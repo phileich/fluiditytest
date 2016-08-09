@@ -61,7 +61,7 @@ public class CounterClient {
             }
             
             
-            Logger.debug = false;
+            Logger.debug = true;
             BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
 
             for (int i = 0; i < numberOfOps; i++) {

@@ -39,9 +39,12 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 
 	private int session = 0; // session id
 	private int sequence = 0; // sequence number
-	private int unorderedMessageSequence = 0; // sequence number for readonly messages
+	private int unorderedMessageSequence = 0; // sequence number for readonly
+												// messages
 	private CommunicationSystemClientSide cs; // Client side comunication system
-	private Lock lock = new ReentrantLock(); // lock to manage concurrent access to this object by other threads
+	private Lock lock = new ReentrantLock(); // lock to manage concurrent access
+												// to this object by other
+												// threads
 	private boolean useSignatures = false;
 	private AtomicInteger opCounter = new AtomicInteger(0);
 
@@ -53,7 +56,7 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 	public TOMSender() {
 	}
 
-	public void close(){
+	public void close() {
 		cs.close();
 	}
 
@@ -61,17 +64,17 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 		return this.cs;
 	}
 
-
-	//******* EDUARDO BEGIN **************//
-	public ClientViewController getViewManager(){
+	// ******* EDUARDO BEGIN **************//
+	public ClientViewController getViewManager() {
 		return this.viewController;
 	}
 
 	/**
-	 * This method initializes the object
-	 * TODO: Ask if this method cannot be protected (compiles, but....)
+	 * This method initializes the object TODO: Ask if this method cannot be
+	 * protected (compiles, but....)
 	 *
-	 * @param processId ID of the process
+	 * @param processId
+	 *            ID of the process
 	 */
 	public void init(int processId) {
 		this.viewController = new ClientViewController(processId);
@@ -79,19 +82,19 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 	}
 
 	public void init(int processId, String configHome) {
-		this.viewController = new ClientViewController(processId,configHome);
+		this.viewController = new ClientViewController(processId, configHome);
 		startsCS(processId);
 	}
 
 	private void startsCS(int clientId) {
 		this.cs = CommunicationSystemClientSideFactory.getCommunicationSystemClientSide(clientId, this.viewController);
-		this.cs.setReplyReceiver(this); // This object itself shall be a reply receiver
+		this.cs.setReplyReceiver(this); // This object itself shall be a reply
+										// receiver
 		this.me = this.viewController.getStaticConf().getProcessId();
-		this.useSignatures = this.viewController.getStaticConf().getUseSignatures()==1?true:false;
+		this.useSignatures = this.viewController.getStaticConf().getUseSignatures() == 1 ? true : false;
 		this.session = new Random().nextInt();
 	}
-	//******* EDUARDO END **************//
-
+	// ******* EDUARDO END **************//
 
 	public int getProcessId() {
 		return me;
@@ -100,10 +103,10 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 	public int generateRequestId(TOMMessageType type) {
 		lock.lock();
 		int id;
-		if(type == TOMMessageType.ORDERED_REQUEST)
+		if (type == TOMMessageType.ORDERED_REQUEST)
 			id = sequence++;
 		else
-			id = unorderedMessageSequence++; 
+			id = unorderedMessageSequence++;
 		lock.unlock();
 
 		return id;
@@ -113,21 +116,23 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 		return opCounter.getAndIncrement();
 	}
 
-	//******* EDUARDO BEGIN **************//
+	// ******* EDUARDO BEGIN **************//
 	/**
 	 * Multicast data to the group of replicas
 	 *
-	 * @param m Data to be multicast
+	 * @param m
+	 *            Data to be multicast
 	 */
-	//public void TOMulticast(byte[] m) {
-	//    TOMulticast(new TOMMessage(me, session, generateRequestId(), m,
-	//            this.viewManager.getCurrentViewId()));
-	//}
+	// public void TOMulticast(byte[] m) {
+	// TOMulticast(new TOMMessage(me, session, generateRequestId(), m,
+	// this.viewManager.getCurrentViewId()));
+	// }
 
 	/**
 	 * Multicast a TOMMessage to the group of replicas
 	 *
-	 * @param sm Message to be multicast
+	 * @param sm
+	 *            Message to be multicast
 	 */
 	public void TOMulticast(TOMMessage sm) {
 		cs.send(useSignatures, this.viewController.getCurrentViewProcesses(), sm);
@@ -136,54 +141,62 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 	/**
 	 * Multicast data to the group of replicas
 	 *
-	 * @param m Data to be multicast
-	 * @param reqId unique integer that identifies this request
-	 * @param reqType TOM_NORMAL, TOM_READONLY or TOM_RECONFIGURATION
+	 * @param m
+	 *            Data to be multicast
+	 * @param reqId
+	 *            unique integer that identifies this request
+	 * @param reqType
+	 *            TOM_NORMAL, TOM_READONLY or TOM_RECONFIGURATION
 	 */
 	public void TOMulticast(byte[] m, int reqId, TOMMessageType reqType) {
 		cs.send(useSignatures, viewController.getCurrentViewProcesses(),
-				new TOMMessage(me, session, reqId, m, viewController.getCurrentViewId(),
-						reqType));
+				new TOMMessage(me, session, reqId, m, viewController.getCurrentViewId(), reqType));
 	}
 
 	public void TOMulticast(byte[] m, int reqId, int operationId, TOMMessageType reqType) {
 		cs.send(useSignatures, viewController.getCurrentViewProcesses(),
-				new TOMMessage(me, session, reqId, operationId, m, viewController.getCurrentViewId(),
-						reqType));
+				new TOMMessage(me, session, reqId, operationId, m, viewController.getCurrentViewId(), reqType));
+	}
+
+	public void TOMulticast(byte[] m, int reqId, int operationId, TOMMessageType reqType, byte[] dwLatencies) {
+		TOMMessage sm = new TOMMessage(me, session, reqId, operationId, m, viewController.getCurrentViewId(), reqType);
+		sm.setLatencyData(dwLatencies);
+		cs.send(useSignatures, viewController.getCurrentViewProcesses(), sm);
 	}
 
 	public void sendMessageToTargets(byte[] m, int reqId, int[] targets, TOMMessageType type) {
-		if(this.getViewManager().getStaticConf().isTheTTP()) {
+		if (this.getViewManager().getStaticConf().isTheTTP()) {
 			type = TOMMessageType.ASK_STATUS;
 		}
-		cs.send(useSignatures, targets,
-				new TOMMessage(me, session, reqId, m, viewController.getCurrentViewId(), type));
+		cs.send(useSignatures, targets, new TOMMessage(me, session, reqId, m, viewController.getCurrentViewId(), type));
 	}
 
 	public void sendMessageToTargets(byte[] m, int reqId, int operationId, int[] targets, TOMMessageType type) {
-		if(this.getViewManager().getStaticConf().isTheTTP()) {
+		if (this.getViewManager().getStaticConf().isTheTTP()) {
 			type = TOMMessageType.ASK_STATUS;
 		}
 		cs.send(useSignatures, targets,
 				new TOMMessage(me, session, reqId, operationId, m, viewController.getCurrentViewId(), type));
 	}
 
-	public int getSession(){
+	public int getSession() {
 		return session;
 	}
 	/**
 	 * Create TOMMessage and sign it
 	 *
-	 * @param m Data to be included in TOMMessage
+	 * @param m
+	 *            Data to be included in TOMMessage
 	 *
-	 * @return TOMMessage with serializedMsg and serializedMsgSignature fields filled
+	 * @return TOMMessage with serializedMsg and serializedMsgSignature fields
+	 *         filled
 	 */
-	//public TOMMessage sign(byte[] m) {
-	//    TOMMessage tm = new TOMMessage(me, session, generateRequestId(), m,
-	//           this.viewManager.getCurrentViewId());
-	//    cs.sign(tm);
-	//    return tm;
-	//}
+	// public TOMMessage sign(byte[] m) {
+	// TOMMessage tm = new TOMMessage(me, session, generateRequestId(), m,
+	// this.viewManager.getCurrentViewId());
+	// cs.sign(tm);
+	// return tm;
+	// }
 
-	//******* EDUARDO END **************//
+	// ******* EDUARDO END **************//
 }
