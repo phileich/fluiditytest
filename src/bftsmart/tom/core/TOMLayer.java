@@ -255,7 +255,10 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 	 *            ID of the consensus which was last to be executed
 	 */
 	public void setLastExec(int last) {
+		// TODO dw triggern (schöner wärs mit Listener)
+		dwController.receiveExec(last);
 		this.lastExecuted = last;
+
 	}
 
 	/**
@@ -280,7 +283,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 		if (inEx == -1 && !isRetrievingState()) {
 			canPropose.signalAll();
 		}
-		dwController.receiveExec(this.inExecution);
 		proposeLock.unlock();
 	}
 
@@ -314,7 +316,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 	@Override
 	public void requestReceived(TOMMessage msg) {
 		long currTimestamp = System.currentTimeMillis();
-
 		if (!doWork)
 			return;
 

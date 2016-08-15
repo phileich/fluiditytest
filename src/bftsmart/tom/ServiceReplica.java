@@ -160,7 +160,7 @@ public class ServiceReplica {
 		this.id = id;
 		this.SVController = new ServerViewController(id, configHome);
 		this.lmps = new LatencyMonitorPiggybackServer(this.SVController, this.id);
-		this.dwc = new DynamicWeightController(this.id, this.SVController, this.lmps);		
+		this.dwc = new DynamicWeightController(this.id, this.SVController, this.lmps);
 		this.executor = executor;
 		this.recoverer = recoverer;
 		this.replier = replier;
@@ -179,6 +179,7 @@ public class ServiceReplica {
 	private void init() {
 		try {
 			cs = new ServerCommunicationSystem(this.SVController, this, lmps, dwc);
+			dwc.setServerCommunicationSystem(cs);
 		} catch (Exception ex) {
 			Logger.getLogger(ServiceReplica.class.getName()).log(Level.SEVERE, null, ex);
 			throw new RuntimeException("Unable to build a communication system.");
@@ -414,6 +415,24 @@ public class ServiceReplica {
 						}
 					} else if (request.getReqType() == TOMMessageType.RECONFIG) {
 						SVController.enqueueUpdate(request);
+						
+					} else if (request.getReqType() == TOMMessageType.INTERNAL_CONSENSUS) {
+						noop = false;
+						dwc.addInternalConsensusDataToStorage(request.getContent());
+
+						MessageContext msgCtx = new MessageContext(request.getSender(), request.getViewID(),
+								request.getReqType(), request.getSession(), request.getSequence(),
+								request.getOperationId(), request.getReplyServer(), request.serializedMessageSignature,
+								firstRequest.timestamp, request.numOfNonces, request.seed, regencies[consensusCount],
+								leaders[consensusCount], consId[consensusCount],
+								cDecs[consensusCount].getConsMessages(), firstRequest, false);
+
+						// Send the replies back to the client
+						byte[] replies = (new String("ConsensusStored")).getBytes();
+
+						request.reply = new TOMMessage(id, request.getSession(), request.getSequence(), replies,
+								SVController.getCurrentViewId(), TOMMessageType.INTERNAL_CONSENSUS);						
+						replier.manageReply(request, msgCtx);
 					} else {
 						throw new RuntimeException("Should never reach here!");
 					}

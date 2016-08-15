@@ -2,8 +2,9 @@ package bftsmart.dynamicWeights;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,10 +13,12 @@ import bftsmart.tom.util.Logger;
 
 public class LatencyMonitorPiggybackServer implements Storage {
 	// key is the round
-	private LinkedHashMap<Long, ServerLatency[]> serverLatencies = new LinkedHashMap<Long, ServerLatency[]>();
-	private LinkedHashMap<Integer, ServerLatency> tmpServerLatencies = new LinkedHashMap<Integer, ServerLatency>();
-	private LinkedHashMap<Integer, Long[]> tmpClientTimestamps = new LinkedHashMap<Integer, Long[]>();
-	private ArrayList<ClientLatency> clientLatencies = new ArrayList<ClientLatency>();
+	private ConcurrentHashMap<Long, ServerLatency[]> serverLatencies = new ConcurrentHashMap<Long, ServerLatency[]>();
+	private ConcurrentHashMap<Integer, ServerLatency> tmpServerLatencies = new ConcurrentHashMap<Integer, ServerLatency>();
+	private ConcurrentHashMap<Integer, Long[]> tmpClientTimestamps = new ConcurrentHashMap<Integer, Long[]>();
+	// private ArrayList<ClientLatency> clientLatencies = new
+	// ArrayList<ClientLatency>();
+	private List<ClientLatency> clientLatencies = Collections.synchronizedList(new ArrayList<ClientLatency>());
 	private int myID;
 	private ServerViewController svc = null;// needed for current N of the
 											// system
@@ -81,7 +84,7 @@ public class LatencyMonitorPiggybackServer implements Storage {
 
 	}
 
-	public void createLatency(int to, long consensusID) {
+	public synchronized void createLatency(int to, long consensusID) {
 		Logger.println("Created Latency for " + to + " in consensusID " + consensusID);
 		ServerLatency latency = new ServerLatency(System.currentTimeMillis());
 		latency.setFrom(myID);
@@ -91,24 +94,24 @@ public class LatencyMonitorPiggybackServer implements Storage {
 		tmpServerLatencies.put(key, latency);
 	}
 
-	public ArrayList<Long> getServerLatency() {
+	public synchronized ArrayList<Long> getServerLatency() {
 
 		return null;
 	}
 
-	private int createHash(int id, long consensusID) {
+	private synchronized int createHash(int id, long consensusID) {
 		String key = "id:" + id + ",consensusID:" + consensusID;
 		return key.hashCode();
 	}
 
-	public void storeClientTimestamp(long sent_timestamp, long recv_timestamp, int clientID) {
+	public synchronized void storeClientTimestamp(long sent_timestamp, long recv_timestamp, int clientID) {
 		Long[] tmpTimestamp = { sent_timestamp, recv_timestamp };
 		Logger.println("Store Client Timestamp: " + sent_timestamp + " for client " + clientID);
 		tmpClientTimestamps.put(clientID, tmpTimestamp);
 
 	}
 
-	public Long getClientTimestamp(int clientID) {
+	public synchronized Long getClientTimestamp(int clientID) {
 		Long[] timestampArr = tmpClientTimestamps.get(clientID);
 		if (timestampArr != null) {
 			long timstamp = timestampArr[0] + (System.currentTimeMillis() - timestampArr[1]);
@@ -119,32 +122,31 @@ public class LatencyMonitorPiggybackServer implements Storage {
 
 	}
 
-	public void clearClientTimestamp(int clientID, long consensusID) {
+	public synchronized void clearClientTimestamp(int clientID, long consensusID) {
+		// TODO chekc batching
 		int key = createHash(clientID, consensusID);
 		tmpClientTimestamps.remove(key);
 	}
 
-	public void storeClientLatency(ClientLatency cl) {
+	public synchronized void storeClientLatency(ClientLatency cl) {
 		clientLatencies.add(cl);
 	}
 
-	public void storeClientLatencies(ArrayList<ClientLatency> cls) {
+	public synchronized void storeClientLatencies(ArrayList<ClientLatency> cls) {
 		clientLatencies.addAll(cls);
 		Logger.println("Store client latencies: " + StringUtils.join(cls, ","));
 	}
 
 	@Override
-	public List<ServerLatency> getServerLatencies() {
-		// TODO Auto-generated method stub
-		return null;
+	public synchronized List<Latency[]> getServerLatencies() {
+		List<Latency[]> latencies = new ArrayList<Latency[]>(serverLatencies.values());
+		return latencies;
 	}
 
 	@Override
-	public List<ClientLatency> getClientLatencies() {
-		//return a copy of the latencies
-		 List<ClientLatency> latencies = (List<ClientLatency>) clientLatencies.clone();
-		
-		
+	public synchronized List<Latency> getClientLatencies() {
+		// return a copy of the latencies
+		List<Latency> latencies = new ArrayList<Latency>(clientLatencies);		
 		return latencies;
 
 	}

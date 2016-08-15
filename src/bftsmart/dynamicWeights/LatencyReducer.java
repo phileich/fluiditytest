@@ -3,5 +3,7 @@ package bftsmart.dynamicWeights;
 import java.util.List;
 
 public interface LatencyReducer {
-	public double[] reduce(List<ClientLatency> latencies, int currentN);
+	public Latency[] reduce(List<Latency> latencies, int currentN);
+
+	public Latency[] reduce2d(List<Latency[]> latencies, int currentN);
 }

@@ -1,8 +1,16 @@
 package bftsmart.dynamicWeights;
 
 public class ServerLatency extends Latency {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2009961313741786805L;
 	private Long ts_sent;
 	private Long ts_received;
+
+	public ServerLatency() {
+
+	}
 
 	public ServerLatency(Long ts_sent, Long ts_received) {
 		this.ts_received = ts_received;

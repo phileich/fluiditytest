@@ -20,6 +20,8 @@ import com.panayotis.gnuplot.plot.AbstractPlot;
 import com.panayotis.gnuplot.style.PlotStyle;
 import com.panayotis.gnuplot.style.Style;
 
+import bftsmart.tom.util.Logger;
+
 public class Kalman implements LatencyReducer {
 	private KalmanFilter filter;
 
@@ -36,6 +38,7 @@ public class Kalman implements LatencyReducer {
 		for (int i = 0; i < latenciesArr.size(); i++) {
 			// for each replica do one kalman
 			ArrayList<Double> latencyOfReplica = latenciesArr.get(i);
+			Logger.println("Data of Replica " + i + ": " + latencyOfReplica);
 			double reducedLatency = kalman(latencyOfReplica);
 			reducedLatencies[i] = reducedLatency;
 		}
@@ -46,9 +49,11 @@ public class Kalman implements LatencyReducer {
 	private void initKalman(int currentN) {
 		Double a_value = 1d;
 		Double h_value = 1d;
-		Double q_value = 0.1d;
-		Double p0_value = 10d;
+		Double q_value = 0.01d;
+		Double p0_value = 0.01d;
+		Double b_value = 1d;
 		Double r_value = 0.1d;
+		Double x_value = 0d;
 
 		// A = [ 1 ]
 		RealMatrix A = MatrixUtils.createRealDiagonalMatrix(new double[] { a_value });
@@ -65,7 +70,7 @@ public class Kalman implements LatencyReducer {
 		// }, { 0, 1d, 0 }, { 0, 0, 1d } });
 
 		// x = [ 10 ]
-		RealVector x = new ArrayRealVector(new double[] { 0d });
+		RealVector x = new ArrayRealVector(new double[] { x_value });
 
 		// Q = [ 0.01 ]
 		RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double[] { q_value });
@@ -100,11 +105,11 @@ public class Kalman implements LatencyReducer {
 		if (plotKalman) {
 			plotKalmanFilter();
 		}
-
 		return filter.getStateEstimation()[0];
 	}
 
 	private ArrayList<ArrayList<Double>> listTo2dArray(List<ClientLatency> clientLatencies, int currentN) {
+		//TODO sort!!!
 		ArrayList<ArrayList<Double>> clientLatenciesArrayList = new ArrayList<ArrayList<Double>>();
 		// double[][] clientLatenciesArray = new double[currentN][];
 		// init arraylist

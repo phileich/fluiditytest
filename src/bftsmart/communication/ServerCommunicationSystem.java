@@ -171,22 +171,6 @@ public class ServerCommunicationSystem extends Thread {
 				clientsConn.send(target, (TOMMessage) sm, false);
 			}
 		} else {
-
-			// if (sm instanceof ConsensusMessage && ((ConsensusMessage)
-			// sm).getPaxosVerboseType() == "ACCEPT") {
-			// for (int i = 0; i < targets.length; i++) {
-			// // cause serversConn.send needs an int[]
-			// int[] target = new int[1];
-			// target[0] = targets[i];
-			// ((ConsensusMessage) sm).setDynamicWeightTimestamp(
-			// lmp.getServerTimestamp(targets[i], ((ConsensusMessage)
-			// sm).getNumber()));
-			// Logger.println("--------sending----------> " + sm + " to " +
-			// Arrays.toString(targets));
-			// serversConn.send(target, sm, true);
-			// }
-			//
-			// } else
 			if (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getPaxosVerboseType() == "WRITE") {
 				for (int i = 0; i < targets.length; i++) {
 					// cause serversConn.send needs an int[]

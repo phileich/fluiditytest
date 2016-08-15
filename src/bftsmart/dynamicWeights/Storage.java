@@ -3,7 +3,7 @@ package bftsmart.dynamicWeights;
 import java.util.List;
 
 public interface Storage {
-	public List<ClientLatency> getClientLatencies();
+	public List<Latency> getClientLatencies();
 
-	public List<ServerLatency> getServerLatencies();
+	public List<Latency[]> getServerLatencies();
 }

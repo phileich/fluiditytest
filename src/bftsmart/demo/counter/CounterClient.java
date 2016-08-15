@@ -24,6 +24,7 @@ import java.io.IOException;
 
 import java.io.InputStreamReader;
 
+import bftsmart.dynamicWeights.DWServiceProxyLatencyMonitorPiggyBack;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.util.Logger;
 import java.util.logging.Level;
@@ -42,7 +43,7 @@ public class CounterClient {
             System.exit(-1);
         }
 
-        ServiceProxy counterProxy = new ServiceProxy(Integer.parseInt(args[0]));
+        ServiceProxy counterProxy = new DWServiceProxyLatencyMonitorPiggyBack(Integer.parseInt(args[0]));
 
         //counterProxy.setInvokeTimeout(1);
 

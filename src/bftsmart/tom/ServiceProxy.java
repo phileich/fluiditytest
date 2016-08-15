@@ -15,7 +15,6 @@ limitations under the License.
  */
 package bftsmart.tom;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
@@ -23,9 +22,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.lang3.SerializationUtils;
-
-import bftsmart.dynamicWeights.LatencyMonitorPiggybackClient;
 import bftsmart.reconfiguration.ReconfigureReply;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -44,23 +40,22 @@ public class ServiceProxy extends TOMSender {
 	// Locks for send requests and receive replies
 	protected ReentrantLock canReceiveLock = new ReentrantLock();
 	protected ReentrantLock canSendLock = new ReentrantLock();
-	private Semaphore sm = new Semaphore(0);
-	private int reqId = -1; // request id
-	private int operationId = -1; // request id
-	private TOMMessageType requestType;
-	private int replyQuorum = 0; // size of the reply quorum
-	private TOMMessage replies[] = null; // Replies from replicas are stored
+	protected Semaphore sm = new Semaphore(0);
+	protected int reqId = -1; // request id
+	protected int operationId = -1; // request id
+	protected TOMMessageType requestType;
+	protected int replyQuorum = 0; // size of the reply quorum
+	protected TOMMessage replies[] = null; // Replies from replicas are stored
 											// here
-	private int receivedReplies = 0; // Number of received replies
-	private TOMMessage response = null; // Reply delivered to the application
-	private int invokeTimeout = 40;
-	private Comparator<byte[]> comparator;
-	private Extractor extractor;
-	private Random rand = new Random(System.currentTimeMillis());
-	private int replyServer;
-	private HashResponseController hashResponseController;
-	private int invokeUnorderedHashedTimeout = 10;
-	private LatencyMonitorPiggybackClient lmpc = null;
+	protected int receivedReplies = 0; // Number of received replies
+	protected TOMMessage response = null; // Reply delivered to the application
+	protected int invokeTimeout = 40;
+	protected Comparator<byte[]> comparator;
+	protected Extractor extractor;
+	protected Random rand = new Random(System.currentTimeMillis());
+	protected int replyServer;
+	protected HashResponseController hashResponseController;
+	protected int invokeUnorderedHashedTimeout = 10;
 
 	/**
 	 * Constructor
@@ -102,7 +97,6 @@ public class ServiceProxy extends TOMSender {
 			init(processId, configHome);
 		}
 
-		lmpc = new LatencyMonitorPiggybackClient(processId, getViewManager());
 		replies = new TOMMessage[getViewManager().getCurrentViewN()];
 
 		comparator = (replyComparator != null) ? replyComparator : new Comparator<byte[]>() {
@@ -204,11 +198,9 @@ public class ServiceProxy extends TOMSender {
 					getViewManager().getCurrentViewId(), requestType);
 			sm.setReplyServer(replyServer);
 			// add all collected DWLatencies
-			sm.setLatencyData(SerializationUtils.serialize((Serializable) lmpc.getClientLatencies()));
 			TOMulticast(sm);
 		} else {
-			TOMulticast(request, reqId, operationId, reqType,
-					SerializationUtils.serialize((Serializable) lmpc.getClientLatencies()));
+			TOMulticast(request, reqId, operationId, reqType);
 		}
 
 		Logger.println("Sending request (" + reqType + ") with reqId=" + reqId);
@@ -311,7 +303,7 @@ public class ServiceProxy extends TOMSender {
 	}
 
 	// ******* EDUARDO BEGIN **************//
-	private void reconfigureTo(View v) {
+	protected void reconfigureTo(View v) {
 		Logger.println("Installing a most up-to-date view with id=" + v.getId());
 		getViewManager().reconfigureTo(v);
 		getViewManager().getViewStore().storeView(v);
@@ -328,7 +320,6 @@ public class ServiceProxy extends TOMSender {
 	 */
 	@Override
 	public void replyReceived(TOMMessage reply) {
-		lmpc.addClientLatency(reply.getDynamicWeightTimestamp(), reply.getSender(), reply.getConsensusID());
 		Logger.println("Synchronously received reply from " + reply.getSender() + " with sequence number "
 				+ reply.getSequence());
 
@@ -433,7 +424,7 @@ public class ServiceProxy extends TOMSender {
 		}
 	}
 
-	private int getReplyQuorum() {
+	protected int getReplyQuorum() {
 
 		// code for classic quorums
 		/*
@@ -460,14 +451,14 @@ public class ServiceProxy extends TOMSender {
 		}
 	}
 
-	private int getRandomlyServerId() {
+	protected int getRandomlyServerId() {
 		int numServers = super.getViewManager().getCurrentViewProcesses().length;
 		int pos = rand.nextInt(numServers);
 
 		return super.getViewManager().getCurrentViewProcesses()[pos];
 	}
 
-	private class HashResponseController {
+	protected class HashResponseController {
 		private TOMMessage reply;
 		private byte[][] hashReplies;
 		private int replyServerPos;

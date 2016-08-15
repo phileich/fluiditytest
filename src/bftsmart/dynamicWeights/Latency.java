@@ -2,21 +2,21 @@ package bftsmart.dynamicWeights;
 
 import java.io.Serializable;
 
-public class Latency implements Serializable{
+public class Latency implements Serializable, Comparable<Latency> {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -6229999093145673414L;
-	private Long ts_value;
+	private Double ts_value;
 	private int from;
 	private int to;
 	private long consensusID;
 
-	public long getValue() {
+	public double getValue() {
 		return ts_value;
 	}
 
-	public void setValue(long ts_value) {
+	public void setValue(double ts_value) {
 		this.ts_value = ts_value;
 	}
 
@@ -46,9 +46,34 @@ public class Latency implements Serializable{
 
 	public String toString() {
 		if (ts_value != null) {
-			return Long.toString(ts_value);
+			return Double.toString(ts_value);
 		} else {
 			return "null";
 		}
+	}
+
+	@Override
+	public int compareTo(Latency o) {
+		//compares first by consensusID, then from, then to
+		if (consensusID > o.consensusID) {
+			return 1;
+		} else if (consensusID < o.consensusID) {
+			return -1;
+		} else {
+			if (from > o.from) {
+				return 1;
+			} else if (from < o.from) {
+				return -1;
+			} else {
+				if (to > o.to) {
+					return 1;
+				} else if (to < o.to) {
+					return -1;
+				} else {
+					return 0;
+				}
+			}
+		}
+
 	}
 }
