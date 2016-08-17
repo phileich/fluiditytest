@@ -16,4 +16,10 @@ public class DummyStorage implements Storage{
 		return null;
 	}
 
+	@Override
+	public List<Latency[]> getServerProposeLatencies() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
