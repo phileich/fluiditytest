@@ -80,6 +80,7 @@ files
 config/currentView
 config/system.config
 bin
+bin/*
 
 
 ### ECLIPSE ####################################################### ECLIPSE ###
