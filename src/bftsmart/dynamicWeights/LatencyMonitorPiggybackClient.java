@@ -35,7 +35,7 @@ public class LatencyMonitorPiggybackClient implements Storage {
 		// TODO check if consensusID = sequenzID
 		long ts = currTimestamp - timestamp;
 		ClientLatency cl = new ClientLatency();
-		cl.setValue(ts);
+		cl.setValue(ts / 2); // half -> RTT
 		cl.setFrom(myID);
 		cl.setTo(serverID);
 		cl.setConsensusID(consensusID);
@@ -59,6 +59,11 @@ public class LatencyMonitorPiggybackClient implements Storage {
 
 	@Override
 	public synchronized List<Latency[]> getServerLatencies() {
+		return null;
+	}
+
+	@Override
+	public List<Latency[]> getServerProposeLatencies() {
 		return null;
 	}
 

@@ -6,17 +6,15 @@ public class DynamicWeightGraphNode {
 	private ArrayList<DynamicWeightGraphEdge> in_edges = new ArrayList<>();
 	private ArrayList<DynamicWeightGraphEdge> out_edges = new ArrayList<>();
 	private double value;
-	private Double weight;
 
-//	public DynamicWeightGraphNode(double value) {
-//		this.value = value;
-//		this.setWeight(1);
-//
-//	}
+	// public DynamicWeightGraphNode(double value) {
+	// this.value = value;
+	// this.setWeight(1);
+	//
+	// }
 
-	public DynamicWeightGraphNode(double value, Double weight) {
+	public DynamicWeightGraphNode(double value) {
 		this.value = value;
-		this.setWeight(weight);
 	}
 
 	public ArrayList<DynamicWeightGraphEdge> getOutgoingEdges() {
@@ -41,14 +39,6 @@ public class DynamicWeightGraphNode {
 
 	public void setValue(double value) {
 		this.value = value;
-	}
-
-	public Double getWeight() {
-		return weight;
-	}
-
-	public void setWeight(Double weight) {
-		this.weight = weight;
 	}
 
 }

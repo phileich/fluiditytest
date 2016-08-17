@@ -1,152 +1,258 @@
 package bftsmart.dynamicWeights;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.Collections;
 
-import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.util.Logger;
 
 public class DynamicWeightGraphBuilder {
-	private ServerViewController svController;
-	private DynamicWeightGraph[] dwGraphs;
-	private int currentLeader;
-	private Double[] currentWeightAssignment;
-	private double currentCalculatedValue;
+	private DynamicWeightGraph dwGraph;
 
-	DynamicWeightGraphBuilder(ServerViewController svController, int currentLeader, Double[] currentWeightAssignment) {
-		this.svController = svController;
-		this.currentLeader = currentLeader;
-		this.currentWeightAssignment = currentWeightAssignment;
+	public DynamicWeightGraphBuilder() {
+		dwGraph = new DynamicWeightGraph(new DynamicWeightGraphNode(0));
 	}
 
-	private int binCoeff(long n, long k) {
-		if (k > n)
-			return 0;
-		else {
-			int a = 1;
-			for (long i = n - k + 1; i <= n; i++)
-				a *= i;
-			int b = 1;
-			for (long i = 2; i <= k; i++)
-				b *= i;
-			return a / b;
-		}
+	public DynamicWeightGraph build() {
+		return dwGraph;
 	}
 
-	public DynamicWeightGraph[] buildGraphs(double[][] serverLatencies, double[] clientlatencies) {
-		Logger.println("Building Calculation Graphs");
-		int f = svController.getCurrentViewF();
-		int n = svController.getCurrentViewN();
-		double vMin = 1;
-		// 3f+1 for BFT
-		int requiredN = (3 * f) + 1;
-		int deltaN = n - requiredN;
-		double vMax = 1 + (deltaN / f);
-		// nr of combinations
-		int comb = n * binCoeff(n, 2 * f);
+	public DynamicWeightGraphBuilder setWeights(Double[] weights) {
+		dwGraph.setWeights(weights);
+		return this;
+	}
 
-		dwGraphs = new DynamicWeightGraph[comb];
-
-		// create weight assignment list
-		// 2f replicas have weight vmax
-		Double[] weightassignment = new Double[n];
-		for (int i = 0; i < (2 * f); i++) {
-			weightassignment[i] = vMax;
+	/**
+	 * Adds a one-to-all pattern to the graph. Only the leaf with the nodenr
+	 * number will be used.
+	 * 
+	 * @param nodeNr
+	 *            the number of the leaf from which the one-to-all pattern will
+	 *            start. Starts with index 0.
+	 * @param latencies
+	 *            the latencies from the client to the nodes
+	 * @params weights the weights for each source node
+	 * @return the builder
+	 */
+	public DynamicWeightGraphBuilder addClientRequest(int nodeNr, double[] latencies, Double[] weights) {
+		// check if nodenr is in range of leaves
+		if (nodeNr > this.dwGraph.getLeaves().length) {
+			Logger.println("Could not add ClientRequest to graph, because nodeNr is higher than the leafe number.");
+			return this;
 		}
-		for (int i = (2 * f); i < weightassignment.length; i++) {
-			weightassignment[i] = vMin;
+
+		// check if number of latencies is equal to number of weights
+		if (latencies.length != weights.length) {
+			Logger.println(
+					"Could not add ClientRequest to graph, because number of latencies is not equal to number of weights.");
+			return this;
 		}
 
-		// for each leader
-		int combCount = 0;
-		for (int i = 0; i < n; i++) {
-			Logger.println("---------------------------------------");
-			Logger.println("Leader: " + i);
-			Permutations<Double> perm = new Permutations<Double>(weightassignment);
-			while (perm.hasNext()) {
-				Double[] permutation = perm.next();
-				Logger.println(Arrays.toString(permutation));
+		// create new leafes
+		DynamicWeightGraphNode[] newLeaves = new DynamicWeightGraphNode[latencies.length];
+		for (int i = 0; i < newLeaves.length; i++) {
 
-				// Create the graph
-				DynamicWeightGraph dwGraph = new DynamicWeightGraph(new DynamicWeightGraphNode(0, 1d), clientlatencies,
-						serverLatencies, permutation);
+			DynamicWeightGraphNode tmpNode = new DynamicWeightGraphNode(0);
+			new DynamicWeightGraphEdge(dwGraph.getLeaves()[nodeNr], tmpNode, latencies[i], weights[i]);
+			newLeaves[i] = tmpNode;
+		}
 
-				dwGraph.addClientResponse(
-						dwGraph.addDoubleMultiCast(dwGraph.addClientRequest(dwGraph.getRoot()), getReplyQuorum()),
-						getReplyQuorum());
+		// calculate
+		for (int i = 0; i < newLeaves.length; i++) {
+			// the value of the node is the value of the client + the time from
+			// client to server i
+			newLeaves[i].setValue(dwGraph.getLeaves()[nodeNr].getValue() + latencies[i]);
+		}
 
-				if (Arrays.deepEquals(dwGraph.getWeightAssignment(), currentWeightAssignment)
-						&& dwGraph.getLeaderID() == currentLeader) {
-					this.currentCalculatedValue = dwGraph.getCalculatedValue();
-				}
-				Logger.println("" +dwGraph.getCalculatedValue());
-				// add graph
-				dwGraphs[combCount] = dwGraph;
+		dwGraph.setLeaves(newLeaves);
+		return this;
+	}
 
-				combCount++;
+	/**
+	 * Adds a one-to-all pattern to the graph. Only the leaf with the nodenr
+	 * number will be used.
+	 * 
+	 * @param leaderNr
+	 *            the number of the leader from which the one-to-all pattern
+	 *            will start. Starts with index 0.
+	 * @param latencies
+	 *            the latencies from the leader to the nodes
+	 * @params weights weights the weights for each source node
+	 * @return the builder
+	 */
+	public DynamicWeightGraphBuilder addLeaderPropose(int leaderNr, double[] latencies, Double[] weights) {
+		// check if leaderNr is in range of leaves
+		if (leaderNr > this.dwGraph.getLeaves().length) {
+			Logger.println("Could not add LeaderPropose to graph, because leaderNr is higher than the leafe number.");
+			return this;
+		}
+
+		// check if number of latencies is equal to number of weights
+		if (latencies.length != weights.length) {
+			Logger.println(
+					"Could not add LeaderPropose to graph, because number of latencies is not equal to number of weights.");
+			return this;
+		}
+
+		// check if number of latencies is equal to number of leaves
+		if (latencies.length != dwGraph.getLeaves().length) {
+			Logger.println(
+					"Could not add LeaderPropose to graph, because number of latencies is not equal to number of leaves.");
+			return this;
+		}
+
+		// create new leafes
+		DynamicWeightGraphNode[] newLeaves = new DynamicWeightGraphNode[latencies.length];
+		for (int i = 0; i < newLeaves.length; i++) {
+
+			DynamicWeightGraphNode tmpNode = new DynamicWeightGraphNode(0);
+			new DynamicWeightGraphEdge(dwGraph.getLeaves()[leaderNr], tmpNode, latencies[i], weights[i]);
+			newLeaves[i] = tmpNode;
+		}
+
+		// calculate
+		for (int i = 0; i < newLeaves.length; i++) {
+			// the value of the node is the maximum of the value of the leader +
+			// the time from
+			// the leader to server i and the value of the server node i
+			newLeaves[i].setValue(Math.max(dwGraph.getLeaves()[leaderNr].getValue() + latencies[i],
+					dwGraph.getLeaves()[i].getValue()));
+		}
+
+		dwGraph.setLeaves(newLeaves);
+		return this;
+	}
+
+	/**
+	 * Adds a all-to-all pattern to the graph. Each leaf will have a edge to all
+	 * new leaves.
+	 * 
+	 * @param latencies
+	 *            the latency matrix for each node to node
+	 * @param weights
+	 *            the weights for each source node
+	 * @param quorumSize
+	 *            the quorumSize of the pattern
+	 * @return
+	 */
+	public DynamicWeightGraphBuilder addMultiCast(double[][] latencies, Double[] weights, int quorumSize) {
+		// check if latencies size is equal
+		for (int i = 0; i < latencies.length; i++) {
+			if (latencies[i].length != latencies.length) {
+				Logger.println(
+						"Could not add MultiCast to graph, because latencies collumn size is not equal to its row size.");
+				return this;
 			}
-
 		}
-		return dwGraphs;
-
-	}
-
-	private int getReplyQuorum() {
-
-		// code for classic quorums
-		/*
-		 * if (getViewManager().getStaticConf().isBFT()) { return (int)
-		 * Math.ceil((getViewManager().getCurrentViewN() +
-		 * getViewManager().getCurrentViewF()) / 2) + 1; } else { return (int)
-		 * Math.ceil((getViewManager().getCurrentViewN()) / 2) + 1; }
-		 */
-
-		// code for vote schemes
-		if (svController.getStaticConf().isBFT()) {
-			return (int) Math.ceil(
-					(svController.getCurrentView().getOverlayN() + (svController.getCurrentView().getOverlayF()) + 1)
-							/ 2);
-		} else {
-
-			// code for simple majority (of votes)
-			// return (int)
-			// Math.ceil(((getViewManager().getCurrentView().getOverlayN()) + 1)
-			// / 2);
-
-			// Code to only wait one reply
-			Logger.println("(ServiceProxy.getReplyQuorum) only one reply will be gathered");
-			return 1;
+		// check if quroumSize is lesser than latency size
+		if (quorumSize > latencies.length) {
+			Logger.println("Could not add MultiCast to graph, because quorumSize is greater than latencies  size.");
+			return this;
 		}
-	}
-
-	
-
-	public double getCurrentCalculatedValue() {
-		return currentCalculatedValue;
-	}
-	
-	public Double[] getCurrentWeightAssignment(){
-		return currentWeightAssignment;
-	}
-}
-
-class ValueComparator implements Comparator<Integer> {
-
-	HashMap<Integer, Double> map = new HashMap<Integer, Double>();
-
-	public ValueComparator(HashMap<Integer, Double> map) {
-		this.map.putAll(map);
-	}
-
-	@Override
-	public int compare(Integer s1, Integer s2) {
-		if (map.get(s1) >= map.get(s2)) {
-			return -1;
-		} else {
-			return 1;
+		// check if quorumSize is greater than zero
+		if (quorumSize < 1) {
+			Logger.println("Could not add MultiCast to graph, because quorumSize has to be greater than zero.");
+			return this;
 		}
+
+		// check if number of latencies is equal to number of leaves
+		if (latencies.length != dwGraph.getLeaves().length) {
+			Logger.println(
+					"Could not add MultiCast to graph, because number of latencies is not equal to number of leaves.");
+			return this;
+		}
+
+		// Create
+		DynamicWeightGraphNode[] newLeaves = new DynamicWeightGraphNode[latencies.length];
+		// nodes
+		for (int i = 0; i < newLeaves.length; i++) {
+			DynamicWeightGraphNode tmpNode = new DynamicWeightGraphNode(0);
+			newLeaves[i] = tmpNode;
+		}
+		// edges from each nodes to each leaf
+		for (int i = 0; i < dwGraph.getLeaves().length; i++) {
+			for (int j = 0; j < newLeaves.length; j++) {
+				new DynamicWeightGraphEdge(dwGraph.getLeaves()[i], newLeaves[j], latencies[i][j], weights[i]);
+			}
+		}
+
+		// calculate
+		for (int i = 0; i < newLeaves.length; i++) {
+			ArrayList<Double> values = new ArrayList<Double>();
+			// calculate every value of incoming edges
+			for (DynamicWeightGraphEdge edge : newLeaves[i].getIncomingEdges()) {
+				double value = edge.getFrom().getValue() + edge.getValue();
+				// add for each weight
+				for (int j = 0; j < edge.getWeight(); j++) {
+					values.add(value);
+				}
+			}
+			Collections.sort(values);
+			newLeaves[i].setValue(values.get(quorumSize - 1));
+		}
+
+		dwGraph.setLeaves(newLeaves);
+		return this;
 	}
 
+	/**
+	 * Adds a all-to-one pattern to the graph
+	 * 
+	 * @param latencies
+	 * @param weights
+	 * @param quorumSize
+	 * @return
+	 */
+	public DynamicWeightGraphBuilder addClientResponse(double[] latencies, Double[] weights, int quorumSize) {
+		// check if number of latencies is equal to number of weights
+		if (latencies.length != weights.length) {
+			Logger.println(
+					"Could not add ClientResponse to graph, because number of latencies is not equal to number of weights.");
+			return this;
+		}
+
+		// check if number of latencies is equal to number of leaves
+		if (latencies.length != dwGraph.getLeaves().length) {
+			Logger.println(
+					"Could not add ClientResponse to graph, because number of latencies is not equal to number of leaves.");
+			return this;
+		}
+
+		// check if quroumSize is lesser than latency size
+		if (quorumSize > latencies.length) {
+			Logger.println(
+					"Could not add ClientResponse to graph, because quorumSize is greater than latencies  size.");
+			return this;
+		}
+
+		// check if quorumSize is greater than zero
+		if (quorumSize < 1) {
+			Logger.println("Could not add ClientResponse to graph, because quorumSize has to be greater than zero.");
+			return this;
+		}
+
+		// Create
+		DynamicWeightGraphNode[] newLeaves = new DynamicWeightGraphNode[1];
+		newLeaves[0] = new DynamicWeightGraphNode(0);
+
+		for (int i = 0; i < dwGraph.getLeaves().length; i++) {
+			new DynamicWeightGraphEdge(dwGraph.getLeaves()[i], newLeaves[0], latencies[i], weights[i]);
+		}
+
+		// Calculate
+
+		ArrayList<Double> values = new ArrayList<Double>();
+		// calculate every value of incoming edges
+		for (DynamicWeightGraphEdge edge : newLeaves[0].getIncomingEdges()) {
+			double value = edge.getFrom().getValue() + edge.getValue();
+			// add for each weight
+			for (int j = 0; j < edge.getWeight(); j++) {
+				values.add(value);
+			}
+		}
+		Collections.sort(values);
+		newLeaves[0].setValue(values.get(quorumSize - 1));
+
+		dwGraph.setLeaves(newLeaves);
+		return this;
+	}
 }

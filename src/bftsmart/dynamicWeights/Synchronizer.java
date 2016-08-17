@@ -37,25 +37,33 @@ public class Synchronizer implements Runnable {
 			// get latencies
 			List<Latency> clientLatencies = latencyMonitor.getClientLatencies();
 			List<Latency[]> serverLatencies = latencyMonitor.getServerLatencies();
+			List<Latency[]> serverProposeLatencies = latencyMonitor.getServerProposeLatencies();
 
 			// reduce clientLatency
 			Latency[] reducedClientLat = latReducer.reduce(clientLatencies, currentN);
 
 			Latency[] reducedServerLat = latReducer.reduce2d(serverLatencies, currentN);
+			
+			Latency[] reducedServerProposeLat = latReducer.reduce2d(serverProposeLatencies, currentN);
 
 			ByteArrayOutputStream out = new ByteArrayOutputStream(4);
 			DataOutputStream dos = new DataOutputStream(out);
 
 			byte[] serializeClientLat = SerializationUtils.serialize(reducedClientLat);
 			byte[] serializeServerLat = SerializationUtils.serialize(reducedServerLat);
+			byte[] serializeServerProposeLat = SerializationUtils.serialize(reducedServerProposeLat);
 
 			dos.writeInt(serializeClientLat.length);
 			dos.write(serializeClientLat);
 			dos.writeInt(serializeServerLat.length);
 			dos.write(serializeServerLat);
+			dos.writeInt(serializeServerProposeLat.length);
+			dos.write(serializeServerProposeLat);
 
 			Logger.println("Sending client latencies to internal consensus: " + Arrays.toString(reducedClientLat));
 			Logger.println("Sending server latencies to internal consensus: " + Arrays.toString(reducedServerLat));
+			Logger.println("Sending server propose latencies to internal consensus: " + Arrays.toString(reducedServerProposeLat));
+			
 			byte[] reply = internalClient.invokeInternal(out.toByteArray());
 			if (reply != null) {
 				Logger.println("Received Internal Consensus: " + new String(reply));

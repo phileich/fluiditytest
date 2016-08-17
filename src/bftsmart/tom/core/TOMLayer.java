@@ -35,6 +35,8 @@ import bftsmart.communication.client.RequestReceiver;
 import bftsmart.consensus.Consensus;
 import bftsmart.consensus.Decision;
 import bftsmart.consensus.Epoch;
+import bftsmart.consensus.messages.ConsensusMessage;
+import bftsmart.consensus.messages.MessageFactory;
 import bftsmart.consensus.roles.Acceptor;
 import bftsmart.dynamicWeights.ClientLatency;
 import bftsmart.dynamicWeights.DynamicWeightController;
@@ -338,7 +340,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 			lmps.storeClientLatencies(cls);
 		}
 		lmps.storeClientTimestamp(msg.getDynamicWeightTimestamp(), currTimestamp, msg.getSender());
-
+		if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()){
+			// create Dummy Propose
+			communication.send(lmps.getCurrentViewAcceptors(),
+					new ConsensusMessage(MessageFactory.DUMMY_PROPOSE, 0, 0, dwController.getID()));
+		}
 	}
 
 	/**

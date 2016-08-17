@@ -6,6 +6,7 @@ import java.util.List;
 
 public class LatencyStorage {
 	private List<ServerLatency[]> serverLatencies = Collections.synchronizedList(new ArrayList<ServerLatency[]>());
+	private List<ServerLatency[]> serverProposeLatencies = Collections.synchronizedList(new ArrayList<ServerLatency[]>());
 	private List<ClientLatency[]> clientLatencies = Collections.synchronizedList(new ArrayList<ClientLatency[]>());
 
 	public void addClientLatencies(ClientLatency[] cl) {
@@ -14,6 +15,10 @@ public class LatencyStorage {
 
 	public void addServerLatencies(ServerLatency[] sl) {
 		this.serverLatencies.add(sl);
+	}
+	
+	public void addServerProposeLatencies(ServerLatency[] spl) {
+		this.serverProposeLatencies.add(spl);
 	}
 
 	public int getClientSize() {
@@ -26,6 +31,11 @@ public class LatencyStorage {
 
 	public List<Latency[]> getServerLatencies() {
 		List<Latency[]> copyList = new ArrayList<Latency[]>(serverLatencies);		
+		return copyList;
+	}
+	
+	public List<Latency[]> getServerProposeLatencies() {
+		List<Latency[]> copyList = new ArrayList<Latency[]>(serverProposeLatencies);		
 		return copyList;
 	}
 

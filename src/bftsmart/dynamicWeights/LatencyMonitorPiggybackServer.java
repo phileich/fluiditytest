@@ -15,6 +15,8 @@ public class LatencyMonitorPiggybackServer implements Storage {
 	// key is the round
 	private ConcurrentHashMap<Long, ServerLatency[]> serverLatencies = new ConcurrentHashMap<Long, ServerLatency[]>();
 	private ConcurrentHashMap<Integer, ServerLatency> tmpServerLatencies = new ConcurrentHashMap<Integer, ServerLatency>();
+	private ConcurrentHashMap<Long, ServerLatency[]> serverProposeLatencies = new ConcurrentHashMap<Long, ServerLatency[]>();
+	private ConcurrentHashMap<Integer, ServerLatency> tmpServerProposeLatencies = new ConcurrentHashMap<Integer, ServerLatency>();
 	private ConcurrentHashMap<Integer, Long[]> tmpClientTimestamps = new ConcurrentHashMap<Integer, Long[]>();
 	// private ArrayList<ClientLatency> clientLatencies = new
 	// ArrayList<ClientLatency>();
@@ -29,7 +31,7 @@ public class LatencyMonitorPiggybackServer implements Storage {
 	}
 
 	/**
-	 * Stores the Latencies
+	 * Stores the Latencies. Represented by a Write - Accept cycle
 	 * 
 	 * @param serverID
 	 *            the ID of the entity which receives the latency request
@@ -73,9 +75,68 @@ public class LatencyMonitorPiggybackServer implements Storage {
 			tmpServerLatencies.remove(key);
 
 			// print
+			System.out.print("Server Latencies: ");
 			for (Long name : serverLatencies.keySet()) {
 				String printKey = name.toString();
 				String value = Arrays.deepToString(serverLatencies.get(name));
+				System.out.print("(" + printKey + ":" + value + "); ");
+
+			}
+			System.out.println("");
+		}
+
+	}
+
+	/**
+	 * Stores the ProposeLatencies
+	 * 
+	 * @param serverID
+	 *            the ID of the entity which receives the latency request
+	 * @param consensusID
+	 *            the consensusID defined by the replicas
+	 */
+	public synchronized void addServerProposeLatency(int serverID, long consensusID) {
+		long latReceived = System.currentTimeMillis();
+		// get Latency
+		int key = createHash(serverID, consensusID);
+		ServerLatency storedLatency = tmpServerProposeLatencies.get(key);
+		if (storedLatency == null) {
+			// error not created yet
+		} else {
+			storedLatency.setReceived(latReceived);
+			storedLatency.setValue(storedLatency.getValue() / 2); // half -> RTT
+			Logger.println("Store Server Propose Latency: latency:" + storedLatency.getValue() + ",id:" + serverID
+					+ ",consensusID:" + consensusID);
+
+			ServerLatency[] latencyOfRound = serverProposeLatencies.get(consensusID);
+
+			if (latencyOfRound == null) {
+				// this does not exist yet -> create
+				int n = svc.getCurrentViewN();
+				latencyOfRound = new ServerLatency[n];
+				latencyOfRound[serverID] = storedLatency;
+				// my own latency with lat = 0
+				ServerLatency myLat = new ServerLatency(new Long(0), new Long(0));
+				latencyOfRound[myID] = myLat;
+
+			} else {
+				// check if correct id
+				if (serverID < latencyOfRound.length) {
+					latencyOfRound[serverID] = storedLatency;
+				} else {
+					// ERROR!
+				}
+			}
+			serverProposeLatencies.put(consensusID, latencyOfRound);
+
+			// remove tmpLatency, no longer needed to store
+			tmpServerProposeLatencies.remove(key);
+
+			// print
+			System.out.print("Server Propose Latencies: ");
+			for (Long name : serverProposeLatencies.keySet()) {
+				String printKey = name.toString();
+				String value = Arrays.deepToString(serverProposeLatencies.get(name));
 				System.out.print("(" + printKey + ":" + value + "); ");
 
 			}
@@ -94,9 +155,14 @@ public class LatencyMonitorPiggybackServer implements Storage {
 		tmpServerLatencies.put(key, latency);
 	}
 
-	public synchronized ArrayList<Long> getServerLatency() {
-
-		return null;
+	public synchronized void createProposeLatency(int to, long consensusID) {
+		Logger.println("Created Propose Latency for " + to + " in consensusID " + consensusID);
+		ServerLatency latency = new ServerLatency(System.currentTimeMillis());
+		latency.setFrom(myID);
+		latency.setTo(to);
+		latency.setConsensusID(consensusID);
+		int key = createHash(to, consensusID);
+		tmpServerProposeLatencies.put(key, latency);
 	}
 
 	private synchronized int createHash(int id, long consensusID) {
@@ -144,10 +210,20 @@ public class LatencyMonitorPiggybackServer implements Storage {
 	}
 
 	@Override
+	public synchronized List<Latency[]> getServerProposeLatencies() {
+		List<Latency[]> latencies = new ArrayList<Latency[]>(serverProposeLatencies.values());
+		return latencies;
+	}
+
+	@Override
 	public synchronized List<Latency> getClientLatencies() {
 		// return a copy of the latencies
-		List<Latency> latencies = new ArrayList<Latency>(clientLatencies);		
+		List<Latency> latencies = new ArrayList<Latency>(clientLatencies);
 		return latencies;
 
+	}
+
+	public int[] getCurrentViewAcceptors() {
+		return svc.getCurrentViewAcceptors();
 	}
 }

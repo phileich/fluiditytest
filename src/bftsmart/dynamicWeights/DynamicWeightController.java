@@ -32,13 +32,18 @@ public class DynamicWeightController implements Runnable {
 		this.latStorage = new LatencyStorage();
 	}
 
+	public int getID() {
+		return id;
+	}
+
 	// TODO erweitern von Klassen
 	@Override
 	public void run() {
 		// Start calculation of reconfiguration
 		System.out.println("start reconfig calculation");
 		// synchronize Data
-		Thread syncThread = new Thread(new Synchronizer(latencyMonitor, id, svController, scs), "SynchronizationThread");
+		Thread syncThread = new Thread(new Synchronizer(latencyMonitor, id, svController, scs),
+				"SynchronizationThread");
 		syncThread.start();
 	}
 
@@ -86,14 +91,20 @@ public class DynamicWeightController implements Runnable {
 			int serverLength = dis.readInt();
 			byte[] serializedServerLat = new byte[serverLength];
 			dis.readFully(serializedServerLat);
-
 			ServerLatency[] serverLatencies = SerializationUtils.deserialize(serializedServerLat);
+			
+			int serverProposeLength = dis.readInt();
+			byte[] serializedServerProposeLat = new byte[serverProposeLength];
+			dis.readFully(serializedServerProposeLat);
+			ServerLatency[] serverProposeLatencies = SerializationUtils.deserialize(serializedServerProposeLat);
 
 			System.out.println("received Client Latencies from internal conensus: " + Arrays.toString(clientLatencies));
-
 			System.out.println("received Server Latencies from internal conensus: " + Arrays.toString(serverLatencies));
+			System.out.println("received Server Propose Latencies from internal conensus: " + Arrays.toString(serverProposeLatencies));
+			
 			latStorage.addClientLatencies(clientLatencies);
 			latStorage.addServerLatencies(serverLatencies);
+			latStorage.addServerProposeLatencies(serverProposeLatencies);
 
 			// if n -f entries -> trigger calculation
 			if (latStorage.getClientSize() >= (svController.getCurrentViewN() - svController.getCurrentViewF())
@@ -103,7 +114,8 @@ public class DynamicWeightController implements Runnable {
 				calcStarted = true;
 				try {
 					Thread.sleep(5000);
-					Thread reconfigThread = new Thread(new Reconfigurator(latStorage, svController), "ReconfigurationThread");
+					Thread reconfigThread = new Thread(new Reconfigurator(latStorage, svController),
+							"ReconfigurationThread");
 					reconfigThread.start();
 				} catch (InterruptedException e) {
 					e.printStackTrace();

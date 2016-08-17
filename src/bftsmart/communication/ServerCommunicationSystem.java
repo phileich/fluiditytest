@@ -25,6 +25,7 @@ import bftsmart.communication.client.CommunicationSystemServerSideFactory;
 import bftsmart.communication.client.RequestReceiver;
 import bftsmart.communication.server.ServersCommunicationLayer;
 import bftsmart.consensus.messages.ConsensusMessage;
+import bftsmart.consensus.messages.MessageFactory;
 import bftsmart.consensus.roles.Acceptor;
 import bftsmart.dynamicWeights.DynamicWeightController;
 import bftsmart.dynamicWeights.LatencyMonitorPiggybackServer;
@@ -130,7 +131,19 @@ public class ServerCommunicationSystem extends Thread {
 					if ((sm instanceof ConsensusMessage) && ((ConsensusMessage) sm).getPaxosVerboseType() == "ACCEPT") {
 						// store latency in volatile storage
 						lmps.addServerLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
-					}					
+					} else if ((sm instanceof ConsensusMessage)
+							&& (((ConsensusMessage) sm).getPaxosVerboseType() == "PROPOSE"
+									|| ((ConsensusMessage) sm).getPaxosVerboseType() == "DUMMY_PROPOSE")) {
+						// send immediately back
+						ConsensusMessage cm = new ConsensusMessage(MessageFactory.DUMMY_PROPOSE_RESPONSE,
+								((ConsensusMessage) sm).getNumber(), 0, dwc.getID());
+						lmps.createProposeLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
+						Logger.println("--------sending----------> " + cm + " to " + sm.getSender());
+						serversConn.send(new int[] { sm.getSender() }, cm, false);
+					} else if ((sm instanceof ConsensusMessage)
+							&& ((ConsensusMessage) sm).getPaxosVerboseType() == "DUMMY_PROPOSE_RESPONSE") {
+						lmps.addServerProposeLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
+					}
 					messageHandler.processData(sm);
 					count++;
 				} else {
@@ -164,9 +177,9 @@ public class ServerCommunicationSystem extends Thread {
 				target[0] = targets[i];
 				((TOMMessage) sm).setDynamicWeightTimestamp(lmps.getClientTimestamp(targets[i]));
 				((TOMMessage) sm).setConsensusID(dwc.getInExec());
-				//remove from tmp storage to prevent overflow
+				// remove from tmp storage to prevent overflow
 				lmps.clearClientTimestamp(targets[i], dwc.getInExec());
-								
+
 				Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
 				clientsConn.send(target, (TOMMessage) sm, false);
 			}

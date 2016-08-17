@@ -24,6 +24,8 @@ public class MessageFactory{
     public static final int PROPOSE = 44781;
     public static final int WRITE    = 44782;
     public static final int ACCEPT  = 44783;
+    public static final int DUMMY_PROPOSE  = 44784;
+    public static final int DUMMY_PROPOSE_RESPONSE  = 44785;
 
     private int from; // Replica ID of the process which sent this message
 
@@ -74,6 +76,19 @@ public class MessageFactory{
     public ConsensusMessage createAccept(int id, int epoch, byte[] value) {
 
         return new ConsensusMessage(ACCEPT,id,epoch, from, value);
+
+    }
+    
+    /**
+     * Creates a DummyPropose message to be sent by this process
+     * @param id Consensus's execution ID
+     * @param epoch Epoch number
+     * @param value Accepted value
+     * @return A consensus message of the DUMMY_PROPOSE type, with the specified id, epoch, and value
+     */
+    public ConsensusMessage createDummyPropose(int id, int epoch, byte[] value) {
+
+        return new ConsensusMessage(DUMMY_PROPOSE,id,epoch, from, value);
 
     }
 

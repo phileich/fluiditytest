@@ -231,6 +231,10 @@ public class ConsensusMessage extends SystemMessage {
 			return "ACCEPT";
 		else if (paxosType == MessageFactory.WRITE)
 			return "WRITE";
+		else if (paxosType == MessageFactory.DUMMY_PROPOSE)
+			return "DUMMY_PROPOSE";
+		else if (paxosType == MessageFactory.DUMMY_PROPOSE_RESPONSE)
+			return "DUMMY_PROPOSE_RESPONSE";
 		else
 			return "";
 	}
