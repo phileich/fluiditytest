@@ -340,10 +340,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 			lmps.storeClientLatencies(cls);
 		}
 		lmps.storeClientTimestamp(msg.getDynamicWeightTimestamp(), currTimestamp, msg.getSender());
-		if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()){
+		if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
 			// create Dummy Propose
-			communication.send(lmps.getCurrentViewAcceptors(),
-					new ConsensusMessage(MessageFactory.DUMMY_PROPOSE, 0, 0, dwController.getID()));
+			lmps.createProposeLatencies(lmps.getCurrentViewOtherAcceptors(), dwController.getInExec() + 1);
+			communication.send(lmps.getCurrentViewAcceptors(), new ConsensusMessage(MessageFactory.DUMMY_PROPOSE,
+					dwController.getInExec() + 1, 0, dwController.getID()));
 		}
 	}
 
@@ -470,6 +471,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 					continue;
 
 				}
+				lmps.createProposeLatencies(controller.getCurrentViewOtherAcceptors(), getInExec());
 				execManager.getProposer().startConsensus(execId, createPropose(dec));
 			}
 		}

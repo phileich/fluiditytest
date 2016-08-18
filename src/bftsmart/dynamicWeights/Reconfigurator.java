@@ -75,10 +75,10 @@ public class Reconfigurator implements Runnable {
 			for (int i = 0; i < latencies.length; i++) {
 				Latency lat = latencies[i];
 				reducedServerProposeValues[lat.getFrom()][lat.getTo()] = Math
-						.max(reducedServerValues[lat.getFrom()][lat.getTo()], lat.getValue());
+						.max(reducedServerProposeValues[lat.getFrom()][lat.getTo()], lat.getValue());
 				// symmetric
 				reducedServerProposeValues[lat.getTo()][lat.getFrom()] = Math
-						.max(reducedServerValues[lat.getTo()][lat.getFrom()], lat.getValue());
+						.max(reducedServerProposeValues[lat.getTo()][lat.getFrom()], lat.getValue());
 				if (lat.getValue() > maxProposeValue) {
 					maxProposeValue = lat.getValue();
 				}
@@ -135,8 +135,8 @@ public class Reconfigurator implements Runnable {
 				DynamicWeightGraphBuilder dwgBuilder = new DynamicWeightGraphBuilder().setWeights(permutation);
 				DynamicWeightGraph dwGraph = dwgBuilder.addClientRequest(0, reducedClientValues, permutation)
 						.addLeaderPropose(i, reducedServerProposeValues[i], permutation)
-						.addMultiCast(reducedServerProposeValues, permutation, svController.getQuorum())
-						.addClientResponse(reducedClientValues, permutation, svController.getQuorum()).build();
+						.addMultiCast(reducedServerValues, permutation, getReplyQuorum())
+						.addClientResponse(reducedClientValues, permutation, getReplyQuorum()).build();
 
 				if (Arrays.deepEquals(permutation, currentWeightAssignment) && i == currentLeader) {
 					currentCalculatedValue = dwGraph.getLeaves()[0].getValue(); // should
@@ -237,6 +237,35 @@ public class Reconfigurator implements Runnable {
 		TreeMap<Integer, Double> result = new TreeMap<Integer, Double>(comparator);
 		result.putAll(map);
 		return result;
+	}
+
+	protected int getReplyQuorum() {
+
+		// code for classic quorums
+		/*
+		 * if (getViewManager().getStaticConf().isBFT()) { return (int)
+		 * Math.ceil((getViewManager().getCurrentViewN() +
+		 * getViewManager().getCurrentViewF()) / 2) + 1; } else { return (int)
+		 * Math.ceil((getViewManager().getCurrentViewN()) / 2) + 1; }
+		 */
+
+		// code for vote schemes
+
+		if (svController.getStaticConf().isBFT()) {
+			return (int) Math.ceil(
+					(svController.getCurrentView().getOverlayN() + (svController.getCurrentView().getOverlayF()) + 1)
+							/ 2);
+		} else {
+
+			// code for simple majority (of votes)
+			// return (int)
+			// Math.ceil(((getViewManager().getCurrentView().getOverlayN()) + 1)
+			// / 2);
+
+			// Code to only wait one reply
+			Logger.println("(ServiceProxy.getReplyQuorum) only one reply will be gathered");
+			return 1;
+		}
 	}
 }
 

@@ -165,6 +165,19 @@ public class LatencyMonitorPiggybackServer implements Storage {
 		tmpServerProposeLatencies.put(key, latency);
 	}
 
+	public synchronized void createProposeLatencies(int[] to, long consensusID) {
+		for (int i = 0; i < to.length; i++) {
+			Logger.println("Created Propose Latency for " + to[i] + " in consensusID " + consensusID);
+			ServerLatency latency = new ServerLatency(System.currentTimeMillis());
+			latency.setFrom(myID);
+			latency.setTo(to[i]);
+			latency.setConsensusID(consensusID);
+			int key = createHash(to[i], consensusID);
+			tmpServerProposeLatencies.put(key, latency);
+		}
+
+	}
+
 	private synchronized int createHash(int id, long consensusID) {
 		String key = "id:" + id + ",consensusID:" + consensusID;
 		return key.hashCode();
@@ -225,5 +238,9 @@ public class LatencyMonitorPiggybackServer implements Storage {
 
 	public int[] getCurrentViewAcceptors() {
 		return svc.getCurrentViewAcceptors();
+	}
+
+	public int[] getCurrentViewOtherAcceptors() {
+		return svc.getCurrentViewOtherAcceptors();
 	}
 }

@@ -47,7 +47,7 @@ public class DynamicWeightGraphBuilder {
 			return this;
 		}
 
-		// create new leafes
+		// create new leaves
 		DynamicWeightGraphNode[] newLeaves = new DynamicWeightGraphNode[latencies.length];
 		for (int i = 0; i < newLeaves.length; i++) {
 
@@ -100,10 +100,9 @@ public class DynamicWeightGraphBuilder {
 			return this;
 		}
 
-		// create new leafes
+		// create new leaves
 		DynamicWeightGraphNode[] newLeaves = new DynamicWeightGraphNode[latencies.length];
 		for (int i = 0; i < newLeaves.length; i++) {
-
 			DynamicWeightGraphNode tmpNode = new DynamicWeightGraphNode(0);
 			new DynamicWeightGraphEdge(dwGraph.getLeaves()[leaderNr], tmpNode, latencies[i], weights[i]);
 			newLeaves[i] = tmpNode;

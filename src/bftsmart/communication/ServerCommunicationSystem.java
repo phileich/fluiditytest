@@ -137,7 +137,6 @@ public class ServerCommunicationSystem extends Thread {
 						// send immediately back
 						ConsensusMessage cm = new ConsensusMessage(MessageFactory.DUMMY_PROPOSE_RESPONSE,
 								((ConsensusMessage) sm).getNumber(), 0, dwc.getID());
-						lmps.createProposeLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
 						Logger.println("--------sending----------> " + cm + " to " + sm.getSender());
 						serversConn.send(new int[] { sm.getSender() }, cm, false);
 					} else if ((sm instanceof ConsensusMessage)
