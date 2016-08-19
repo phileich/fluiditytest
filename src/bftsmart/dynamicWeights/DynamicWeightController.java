@@ -65,7 +65,7 @@ public class DynamicWeightController implements Runnable {
 		if (exec % 100 == 0 && exec != 0) {
 			if (!reconfigInExec) {
 				reconfigInExec = true;
-				new Thread(this, "ControllerThread").start();
+//				new Thread(this, "ControllerThread").start();
 			}
 		}
 

@@ -25,6 +25,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.SerializationUtils;
+
 import bftsmart.communication.SystemMessage;
 import bftsmart.tom.util.DebugInfo;
 
@@ -45,9 +47,9 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	private int sequence;
 	private int operationId; // Sequence number defined by the client
 	// used for dynamic weights
-	private long dynamicWeightTimestamp = System.currentTimeMillis();
+	private Long dynamicWeightTimestamp = null;
 	// defined by the replica and used for dynamic Weights
-	private long consensusID = 0;
+	private Long consensusID = null;
 	private byte[] latencyData = null;
 
 	private byte[] content = null; // Content of the message
@@ -283,8 +285,24 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		out.writeInt(sequence);
 		out.writeInt(operationId);
 		out.writeInt(replyServer);
-		out.writeLong(dynamicWeightTimestamp);
-		out.writeLong(consensusID);
+		// out.writeLong(dynamicWeightTimestamp);
+		// out.writeLong(consensusID);
+
+		if (dynamicWeightTimestamp == null) {
+			out.writeInt(-1);
+		} else {
+			byte[] dynamicWeightTimestampBytes = SerializationUtils.serialize(dynamicWeightTimestamp);
+			out.writeInt(dynamicWeightTimestampBytes.length);
+			out.write(dynamicWeightTimestampBytes);
+		}
+
+		if (consensusID == null) {
+			out.writeInt(-1);
+		} else {
+			byte[] consensusIDBytes = SerializationUtils.serialize(consensusID);
+			out.writeInt(consensusIDBytes.length);
+			out.write(consensusIDBytes);
+		}
 
 		if (latencyData == null) {
 			out.writeInt(-1);
@@ -315,10 +333,26 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		sequence = in.readInt();
 		operationId = in.readInt();
 		replyServer = in.readInt();
-		dynamicWeightTimestamp = in.readLong();
-		consensusID = in.readLong();
+		// dynamicWeightTimestamp = in.readLong();
+		// consensusID = in.readLong();
 
 		int toRead = in.readInt();
+		if (toRead != -1) {
+
+			byte[] dynamicWeightTimestampBytes = new byte[toRead];
+			in.readFully(dynamicWeightTimestampBytes);
+			dynamicWeightTimestamp = SerializationUtils.deserialize(dynamicWeightTimestampBytes);
+		}
+
+		toRead = in.readInt();
+		if (toRead != -1) {
+
+			byte[] consensusIDBytes = new byte[toRead];
+			in.readFully(consensusIDBytes);
+			consensusID = SerializationUtils.deserialize(consensusIDBytes);
+		}
+
+		toRead = in.readInt();
 		if (toRead != -1) {
 			latencyData = new byte[toRead];
 			in.readFully(latencyData);

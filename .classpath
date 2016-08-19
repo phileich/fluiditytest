@@ -4,21 +4,15 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/core-0.1.4.jar"/>
-	<classpathentry kind="lib" path="lib/netty-all-4.0.36.Final.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-jdk14-1.5.8.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/Users/dominikdusold/Documents/workspace_mars/jk-bftsmart-2/lib/commons-lang3-3.4-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/commons-math3-3.6.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/Users/dominikdusold/Documents/workspace_mars/jk-bftsmart-2/lib/commons-math3-3.6-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/JavaPlot.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.4-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math3-3.6-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math3-3.6.jar"/>
+	<classpathentry kind="lib" path="lib/JavaPlot.jar"/>
+	<classpathentry kind="lib" path="lib/netty-all-4.0.36.Final.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -160,6 +160,7 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 
 	public void TOMulticast(byte[] m, int reqId, int operationId, TOMMessageType reqType, byte[] dwLatencies) {
 		TOMMessage sm = new TOMMessage(me, session, reqId, operationId, m, viewController.getCurrentViewId(), reqType);
+		sm.setDynamicWeightTimestamp(System.currentTimeMillis());
 		sm.setLatencyData(dwLatencies);
 		cs.send(useSignatures, viewController.getCurrentViewProcesses(), sm);
 	}

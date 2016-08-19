@@ -9,7 +9,6 @@ import org.apache.commons.lang3.SerializationUtils;
 
 import bftsmart.reconfiguration.ReconfigureReply;
 import bftsmart.reconfiguration.views.View;
-import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.util.Extractor;
@@ -92,6 +91,7 @@ public class DWServiceProxyLatencyMonitorPiggyBack extends DWServiceProxy {
 					getViewManager().getCurrentViewId(), requestType);
 			sm.setReplyServer(replyServer);
 			// add all collected DWLatencies
+			sm.setDynamicWeightTimestamp(System.currentTimeMillis());
 			sm.setLatencyData(SerializationUtils.serialize((Serializable) lmpc.getClientLatencies()));
 			TOMulticast(sm);
 		} else {
