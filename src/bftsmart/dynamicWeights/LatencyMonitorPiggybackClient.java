@@ -14,12 +14,10 @@ public class LatencyMonitorPiggybackClient implements Storage {
 	private List<ClientLatency> clientLatencies = Collections.synchronizedList(new ArrayList<ClientLatency>());
 	private List<ClientLatency> clientLatenciesBackup = Collections.synchronizedList(new ArrayList<ClientLatency>());
 	private int myID;
-	private ClientViewController cvc = null;// needed for current N of the
-											// system
 
 	public LatencyMonitorPiggybackClient(int id, ClientViewController cvc) {
 		this.myID = id;
-		this.cvc = cvc;
+
 	}
 
 	/**

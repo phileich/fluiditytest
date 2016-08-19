@@ -15,16 +15,15 @@ import bftsmart.tom.util.Logger;
 public class Synchronizer implements Runnable {
 	private LatencyReducer latReducer;
 	private int id;
-	private ServerViewController svController;
+	private int n;
 	private ServerCommunicationSystem scs;
 	private Storage latencyMonitor;
 
-	public Synchronizer(Storage latencyMonitor, int id, ServerViewController svController,
-			ServerCommunicationSystem scs) {
+	public Synchronizer(Storage latencyMonitor, int id, int n, ServerCommunicationSystem scs) {
 		this.latReducer = new MedianReducer();
 		this.id = id;
 		this.scs = scs;
-		this.svController = svController;
+		this.n = n;
 		this.latencyMonitor = latencyMonitor;
 
 	}
@@ -33,18 +32,17 @@ public class Synchronizer implements Runnable {
 	public void run() {
 		InternalServiceProxy internalClient = new InternalServiceProxy(id + 100);
 		try {
-			int currentN = svController.getCurrentViewN();
 			// get latencies
 			List<Latency> clientLatencies = latencyMonitor.getClientLatencies();
 			List<Latency[]> serverLatencies = latencyMonitor.getServerLatencies();
 			List<Latency[]> serverProposeLatencies = latencyMonitor.getServerProposeLatencies();
 
 			// reduce clientLatency
-			Latency[] reducedClientLat = latReducer.reduce(clientLatencies, currentN);
+			Latency[] reducedClientLat = latReducer.reduce(clientLatencies, n);
 
-			Latency[] reducedServerLat = latReducer.reduce2d(serverLatencies, currentN);
-			
-			Latency[] reducedServerProposeLat = latReducer.reduce2d(serverProposeLatencies, currentN);
+			Latency[] reducedServerLat = latReducer.reduce2d(serverLatencies, n);
+
+			Latency[] reducedServerProposeLat = latReducer.reduce2d(serverProposeLatencies, n);
 
 			ByteArrayOutputStream out = new ByteArrayOutputStream(4);
 			DataOutputStream dos = new DataOutputStream(out);
@@ -62,8 +60,9 @@ public class Synchronizer implements Runnable {
 
 			Logger.println("Sending client latencies to internal consensus: " + Arrays.toString(reducedClientLat));
 			Logger.println("Sending server latencies to internal consensus: " + Arrays.toString(reducedServerLat));
-			Logger.println("Sending server propose latencies to internal consensus: " + Arrays.toString(reducedServerProposeLat));
-			
+			Logger.println("Sending server propose latencies to internal consensus: "
+					+ Arrays.toString(reducedServerProposeLat));
+
 			byte[] reply = internalClient.invokeInternal(out.toByteArray());
 			if (reply != null) {
 				Logger.println("Received Internal Consensus: " + new String(reply));

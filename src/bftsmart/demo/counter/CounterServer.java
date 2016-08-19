@@ -15,9 +15,6 @@ limitations under the License.
 */
 package bftsmart.demo.counter;
 
-import bftsmart.tom.MessageContext;
-import bftsmart.tom.ServiceReplica;
-import bftsmart.tom.server.defaultservices.DefaultRecoverable;
 //import bftsmart.tom.server.defaultservices.DefaultRecoverable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,87 +26,91 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
+import bftsmart.dynamicWeights.DWServiceReplica;
+import bftsmart.tom.MessageContext;
+import bftsmart.tom.ServiceReplica;
+import bftsmart.tom.server.defaultservices.DefaultRecoverable;
+
 /**
  * Example replica that implements a BFT replicated service (a counter).
  *
  */
 
-public final class CounterServer extends DefaultRecoverable  {
-    
-    private int counter = 0;
-    private int iterations = 0;
-    
-    ServiceReplica replica = null;
+public final class CounterServer extends DefaultRecoverable {
 
-    public CounterServer(int id) {
-    	replica = new ServiceReplica(id, this, this);
-    }
-    
-    @Override
-    public byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs) {
-        
-        
-        byte [][] replies = new byte[commands.length][];
-        for (int i = 0; i < commands.length; i++) {
-            if(msgCtxs != null && msgCtxs[i] != null) {
-            replies[i] = executeSingle(commands[i],msgCtxs[i]);
-            }
-            else executeSingle(commands[i],null);
-        }
-        
-        return replies;
-    }
-        
-    @Override
-    public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
-                
-        iterations++;
-        System.out.println("(" + iterations + ") Reading counter at value: " + counter);
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream(4);
-            new DataOutputStream(out).writeInt(counter);
-            return out.toByteArray();
-        } catch (IOException ex) {
-            System.err.println("Invalid request received!");
-            return new byte[0];
-        }
-    }
-    
-    private byte[] executeSingle(byte[] command, MessageContext msgCtx) {
-        iterations++;
-        try {
-            int increment = new DataInputStream(new ByteArrayInputStream(command)).readInt();
-            //System.out.println("read-only request: "+(msgCtx.getConsensusId() == -1));
-            counter += increment;
-            
-            if (msgCtx != null) {
-                if (msgCtx.getConsensusId() == -1) {
-                    System.out.println("(" + iterations + ") Counter was incremented: " + counter);
-                } else {
-                    System.out.println("(" + iterations + " / " + msgCtx.getConsensusId() + ") Counter was incremented: " + counter);
-                }
-            }
-            else {
-                System.out.println("(" + iterations + ") Counter was incremented: " + counter);
-            }
-            ByteArrayOutputStream out = new ByteArrayOutputStream(4);
-            new DataOutputStream(out).writeInt(counter);
-            return out.toByteArray();
-        } catch (IOException ex) {
-            System.err.println("Invalid request received!");
-            return new byte[0];
-        }
-    }
+	private int counter = 0;
+	private int iterations = 0;
 
-    public static void main(String[] args){
-        if(args.length < 1) {
-            System.out.println("Use: java CounterServer <processId>");
-            System.exit(-1);
-        }      
-        new CounterServer(Integer.parseInt(args[0]));
-    }
+	ServiceReplica replica = null;
 
-    
+	public CounterServer(int id) {
+		replica = new ServiceReplica(id, this, this);
+	}
+
+	@Override
+	public byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs) {
+
+		byte[][] replies = new byte[commands.length][];
+		for (int i = 0; i < commands.length; i++) {
+			if (msgCtxs != null && msgCtxs[i] != null) {
+				replies[i] = executeSingle(commands[i], msgCtxs[i]);
+			} else
+				executeSingle(commands[i], null);
+		}
+
+		return replies;
+	}
+
+	@Override
+	public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
+
+		iterations++;
+		System.out.println("(" + iterations + ") Reading counter at value: " + counter);
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream(4);
+			new DataOutputStream(out).writeInt(counter);
+			return out.toByteArray();
+		} catch (IOException ex) {
+			System.err.println("Invalid request received!");
+			return new byte[0];
+		}
+	}
+
+	private byte[] executeSingle(byte[] command, MessageContext msgCtx) {
+		iterations++;
+		try {
+			int increment = new DataInputStream(new ByteArrayInputStream(command)).readInt();
+			// System.out.println("read-only request: "+(msgCtx.getConsensusId()
+			// == -1));
+			counter += increment;
+
+			if (msgCtx != null) {
+				if (msgCtx.getConsensusId() == -1) {
+					System.out.println("(" + iterations + ") Counter was incremented: " + counter);
+				} else {
+					System.out.println("(" + iterations + " / " + msgCtx.getConsensusId()
+							+ ") Counter was incremented: " + counter);
+				}
+			} else {
+				System.out.println("(" + iterations + ") Counter was incremented: " + counter);
+			}
+			ByteArrayOutputStream out = new ByteArrayOutputStream(4);
+			new DataOutputStream(out).writeInt(counter);
+			return out.toByteArray();
+		} catch (IOException ex) {
+			System.err.println("Invalid request received!");
+			return new byte[0];
+		}
+	}
+
+	public static void main(String[] args) {
+		if (args.length < 1) {
+			System.out.println("Use: java CounterServer <processId>");
+			System.exit(-1);
+		}
+		new CounterServer(Integer.parseInt(args[0]));
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public void installSnapshot(byte[] state) {
@@ -117,12 +118,11 @@ public final class CounterServer extends DefaultRecoverable  {
 			System.out.println("setState called");
 			ByteArrayInputStream bis = new ByteArrayInputStream(state);
 			ObjectInput in = new ObjectInputStream(bis);
-			counter =  in.readInt();
+			counter = in.readInt();
 			in.close();
 			bis.close();
 		} catch (Exception e) {
-			System.err.println("[ERROR] Error deserializing state: "
-					+ e.getMessage());
+			System.err.println("[ERROR] Error deserializing state: " + e.getMessage());
 		}
 	}
 
@@ -139,8 +139,7 @@ public final class CounterServer extends DefaultRecoverable  {
 			bos.close();
 			return bos.toByteArray();
 		} catch (IOException ioe) {
-			System.err.println("[ERROR] Error serializing state: "
-					+ ioe.getMessage());
+			System.err.println("[ERROR] Error serializing state: " + ioe.getMessage());
 			return "ERROR".getBytes();
 		}
 	}

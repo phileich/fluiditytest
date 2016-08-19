@@ -28,8 +28,6 @@ import bftsmart.tom.core.ExecutionManager;
 import bftsmart.consensus.messages.MessageFactory;
 import bftsmart.consensus.roles.Acceptor;
 import bftsmart.consensus.roles.Proposer;
-import bftsmart.dynamicWeights.DynamicWeightController;
-import bftsmart.dynamicWeights.LatencyMonitorPiggybackServer;
 import bftsmart.reconfiguration.ReconfigureReply;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.VMMessage;
@@ -73,22 +71,24 @@ public class ServiceReplica {
 	}
 
 	// replica ID
-	private int id;
+	protected int id;
 	// Server side comunication system
-	private ServerCommunicationSystem cs = null;
-	private ReplyManager repMan = null;
-	private ServerViewController SVController;
-	private ReentrantLock waitTTPJoinMsgLock = new ReentrantLock();
-	private Condition canProceed = waitTTPJoinMsgLock.newCondition();
-	private Executable executor = null;
-	private Recoverable recoverer = null;
-	private TOMLayer tomLayer = null;
-	private boolean tomStackCreated = false;
-	private ReplicaContext replicaCtx = null;
-	private Replier replier = null;
-	private RequestVerifier verifier = null;
-	private LatencyMonitorPiggybackServer lmps = null;
-	private DynamicWeightController dwc = null;
+	protected ServerCommunicationSystem cs = null;
+	protected ReplyManager repMan = null;
+	protected ServerViewController SVController;
+	protected ReentrantLock waitTTPJoinMsgLock = new ReentrantLock();
+	protected Condition canProceed = waitTTPJoinMsgLock.newCondition();
+	protected Executable executor = null;
+	protected Recoverable recoverer = null;
+	protected TOMLayer tomLayer = null;
+	protected boolean tomStackCreated = false;
+	protected ReplicaContext replicaCtx = null;
+	protected Replier replier = null;
+	protected RequestVerifier verifier = null;
+
+	public ServiceReplica() {
+
+	}
 
 	/**
 	 * Constructor
@@ -159,8 +159,6 @@ public class ServiceReplica {
 			RequestVerifier verifier, Replier replier) {
 		this.id = id;
 		this.SVController = new ServerViewController(id, configHome);
-		this.lmps = new LatencyMonitorPiggybackServer(this.SVController, this.id);
-		this.dwc = new DynamicWeightController(this.id, this.SVController, this.lmps);
 		this.executor = executor;
 		this.recoverer = recoverer;
 		this.replier = replier;
@@ -168,7 +166,6 @@ public class ServiceReplica {
 		this.init();
 		this.recoverer.setReplicaContext(replicaCtx);
 		this.replier.setReplicaContext(replicaCtx);
-
 	}
 
 	public void setReplyController(Replier replier) {
@@ -178,8 +175,7 @@ public class ServiceReplica {
 	// this method initializes the object
 	private void init() {
 		try {
-			cs = new ServerCommunicationSystem(this.SVController, this, lmps, dwc);
-			dwc.setServerCommunicationSystem(cs);
+			cs = new ServerCommunicationSystem(this.SVController, this);
 		} catch (Exception ex) {
 			Logger.getLogger(ServiceReplica.class.getName()).log(Level.SEVERE, null, ex);
 			throw new RuntimeException("Unable to build a communication system.");
@@ -220,7 +216,7 @@ public class ServiceReplica {
 		}
 	}
 
-	private void initReplica() {
+	protected void initReplica() {
 		cs.start();
 		repMan = new ReplyManager(SVController.getStaticConf().getNumRepliers(), cs);
 	}
@@ -415,24 +411,6 @@ public class ServiceReplica {
 						}
 					} else if (request.getReqType() == TOMMessageType.RECONFIG) {
 						SVController.enqueueUpdate(request);
-						
-					} else if (request.getReqType() == TOMMessageType.INTERNAL_CONSENSUS) {
-						noop = false;
-						dwc.addInternalConsensusDataToStorage(request.getContent());
-
-						MessageContext msgCtx = new MessageContext(request.getSender(), request.getViewID(),
-								request.getReqType(), request.getSession(), request.getSequence(),
-								request.getOperationId(), request.getReplyServer(), request.serializedMessageSignature,
-								firstRequest.timestamp, request.numOfNonces, request.seed, regencies[consensusCount],
-								leaders[consensusCount], consId[consensusCount],
-								cDecs[consensusCount].getConsMessages(), firstRequest, false);
-
-						// Send the replies back to the client
-						byte[] replies = (new String("ConsensusStored")).getBytes();
-
-						request.reply = new TOMMessage(id, request.getSession(), request.getSequence(), replies,
-								SVController.getCurrentViewId(), TOMMessageType.INTERNAL_CONSENSUS);						
-						replier.manageReply(request, msgCtx);
 					} else {
 						throw new RuntimeException("Should never reach here!");
 					}
@@ -590,7 +568,7 @@ public class ServiceReplica {
 
 		acceptor.setExecutionManager(executionManager);
 
-		tomLayer = new TOMLayer(executionManager, this, recoverer, acceptor, cs, SVController, verifier, dwc, lmps);
+		tomLayer = new TOMLayer(executionManager, this, recoverer, acceptor, cs, SVController, verifier);
 
 		executionManager.setTOMLayer(tomLayer);
 

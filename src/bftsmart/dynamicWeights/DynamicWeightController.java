@@ -29,7 +29,7 @@ public class DynamicWeightController implements Runnable {
 		this.svController = svController;
 		this.id = id;
 		this.latencyMonitor = latencyMonitor;
-		this.latStorage = new LatencyStorage();
+		this.latStorage = new LatencyStorage();		
 	}
 
 	public int getID() {
@@ -42,7 +42,7 @@ public class DynamicWeightController implements Runnable {
 		// Start calculation of reconfiguration
 		System.out.println("start reconfig calculation");
 		// synchronize Data
-		Thread syncThread = new Thread(new Synchronizer(latencyMonitor, id, svController, scs),
+		Thread syncThread = new Thread(new Synchronizer(latencyMonitor, id, svController.getCurrentViewN(), scs),
 				"SynchronizationThread");
 		syncThread.start();
 	}
@@ -92,7 +92,7 @@ public class DynamicWeightController implements Runnable {
 			byte[] serializedServerLat = new byte[serverLength];
 			dis.readFully(serializedServerLat);
 			ServerLatency[] serverLatencies = SerializationUtils.deserialize(serializedServerLat);
-			
+
 			int serverProposeLength = dis.readInt();
 			byte[] serializedServerProposeLat = new byte[serverProposeLength];
 			dis.readFully(serializedServerProposeLat);
@@ -100,8 +100,9 @@ public class DynamicWeightController implements Runnable {
 
 			System.out.println("received Client Latencies from internal conensus: " + Arrays.toString(clientLatencies));
 			System.out.println("received Server Latencies from internal conensus: " + Arrays.toString(serverLatencies));
-			System.out.println("received Server Propose Latencies from internal conensus: " + Arrays.toString(serverProposeLatencies));
-			
+			System.out.println("received Server Propose Latencies from internal conensus: "
+					+ Arrays.toString(serverProposeLatencies));
+
 			latStorage.addClientLatencies(clientLatencies);
 			latStorage.addServerLatencies(serverLatencies);
 			latStorage.addServerProposeLatencies(serverProposeLatencies);
