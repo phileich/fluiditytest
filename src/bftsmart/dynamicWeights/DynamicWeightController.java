@@ -10,6 +10,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.TOMLayer;
+import bftsmart.tom.util.Logger;
 
 public class DynamicWeightController implements Runnable {
 	private ServerViewController svController;
@@ -20,6 +21,7 @@ public class DynamicWeightController implements Runnable {
 	private boolean reconfigInExec = false;
 	private boolean calcStarted = false;
 	private ServerCommunicationSystem scs;
+	private int windowSize = 100; // use last windowSize latencies
 
 	public DynamicWeightController(int id, ServerViewController svController) {
 		this(id, svController, new DummyStorage());
@@ -29,7 +31,7 @@ public class DynamicWeightController implements Runnable {
 		this.svController = svController;
 		this.id = id;
 		this.latencyMonitor = latencyMonitor;
-		this.latStorage = new LatencyStorage();		
+		this.latStorage = new LatencyStorage();
 	}
 
 	public int getID() {
@@ -65,7 +67,8 @@ public class DynamicWeightController implements Runnable {
 		if (exec % 100 == 0 && exec != 0) {
 			if (!reconfigInExec) {
 				reconfigInExec = true;
-//				new Thread(this, "ControllerThread").start();
+				Logger.println("---------------- Calculation started ----------------");
+				new Thread(this, "ControllerThread").start();
 			}
 		}
 
@@ -115,7 +118,7 @@ public class DynamicWeightController implements Runnable {
 				calcStarted = true;
 				try {
 					Thread.sleep(5000);
-					Thread reconfigThread = new Thread(new Reconfigurator(latStorage, svController),
+					Thread reconfigThread = new Thread(new Reconfigurator(latStorage, svController, this),
 							"ReconfigurationThread");
 					reconfigThread.start();
 				} catch (InterruptedException e) {
@@ -127,5 +130,17 @@ public class DynamicWeightController implements Runnable {
 			e.printStackTrace();
 		}
 
+	}
+
+	public void notifyReconfigFinished() {
+		// restart and clear everything for new Calc
+		Logger.println("---------------- Calculation finished ----------------");
+		this.reconfigInExec = false;
+		this.calcStarted = false;
+
+	}
+
+	public int getWindowSize() {
+		return windowSize;
 	}
 }

@@ -65,4 +65,10 @@ public class LatencyMonitorPiggybackClient implements Storage {
 		return null;
 	}
 
+	@Override
+	public void clearAll() {
+		clientLatencies.clear();
+		clientLatenciesBackup.clear();
+	}
+
 }

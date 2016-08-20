@@ -217,7 +217,7 @@ public class LatencyMonitorPiggybackServer implements Storage {
 	}
 
 	@Override
-	public synchronized List<Latency[]> getServerLatencies() {
+	public synchronized List<Latency[]> getServerLatencies() {		
 		List<Latency[]> latencies = new ArrayList<Latency[]>(serverLatencies.values());
 		return latencies;
 	}
@@ -242,5 +242,12 @@ public class LatencyMonitorPiggybackServer implements Storage {
 
 	public int[] getCurrentViewOtherAcceptors() {
 		return svc.getCurrentViewOtherAcceptors();
+	}
+
+	@Override
+	public void clearAll() {
+		clientLatencies.clear();
+		serverLatencies.clear();
+		serverProposeLatencies.clear();
 	}
 }

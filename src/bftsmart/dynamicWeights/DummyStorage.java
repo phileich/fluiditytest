@@ -22,4 +22,10 @@ public class DummyStorage implements Storage{
 		return null;
 	}
 
+	@Override
+	public void clearAll() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

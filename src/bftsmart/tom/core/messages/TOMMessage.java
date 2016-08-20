@@ -467,6 +467,9 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	}
 
 	public long getDynamicWeightTimestamp() {
+		if (dynamicWeightTimestamp == null) {
+			return -1;
+		}
 		return dynamicWeightTimestamp;
 	}
 

@@ -18,24 +18,27 @@ public class Synchronizer implements Runnable {
 	private int n;
 	private ServerCommunicationSystem scs;
 	private Storage latencyMonitor;
+	
 
 	public Synchronizer(Storage latencyMonitor, int id, int n, ServerCommunicationSystem scs) {
 		this.latReducer = new MedianReducer();
 		this.id = id;
 		this.scs = scs;
 		this.n = n;
-		this.latencyMonitor = latencyMonitor;
-
+		this.latencyMonitor = latencyMonitor;		
 	}
 
 	@Override
 	public void run() {
 		InternalServiceProxy internalClient = new InternalServiceProxy(id + 100);
 		try {
-			// get latencies
+			// get latencies since last reconfig
 			List<Latency> clientLatencies = latencyMonitor.getClientLatencies();
 			List<Latency[]> serverLatencies = latencyMonitor.getServerLatencies();
 			List<Latency[]> serverProposeLatencies = latencyMonitor.getServerProposeLatencies();
+
+			// clear to prevent overflow
+			latencyMonitor.clearAll();
 
 			// reduce clientLatency
 			Latency[] reducedClientLat = latReducer.reduce(clientLatencies, n);
