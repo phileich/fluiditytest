@@ -61,6 +61,10 @@ public class TOMConfiguration extends Configuration {
 	private boolean useWeights;
 
 	private boolean useDynamicWeights;
+	private int calculationInterval;
+	private boolean measureClients;
+	private boolean measureServers;
+	private int useLastMeasurements;
 
 	/** Creates a new instance of TOMConfiguration */
 	public TOMConfiguration(int processId) {
@@ -332,14 +336,30 @@ public class TOMConfiguration extends Configuration {
 				delta = 0;
 			}
 
-			s = (String) configs.remove("system.useDynamicWeights");
 			if (useWeights) {
+				s = (String) configs.remove("system.dw.useDynamicWeights");
 				useDynamicWeights = (s != null) ? Boolean.parseBoolean(s) : false;
+
+				s = (String) configs.remove("system.dw.calculationInterval");
+				calculationInterval = Integer.parseInt(s);
+
+				s = (String) configs.remove("system.dw.measureClients");
+				measureClients = (s != null) ? Boolean.parseBoolean(s) : false;
+
+				s = (String) configs.remove("system.dw.measureServers");
+				measureServers = (s != null) ? Boolean.parseBoolean(s) : false;
+
+				s = (String) configs.remove("system.dw.useLastMeasurements");
+				useLastMeasurements = Integer.parseInt(s);
+
 			} else {
 				// needs weights
 				useDynamicWeights = false;
+				calculationInterval = 0;
+				measureClients = false;
+				measureServers = false;
+				useLastMeasurements = 0;
 			}
-
 			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -540,8 +560,24 @@ public class TOMConfiguration extends Configuration {
 		return delta;
 	}
 
-	public boolean isDynamicWeights() {
+	public boolean useDynamicWeights() {
 		return useDynamicWeights;
+	}
+
+	public boolean measureClients() {
+		return measureClients;
+	}
+
+	public boolean measureServers() {
+		return measureServers;
+	}
+
+	public int getCalculationInterval() {
+		return calculationInterval;
+	}
+
+	public int getUseLastMeasurements() {
+		return useLastMeasurements;
 	}
 
 }

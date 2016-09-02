@@ -21,6 +21,11 @@ public class DynamicWeightGraphBuilder {
 		return this;
 	}
 
+	public DynamicWeightGraphBuilder setQuorumSize(int quorumSize) {
+		dwGraph.setQuorumSize(quorumSize);
+		return this;
+	}
+
 	/**
 	 * Adds a one-to-all pattern to the graph. Only the leaf with the nodenr
 	 * number will be used.
@@ -61,6 +66,32 @@ public class DynamicWeightGraphBuilder {
 			// the value of the node is the value of the client + the time from
 			// client to server i
 			newLeaves[i].setValue(dwGraph.getLeaves()[nodeNr].getValue() + latencies[i]);
+		}
+
+		dwGraph.setLeaves(newLeaves);
+		return this;
+	}
+
+	public DynamicWeightGraphBuilder addEmptyClientRequest(int nodeNr, int latencySize) {
+		// check if nodenr is in range of leaves
+		if (nodeNr > this.dwGraph.getLeaves().length) {
+			Logger.println("Could not add ClientRequest to graph, because nodeNr is higher than the leafe number.");
+			return this;
+		}
+
+		// create new leaves
+		DynamicWeightGraphNode[] newLeaves = new DynamicWeightGraphNode[latencySize];
+		for (int i = 0; i < newLeaves.length; i++) {
+			DynamicWeightGraphNode tmpNode = new DynamicWeightGraphNode(0);
+			new DynamicWeightGraphEdge(dwGraph.getLeaves()[nodeNr], tmpNode, 0, 0);
+			newLeaves[i] = tmpNode;
+		}
+
+		// calculate
+		for (int i = 0; i < newLeaves.length; i++) {
+			// the value of the node is the value of the client + the time from
+			// client to server i
+			newLeaves[i].setValue(dwGraph.getLeaves()[nodeNr].getValue());
 		}
 
 		dwGraph.setLeaves(newLeaves);
@@ -133,7 +164,7 @@ public class DynamicWeightGraphBuilder {
 	 *            the quorumSize of the pattern
 	 * @return
 	 */
-	public DynamicWeightGraphBuilder addMultiCast(double[][] latencies, Double[] weights, int quorumSize) {
+	public DynamicWeightGraphBuilder addMultiCast(double[][] latencies, Double[] weights) {
 		// check if latencies size is equal
 		for (int i = 0; i < latencies.length; i++) {
 			if (latencies[i].length != latencies.length) {
@@ -143,12 +174,12 @@ public class DynamicWeightGraphBuilder {
 			}
 		}
 		// check if quroumSize is lesser than latency size
-		if (quorumSize > latencies.length) {
+		if (dwGraph.getQuorumSize() > latencies.length) {
 			Logger.println("Could not add MultiCast to graph, because quorumSize is greater than latencies  size.");
 			return this;
 		}
 		// check if quorumSize is greater than zero
-		if (quorumSize < 1) {
+		if (dwGraph.getQuorumSize() < 1) {
 			Logger.println("Could not add MultiCast to graph, because quorumSize has to be greater than zero.");
 			return this;
 		}
@@ -186,7 +217,7 @@ public class DynamicWeightGraphBuilder {
 				}
 			}
 			Collections.sort(values);
-			newLeaves[i].setValue(values.get(quorumSize - 1));
+			newLeaves[i].setValue(values.get(dwGraph.getQuorumSize() - 1));
 		}
 
 		dwGraph.setLeaves(newLeaves);
@@ -201,7 +232,7 @@ public class DynamicWeightGraphBuilder {
 	 * @param quorumSize
 	 * @return
 	 */
-	public DynamicWeightGraphBuilder addClientResponse(double[] latencies, Double[] weights, int quorumSize) {
+	public DynamicWeightGraphBuilder addClientResponse(double[] latencies, Double[] weights) {
 		// check if number of latencies is equal to number of weights
 		if (latencies.length != weights.length) {
 			Logger.println(
@@ -217,14 +248,14 @@ public class DynamicWeightGraphBuilder {
 		}
 
 		// check if quroumSize is lesser than latency size
-		if (quorumSize > latencies.length) {
+		if (dwGraph.getQuorumSize() > latencies.length) {
 			Logger.println(
 					"Could not add ClientResponse to graph, because quorumSize is greater than latencies  size.");
 			return this;
 		}
 
 		// check if quorumSize is greater than zero
-		if (quorumSize < 1) {
+		if (dwGraph.getQuorumSize() < 1) {
 			Logger.println("Could not add ClientResponse to graph, because quorumSize has to be greater than zero.");
 			return this;
 		}
@@ -249,7 +280,7 @@ public class DynamicWeightGraphBuilder {
 			}
 		}
 		Collections.sort(values);
-		newLeaves[0].setValue(values.get(quorumSize - 1));
+		newLeaves[0].setValue(values.get(dwGraph.getQuorumSize() - 1));
 
 		dwGraph.setLeaves(newLeaves);
 		return this;

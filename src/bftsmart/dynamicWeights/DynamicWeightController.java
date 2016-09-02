@@ -21,7 +21,10 @@ public class DynamicWeightController implements Runnable {
 	private boolean reconfigInExec = false;
 	private boolean calcStarted = false;
 	private ServerCommunicationSystem scs;
-	private int windowSize = 100; // use last windowSize latencies
+	private int windowSize; // use last windowSize latencies
+	private int calculationInterval; // every x consensus the calculation is
+										// started
+	private long calcDuration;
 
 	public DynamicWeightController(int id, ServerViewController svController) {
 		this(id, svController, new DummyStorage());
@@ -32,6 +35,8 @@ public class DynamicWeightController implements Runnable {
 		this.id = id;
 		this.latencyMonitor = latencyMonitor;
 		this.latStorage = new LatencyStorage();
+		this.windowSize = svController.getStaticConf().getUseLastMeasurements();
+		this.calculationInterval = svController.getStaticConf().getCalculationInterval();
 	}
 
 	public int getID() {
@@ -42,9 +47,9 @@ public class DynamicWeightController implements Runnable {
 	@Override
 	public void run() {
 		// Start calculation of reconfiguration
-		System.out.println("start reconfig calculation");
 		// synchronize Data
-		Thread syncThread = new Thread(new Synchronizer(latencyMonitor, id, svController.getCurrentViewN(), scs),
+		Thread syncThread = new Thread(
+				new Synchronizer(latencyMonitor, id, svController.getCurrentViewN(), scs, svController.getStaticConf()),
 				"SynchronizationThread");
 		syncThread.start();
 	}
@@ -63,11 +68,12 @@ public class DynamicWeightController implements Runnable {
 	}
 
 	public synchronized void receiveExec(int exec) {
-		// trigger sync every 100 consensus
-		if (exec % 100 == 0 && exec != 0) {
+		// System.out.println("EXEC " + exec);
+		if (exec % calculationInterval == 0 && exec != 0) {
 			if (!reconfigInExec) {
 				reconfigInExec = true;
-				Logger.println("---------------- Calculation started ----------------");
+				calcDuration = System.currentTimeMillis();
+				System.out.println("---------------- Calculation started ----------------");
 				new Thread(this, "ControllerThread").start();
 			}
 		}
@@ -85,34 +91,42 @@ public class DynamicWeightController implements Runnable {
 	public void addInternalConsensusDataToStorage(byte[] data) {
 		try {
 			DataInputStream dis = new DataInputStream(new ByteArrayInputStream(data));
+			if (svController.getStaticConf().measureClients()) {
+				int clientLength = dis.readInt();
+				byte[] serializedClientLat = new byte[clientLength];
+				dis.readFully(serializedClientLat);
+				ClientLatency[] clientLatencies = SerializationUtils.deserialize(serializedClientLat);
+				Logger.println("received Client Latencies from internal conensus: " + Arrays.toString(clientLatencies));
 
-			int clientLength = dis.readInt();
-			byte[] serializedClientLat = new byte[clientLength];
-			dis.readFully(serializedClientLat);
-			ClientLatency[] clientLatencies = SerializationUtils.deserialize(serializedClientLat);
+				latStorage.addClientLatencies(clientLatencies);
+			}
 
-			int serverLength = dis.readInt();
-			byte[] serializedServerLat = new byte[serverLength];
-			dis.readFully(serializedServerLat);
-			ServerLatency[] serverLatencies = SerializationUtils.deserialize(serializedServerLat);
+			if (svController.getStaticConf().measureServers()) {
+				int serverLength = dis.readInt();
+				byte[] serializedServerLat = new byte[serverLength];
+				dis.readFully(serializedServerLat);
+				ServerLatency[] serverLatencies = SerializationUtils.deserialize(serializedServerLat);
 
-			int serverProposeLength = dis.readInt();
-			byte[] serializedServerProposeLat = new byte[serverProposeLength];
-			dis.readFully(serializedServerProposeLat);
-			ServerLatency[] serverProposeLatencies = SerializationUtils.deserialize(serializedServerProposeLat);
+				int serverProposeLength = dis.readInt();
+				byte[] serializedServerProposeLat = new byte[serverProposeLength];
+				dis.readFully(serializedServerProposeLat);
+				ServerLatency[] serverProposeLatencies = SerializationUtils.deserialize(serializedServerProposeLat);
+				Logger.println("received Server Latencies from internal conensus: " + Arrays.toString(serverLatencies));
+				Logger.println("received Server Propose Latencies from internal conensus: "
+						+ Arrays.toString(serverProposeLatencies));
 
-			System.out.println("received Client Latencies from internal conensus: " + Arrays.toString(clientLatencies));
-			System.out.println("received Server Latencies from internal conensus: " + Arrays.toString(serverLatencies));
-			System.out.println("received Server Propose Latencies from internal conensus: "
-					+ Arrays.toString(serverProposeLatencies));
+				latStorage.addServerLatencies(serverLatencies);
+				latStorage.addServerProposeLatencies(serverProposeLatencies);
+			}
 
-			latStorage.addClientLatencies(clientLatencies);
-			latStorage.addServerLatencies(serverLatencies);
-			latStorage.addServerProposeLatencies(serverProposeLatencies);
-
-			// if n -f entries -> trigger calculation
-			if (latStorage.getClientSize() >= (svController.getCurrentViewN() - svController.getCurrentViewF())
-					&& latStorage.getServerSize() >= (svController.getCurrentViewN() - svController.getCurrentViewF())
+			// if n-f entries -> trigger calculation
+			if ((latStorage.getClientSize() >= (svController.getCurrentViewN() - svController.getCurrentViewF())
+					|| !svController.getStaticConf().measureClients())
+					&& (latStorage.getServerSize() >= (svController.getCurrentViewN() - svController.getCurrentViewF())
+							|| !svController.getStaticConf().measureServers())
+					&& (latStorage
+							.getServerProposeSize() >= (svController.getCurrentViewN() - svController.getCurrentViewF())
+							|| !svController.getStaticConf().measureServers())
 					&& !calcStarted) {
 				// wait a bit??
 				calcStarted = true;
@@ -134,7 +148,8 @@ public class DynamicWeightController implements Runnable {
 
 	public void notifyReconfigFinished() {
 		// restart and clear everything for new Calc
-		Logger.println("---------------- Calculation finished ----------------");
+		System.out.println("---------------- Calculation finished (duration: "
+				+ (System.currentTimeMillis() - calcDuration) + "ms) ----------------");
 		this.reconfigInExec = false;
 		this.calcStarted = false;
 

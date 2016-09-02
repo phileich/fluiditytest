@@ -16,10 +16,11 @@ limitations under the License.
 package bftsmart.demo.microbenchmarks;
 
 import java.io.IOException;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import bftsmart.dynamicWeights.DWServiceProxyLatencyMonitorPiggyBack;
+import bftsmart.reconfiguration.util.TOMConfiguration;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.util.Storage;
@@ -30,151 +31,171 @@ import bftsmart.tom.util.Storage;
  */
 public class ThroughputLatencyClient {
 
-    public static int initId = 0;
-    
-    @SuppressWarnings("static-access")
-    public static void main(String[] args) throws IOException {
-        if (args.length < 8) {
-            System.out.println("Usage: ... ThroughputLatencyClient <num. threads> <process id> <number of operations> <request size> <interval> <read only?> <verbose?> <DoS?>");
-            System.exit(-1);
-        }
+	public static int initId = 0;
 
-        int numThreads = Integer.parseInt(args[0]);
-        initId = Integer.parseInt(args[1]);
+	@SuppressWarnings("static-access")
+	public static void main(String[] args) throws IOException {
+		if (args.length < 8) {
+			System.out.println(
+					"Usage: ... ThroughputLatencyClient <num. threads> <process id> <number of operations> <request size> <interval> <read only?> <verbose?> <DoS?>");
+			System.exit(-1);
+		}
 
-        int numberOfOps = Integer.parseInt(args[2]);
-        int requestSize = Integer.parseInt(args[3]);
-        int interval = Integer.parseInt(args[4]);
-        boolean readOnly = Boolean.parseBoolean(args[5]);
-        boolean verbose = Boolean.parseBoolean(args[6]);
-        boolean dos = Boolean.parseBoolean(args[7]);
+		int numThreads = Integer.parseInt(args[0]);
+		initId = Integer.parseInt(args[1]);
 
-        Client[] c = new Client[numThreads];
-        
-        for(int i=0; i<numThreads; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ThroughputLatencyClient.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            
-            System.out.println("Launching client " + (initId+i));
-            c[i] = new ThroughputLatencyClient.Client(initId+i,numberOfOps,requestSize,interval,readOnly, verbose, dos);
-            //c[i].start();
-        }
+		int numberOfOps = Integer.parseInt(args[2]);
+		int requestSize = Integer.parseInt(args[3]);
+		int interval = Integer.parseInt(args[4]);
+		boolean readOnly = Boolean.parseBoolean(args[5]);
+		boolean verbose = Boolean.parseBoolean(args[6]);
+		boolean dos = Boolean.parseBoolean(args[7]);
 
-        for(int i=0; i<numThreads; i++) {
+		Client[] c = new Client[numThreads];
 
-            
-            c[i].start();
-        }
-        
-        
-        for(int i=0; i<numThreads; i++) {
+		for (int i = 0; i < numThreads; i++) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(ThroughputLatencyClient.class.getName()).log(Level.SEVERE, null, ex);
+			}
 
-            try {
-                c[i].join();
-            } catch (InterruptedException ex) {
-                ex.printStackTrace(System.err);
-            }
-        }
+			System.out.println("Launching client " + (initId + i));
+			c[i] = new ThroughputLatencyClient.Client(initId + i, numberOfOps, requestSize, interval, readOnly, verbose,
+					dos);
+			// c[i].start();
+		}
 
-        System.out.println("All clients done.");
-    }
+		for (int i = 0; i < numThreads; i++) {
 
-    static class Client extends Thread {
+			c[i].start();
+		}
 
-        int id;
-        int numberOfOps;
-        int requestSize;
-        int interval;
-        boolean readOnly;
-        boolean verbose;
-        boolean dos;
-        ServiceProxy proxy;
-        byte[] request;
-        
-        public Client(int id, int numberOfOps, int requestSize, int interval, boolean readOnly, boolean verbose, boolean dos) {
-            super("Client "+id);
-        
-            this.id = id;
-            this.numberOfOps = numberOfOps;
-            this.requestSize = requestSize;
-            this.interval = interval;
-            this.readOnly = readOnly;
-            this.verbose = verbose;
-            this.proxy = new ServiceProxy(id);
-            this.request = new byte[this.requestSize];
-            this.dos = dos;
-        }
+		for (int i = 0; i < numThreads; i++) {
 
-        public void run() {
-            //ServiceProxy proxy = new ServiceProxy(id);
-            //proxy.setInvokeTimeout(1);
+			try {
+				c[i].join();
+			} catch (InterruptedException ex) {
+				ex.printStackTrace(System.err);
+			}
+		}
 
-            byte[] reply;
-            int reqId;
+		System.out.println("All clients done.");
+	}
 
-            System.out.println("Warm up...");
+	static class Client extends Thread {
 
-            int req = 0;
-            
-            for (int i = 0; i < numberOfOps / 2; i++, req++) {
-                if (verbose) System.out.print("Sending req " + req + "...");
-                if (dos) {
-                    reqId = proxy.generateRequestId((readOnly) ? TOMMessageType.UNORDERED_REQUEST : TOMMessageType.ORDERED_REQUEST); 
-                    proxy.TOMulticast(request, reqId, (readOnly) ? TOMMessageType.UNORDERED_REQUEST : TOMMessageType.ORDERED_REQUEST); 
-                }
-                else
-                	if(readOnly)
-                		reply = proxy.invokeUnordered(request);
-                	else
-                		reply = proxy.invokeOrdered(request);
-                if (verbose) System.out.println(" sent!");
+		int id;
+		int numberOfOps;
+		int requestSize;
+		int interval;
+		boolean readOnly;
+		boolean verbose;
+		boolean dos;
+		ServiceProxy proxy;
+		byte[] request;
 
-                if (verbose && (req % 1000 == 0)) System.out.println(this.id + " // " + req + " operations sent!");
-            }
+		public Client(int id, int numberOfOps, int requestSize, int interval, boolean readOnly, boolean verbose,
+				boolean dos) {
+			super("Client " + id);
 
-            Storage st = new Storage(numberOfOps / 2);
+			this.id = id;
+			this.numberOfOps = numberOfOps;
+			this.requestSize = requestSize;
+			this.interval = interval;
+			this.readOnly = readOnly;
+			this.verbose = verbose;
+			this.request = new byte[this.requestSize];
+			this.dos = dos;
 
-            System.out.println("Executing experiment for " + numberOfOps / 2 + " ops");
+			TOMConfiguration conf = new TOMConfiguration(id);
+			if (conf.useDynamicWeights()) {
+				System.out.println("#using Dynamic Weights");
+				this.proxy = new DWServiceProxyLatencyMonitorPiggyBack(id);
+			} else {
+				this.proxy = new ServiceProxy(id);
+			}
 
-            for (int i = 0; i < numberOfOps / 2; i++, req++) {
-                long last_send_instant = System.nanoTime();
-                if (verbose) System.out.print(this.id + " // Sending req " + req + "...");
-                if (dos) {
-                    reqId = proxy.generateRequestId((readOnly) ? TOMMessageType.UNORDERED_REQUEST : TOMMessageType.ORDERED_REQUEST); 
-                    proxy.TOMulticast(request, reqId, (readOnly) ? TOMMessageType.UNORDERED_REQUEST : TOMMessageType.ORDERED_REQUEST); 
+		}
 
-                }
-                else
-                	if(readOnly)
-                		reply = proxy.invokeUnordered(request);
-                	else
-                		reply = proxy.invokeOrdered(request);
-                if (verbose) System.out.println(this.id + " // sent!");
-                st.store(System.nanoTime() - last_send_instant);
+		public void run() {
+			// ServiceProxy proxy = new ServiceProxy(id);
+			// proxy.setInvokeTimeout(1);
 
-                if (interval > 0) {
-                    try {
-                        //sleeps interval ms before sending next request
-                        Thread.sleep(interval);
-                    } catch (InterruptedException ex) {
-                    }
-                }
-                                
-                if (verbose && (req % 1000 == 0)) System.out.println(this.id + " // " + req + " operations sent!");
-            }
+			byte[] reply;
+			int reqId;
 
-            if(id == initId) {
-                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
-                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (-10%) = " + st.getDP(true) / 1000 + " us ");
-                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
-                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
-                System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = " + st.getMax(false) / 1000 + " us ");
-            }
-            
-            proxy.close();
-        }
-    }
+			System.out.println("Warm up...");
+
+			int req = 0;
+
+			for (int i = 0; i < numberOfOps / 2; i++, req++) {
+				if (verbose)
+					System.out.print("Sending req " + req + "...");
+				if (dos) {
+					reqId = proxy.generateRequestId(
+							(readOnly) ? TOMMessageType.UNORDERED_REQUEST : TOMMessageType.ORDERED_REQUEST);
+					proxy.TOMulticast(request, reqId,
+							(readOnly) ? TOMMessageType.UNORDERED_REQUEST : TOMMessageType.ORDERED_REQUEST);
+				} else if (readOnly)
+					reply = proxy.invokeUnordered(request);
+				else
+					reply = proxy.invokeOrdered(request);
+				if (verbose)
+					System.out.println(" sent!");
+
+				if (verbose && (req % 1000 == 0))
+					System.out.println(this.id + " // " + req + " operations sent!");
+			}
+
+			Storage st = new Storage(numberOfOps / 2);
+
+			System.out.println("Executing experiment for " + numberOfOps / 2 + " ops");
+
+			for (int i = 0; i < numberOfOps / 2; i++, req++) {
+				long last_send_instant = System.nanoTime();
+				if (verbose)
+					System.out.print(this.id + " // Sending req " + req + "...");
+				if (dos) {
+					reqId = proxy.generateRequestId(
+							(readOnly) ? TOMMessageType.UNORDERED_REQUEST : TOMMessageType.ORDERED_REQUEST);
+					proxy.TOMulticast(request, reqId,
+							(readOnly) ? TOMMessageType.UNORDERED_REQUEST : TOMMessageType.ORDERED_REQUEST);
+
+				} else if (readOnly)
+					reply = proxy.invokeUnordered(request);
+				else
+					reply = proxy.invokeOrdered(request);
+				if (verbose)
+					System.out.println(this.id + " // sent!");
+				st.store(System.nanoTime() - last_send_instant);
+
+				if (interval > 0) {
+					try {
+						// sleeps interval ms before sending next request
+						Thread.sleep(interval);
+					} catch (InterruptedException ex) {
+					}
+				}
+
+				if (verbose && (req % 1000 == 0))
+					System.out.println(this.id + " // " + req + " operations sent!");
+			}
+
+			if (id == initId) {
+				System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (-10%) = "
+						+ st.getAverage(true) / 1000 + " us ");
+				System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (-10%) = "
+						+ st.getDP(true) / 1000 + " us ");
+				System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (all samples) = "
+						+ st.getAverage(false) / 1000 + " us ");
+				System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2
+						+ " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
+				System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = "
+						+ st.getMax(false) / 1000 + " us ");
+			}
+
+			proxy.close();
+		}
+	}
 }

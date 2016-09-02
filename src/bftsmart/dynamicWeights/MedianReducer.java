@@ -6,18 +6,20 @@ import java.util.List;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
-import bftsmart.tom.util.Logger;
-
 public class MedianReducer implements LatencyReducer {
 
 	@Override
 	public Latency[] reduce(List<Latency> latencies, int currentN) {
+		if (latencies.isEmpty()) {
+			return null;
+		}
+
 		// convert List to array
 		ArrayList<ArrayList<Latency>> latenciesArr = listTo2dArray(latencies, currentN);
 		ClientLatency[] reducedLatencies = new ClientLatency[currentN];
 		for (int i = 0; i < latenciesArr.size(); i++) {
 			ArrayList<Latency> latencyOfReplica = latenciesArr.get(i);
-			Logger.println("Data of Replica " + i + ": " + latencyOfReplica);
+//			Logger.println("Data of Replica " + i + ": " + latencyOfReplica);
 			double reducedLatencyValue = median(latencyOfReplica);
 			ClientLatency reducedLatency = new ClientLatency();
 			reducedLatency.setValue(reducedLatencyValue);
@@ -88,12 +90,15 @@ public class MedianReducer implements LatencyReducer {
 
 	@Override
 	public Latency[] reduce2d(List<Latency[]> latencies, int currentN) {
+		if (latencies.isEmpty()) {
+			return null;
+		}
 		// convert List to array
 		ArrayList<ArrayList<Latency>> latenciesArr = list2dTo2dArray(latencies, currentN);
 		ServerLatency[] reducedLatencies = new ServerLatency[currentN];
 		for (int i = 0; i < latenciesArr.size(); i++) {
 			ArrayList<Latency> latencyOfReplica = latenciesArr.get(i);
-			Logger.println("Data of Replica " + i + ": " + latencyOfReplica);
+//			Logger.println("Data of Replica " + i + ": " + latencyOfReplica);
 			double reducedLatencyValue = median(latencyOfReplica);
 			ServerLatency reducedLatency = new ServerLatency();
 			reducedLatency.setValue(reducedLatencyValue);

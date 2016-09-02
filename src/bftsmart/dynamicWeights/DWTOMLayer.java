@@ -35,20 +35,19 @@ public class DWTOMLayer extends TOMLayer {
 		this.dwController.setTOMLayer(this);
 		this.lmps = lmps;
 	}
-	
+
 	/**
 	 * Sets which consensus was the last to be executed
 	 *
 	 * @param last
 	 *            ID of the consensus which was last to be executed
 	 */
+	@Override
 	public void setLastExec(int last) {
-		// TODO dw triggern (schöner wärs mit Listener)
 		dwController.receiveExec(last);
 		this.lastExecuted = last;
-
 	}
-	
+
 	/**
 	 * This method is invoked by the communication system to deliver a request.
 	 * It assumes that the communication system delivers the message in FIFO
@@ -76,20 +75,24 @@ public class DWTOMLayer extends TOMLayer {
 				Logger.println("(TOMLayer.requestReceive) the received TOMMessage " + msg + " was discarded.");
 			}
 		}
-		if (msg.getLatencyData() != null) {
-			Logger.println("received TOM with latenciesData: ");
-			ArrayList<ClientLatency> cls = SerializationUtils.deserialize(msg.getLatencyData());
-			lmps.storeClientLatencies(cls);
+		if (controller.getStaticConf().measureClients()) {
+			if (msg.getLatencyData() != null) {
+				Logger.println("received TOM with latenciesData: ");
+				ArrayList<ClientLatency> cls = SerializationUtils.deserialize(msg.getLatencyData());
+				lmps.storeClientLatencies(cls);
+			}
+			lmps.storeClientTimestamp(msg.getDynamicWeightTimestamp(), currTimestamp, msg.getSender());
 		}
-		lmps.storeClientTimestamp(msg.getDynamicWeightTimestamp(), currTimestamp, msg.getSender());
-		if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
-			// create Dummy Propose
-			lmps.createProposeLatencies(lmps.getCurrentViewOtherAcceptors(), dwController.getInExec() + 1);
-			communication.send(lmps.getCurrentViewAcceptors(), new ConsensusMessage(MessageFactory.DUMMY_PROPOSE,
-					dwController.getInExec() + 1, 0, dwController.getID()));
+		if (controller.getStaticConf().measureServers()) {
+			if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
+				// create Dummy Propose
+				lmps.createProposeLatencies(lmps.getCurrentViewOtherAcceptors(), dwController.getInExec() + 1);
+				communication.send(lmps.getCurrentViewAcceptors(), new ConsensusMessage(MessageFactory.DUMMY_PROPOSE,
+						dwController.getInExec() + 1, 0, dwController.getID()));
+			}
 		}
 	}
-	
+
 	/**
 	 * This is the main code for this thread. It basically waits until this
 	 * replica becomes the leader, and when so, proposes a value to the other
@@ -179,7 +182,9 @@ public class DWTOMLayer extends TOMLayer {
 					continue;
 
 				}
-				lmps.createProposeLatencies(controller.getCurrentViewOtherAcceptors(), getInExec());
+				if (controller.getStaticConf().measureServers()) {
+					lmps.createProposeLatencies(controller.getCurrentViewOtherAcceptors(), getInExec());
+				}
 				execManager.getProposer().startConsensus(execId, createPropose(dec));
 			}
 		}

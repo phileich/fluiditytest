@@ -64,29 +64,36 @@ public class DecisionLogic {
 		// for each leader
 		int combCount = 0;
 		for (int i = 0; i < n; i++) {
-			Logger.println("---------------------------------------");
-			Logger.println("Leader: " + i);
+			System.out.println("---------------------------------------");
+			System.out.println("Leader: " + i);
 			Permutations<Double> perm = new Permutations<Double>(weightassignment);
 			while (perm.hasNext()) {
 				Double[] permutation = perm.next();
-				Logger.println(Arrays.toString(permutation));
+				System.out.println(Arrays.toString(permutation));
 
 				// Create the graph
-				DynamicWeightGraphBuilder dwgBuilder = new DynamicWeightGraphBuilder().setWeights(permutation);
-				DynamicWeightGraph dwGraph = dwgBuilder.addClientRequest(0, reducedClientValues, permutation)
-						.addLeaderPropose(i, reducedServerProposeValues[i], permutation)
-						.addMultiCast(reducedServerValues, permutation, getReplyQuorum())
-						.addClientResponse(reducedClientValues, permutation, getReplyQuorum()).build();
+				DynamicWeightGraphBuilder dwgBuilder = new DynamicWeightGraphBuilder().setWeights(permutation)
+						.setQuorumSize(getReplyQuorum());
+
+				if (svController.getStaticConf().measureClients()) {
+					dwgBuilder.addClientRequest(0, reducedClientValues, permutation);
+				} else {
+					// just for creating nodes
+					dwgBuilder.addEmptyClientRequest(0, permutation.length);
+				}
+				if (svController.getStaticConf().measureServers()) {
+					dwgBuilder.addLeaderPropose(i, reducedServerProposeValues[i], permutation);
+					dwgBuilder.addMultiCast(reducedServerValues, permutation);
+				}
+				if (svController.getStaticConf().measureClients()) {
+					dwgBuilder.addClientResponse(reducedClientValues, permutation);
+				}
+				DynamicWeightGraph dwGraph = dwgBuilder.build();
 
 				if (Arrays.deepEquals(permutation, currentWeightAssignment) && i == currentLeader) {
-					currentCalculatedValue = dwGraph.getLeaves()[0].getValue(); // should
-																				// be
-																				// only
-																				// one
-																				// leaf!!
-					
+					currentCalculatedValue = dwGraph.getValue();
 				}
-				Logger.println("" + dwGraph.getLeaves()[0].getValue());
+				System.out.println("" + dwGraph.getValue());
 				// add graph
 				dwGraphs[combCount] = dwGraph;
 
@@ -94,9 +101,9 @@ public class DecisionLogic {
 			}
 
 		}
-		Logger.println("Current Leader is " + getCurrentLeader());
-		Logger.println("Current Weightassignment is " + Arrays.toString(getCurrentWeightAssignment()));
-		Logger.println("Current Value is " + getCurrentValue());
+		System.out.println("Current Leader is " + getCurrentLeader());
+		System.out.println("Current Weightassignment is " + Arrays.toString(getCurrentWeightAssignment()));
+		System.out.println("Current Value is " + getCurrentValue());
 		return dwGraphs;
 	}
 
@@ -124,17 +131,17 @@ public class DecisionLogic {
 
 		ArrayList<DynamicWeightGraph> newPossibleGraphs = new ArrayList<>();
 		for (DynamicWeightGraph dynamicWeightGraph : dwGraphs) {
-			if (dynamicWeightGraph.getLeaves()[0].getValue() < (currentCalculatedValue * betterPercentage)) {
+			if (dynamicWeightGraph.getValue() < (currentCalculatedValue * betterPercentage)) {
 				newPossibleGraphs.add(dynamicWeightGraph);
 			}
 		}
 
 		if (newPossibleGraphs.size() > 0) {
-			Logger.println("possible reconfigs: " + newPossibleGraphs);
+			System.out.println("possible reconfigs: " + newPossibleGraphs);
 			// get Min value of these
 			DynamicWeightGraph newConfig = getMin(
 					newPossibleGraphs.toArray(new DynamicWeightGraph[newPossibleGraphs.size()]));
-			Logger.println("Reconfig to:  " + newConfig);
+			System.out.println("Reconfig to:  " + newConfig);
 
 			// reconfig to newConfig Graph
 
@@ -152,9 +159,9 @@ public class DecisionLogic {
 				newProcesses[i] = newProcessInteger[i].intValue();
 			}
 
-			Logger.println("new Weights@process " + Arrays.toString(newProcesses));
+			System.out.println("new Weights@process " + Arrays.toString(newProcesses));
 		} else {
-			Logger.println("No configuration is better than the current one! NO RECONFIG");
+			System.out.println("No configuration is better than the current one! NO RECONFIG");
 		}
 
 	}

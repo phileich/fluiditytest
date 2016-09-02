@@ -17,6 +17,7 @@ import bftsmart.tom.util.TOMUtil;
 
 public class DWServiceProxyLatencyMonitorPiggyBack extends DWServiceProxy {
 	private LatencyMonitorPiggybackClient lmpc = null;
+	private boolean measureClients;
 
 	public DWServiceProxyLatencyMonitorPiggyBack(int processId) {
 		this(processId, null, null, null);
@@ -30,6 +31,7 @@ public class DWServiceProxyLatencyMonitorPiggyBack extends DWServiceProxy {
 			Extractor replyExtractor) {
 		super(processId);
 		lmpc = new LatencyMonitorPiggybackClient(processId, getViewManager());
+		measureClients = getViewManager().getStaticConf().measureClients();
 	}
 
 	@Override
@@ -61,7 +63,6 @@ public class DWServiceProxyLatencyMonitorPiggyBack extends DWServiceProxy {
 	 */
 	@Override
 	public byte[] invoke(byte[] request, TOMMessageType reqType) {
-		Logger.println("invoke DWProxy");
 		canSendLock.lock();
 
 		// Clean all statefull data to prepare for receiving next replies
@@ -91,12 +92,18 @@ public class DWServiceProxyLatencyMonitorPiggyBack extends DWServiceProxy {
 					getViewManager().getCurrentViewId(), requestType);
 			sm.setReplyServer(replyServer);
 			// add all collected DWLatencies
-			sm.setDynamicWeightTimestamp(System.currentTimeMillis());
-			sm.setLatencyData(SerializationUtils.serialize((Serializable) lmpc.getClientLatencies()));
+			if (measureClients) {
+				sm.setDynamicWeightTimestamp(System.currentTimeMillis());
+				sm.setLatencyData(SerializationUtils.serialize((Serializable) lmpc.getClientLatencies()));
+			}
 			TOMulticast(sm);
 		} else {
-			TOMulticast(request, reqId, operationId, reqType,
-					SerializationUtils.serialize((Serializable) lmpc.getClientLatencies()));
+			if (measureClients) {
+				TOMulticast(request, reqId, operationId, reqType,
+						SerializationUtils.serialize((Serializable) lmpc.getClientLatencies()));
+			} else {
+				TOMulticast(request, reqId, operationId, reqType);
+			}
 		}
 
 		Logger.println("Sending request (" + reqType + ") with reqId=" + reqId);
@@ -206,7 +213,9 @@ public class DWServiceProxyLatencyMonitorPiggyBack extends DWServiceProxy {
 	 */
 	@Override
 	public void replyReceived(TOMMessage reply) {
-		lmpc.addClientLatency(reply.getDynamicWeightTimestamp(), reply.getSender(), reply.getConsensusID());
+		if (measureClients) {
+			lmpc.addClientLatency(reply.getDynamicWeightTimestamp(), reply.getSender(), reply.getConsensusID());
+		}
 		super.replyReceived(reply);
 	}
 
