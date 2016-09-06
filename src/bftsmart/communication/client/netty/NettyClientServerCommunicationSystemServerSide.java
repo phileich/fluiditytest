@@ -59,19 +59,21 @@ import bftsmart.tom.util.TOMUtil;
  * @author Paulo
  */
 @Sharable
-public class NettyClientServerCommunicationSystemServerSide extends SimpleChannelInboundHandler<TOMMessage> implements CommunicationSystemServerSide {
+public class NettyClientServerCommunicationSystemServerSide extends SimpleChannelInboundHandler<TOMMessage>
+		implements CommunicationSystemServerSide {
 
 	private RequestReceiver requestReceiver;
 	private HashMap sessionTable;
 	private ReentrantReadWriteLock rl;
 	private ServerViewController controller;
-        private boolean closed = false;
-        private Channel mainChannel;
-        
-        // This locked seems to introduce a bottleneck and seems useless, but I cannot recall why I added it
-	//private ReentrantLock sendLock = new ReentrantLock();
+	private boolean closed = false;
+	private Channel mainChannel;
+
+	// This locked seems to introduce a bottleneck and seems useless, but I
+	// cannot recall why I added it
+	// private ReentrantLock sendLock = new ReentrantLock();
 	private NettyServerPipelineFactory serverPipelineFactory;
-    private org.slf4j.Logger logger = LoggerFactory.getLogger(NettyClientServerCommunicationSystemServerSide.class);
+	private org.slf4j.Logger logger = LoggerFactory.getLogger(NettyClientServerCommunicationSystemServerSide.class);
 
 	public NettyClientServerCommunicationSystemServerSide(ServerViewController controller) {
 		try {
@@ -80,32 +82,34 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 			sessionTable = new HashMap();
 			rl = new ReentrantReadWriteLock();
 
-			//Configure the server.
+			// Configure the server.
 			Mac macDummy = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
 
-			serverPipelineFactory = new NettyServerPipelineFactory(this, sessionTable, macDummy.getMacLength(), controller, rl, TOMUtil.getSignatureSize(controller));
+			serverPipelineFactory = new NettyServerPipelineFactory(this, sessionTable, macDummy.getMacLength(),
+					controller, rl, TOMUtil.getSignatureSize(controller));
 
 			EventLoopGroup bossGroup = new NioEventLoopGroup();
 			EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-			ServerBootstrap b = new ServerBootstrap(); 
-			b.group(bossGroup, workerGroup)
-			.channel(NioServerSocketChannel.class) 
-			.childHandler(new ChannelInitializer<SocketChannel>() {
-				@Override
-				public void initChannel(SocketChannel ch) throws Exception {
-					ch.pipeline().addLast(serverPipelineFactory.getDecoder());
-					ch.pipeline().addLast(serverPipelineFactory.getEncoder());
-					ch.pipeline().addLast(serverPipelineFactory.getHandler());
-				}
-			})	.childOption(ChannelOption.SO_KEEPALIVE, true).childOption(ChannelOption.TCP_NODELAY, true);
+			ServerBootstrap b = new ServerBootstrap();
+			b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+					.childHandler(new ChannelInitializer<SocketChannel>() {
+						@Override
+						public void initChannel(SocketChannel ch) throws Exception {
+							ch.pipeline().addLast(serverPipelineFactory.getDecoder());
+							ch.pipeline().addLast(serverPipelineFactory.getEncoder());
+							ch.pipeline().addLast(serverPipelineFactory.getHandler());
+						}
+					}).childOption(ChannelOption.SO_KEEPALIVE, true).childOption(ChannelOption.TCP_NODELAY, true);
 
 			// Bind and start to accept incoming connections.
-			ChannelFuture f = b.bind(new InetSocketAddress(controller.getStaticConf().getHost(
-					controller.getStaticConf().getProcessId()),
-					controller.getStaticConf().getPort(controller.getStaticConf().getProcessId()))).sync(); 
+			ChannelFuture f = b.bind(
+					new InetSocketAddress(controller.getStaticConf().getHost(controller.getStaticConf().getProcessId()),
+							controller.getStaticConf().getPort(controller.getStaticConf().getProcessId())))
+					.sync();
 
-			System.out.println("#Bound to port " + controller.getStaticConf().getPort(controller.getStaticConf().getProcessId()));
+			System.out.println(
+					"#Bound to port " + controller.getStaticConf().getPort(controller.getStaticConf().getProcessId()));
 			System.out.println("#myId " + controller.getStaticConf().getProcessId());
 			System.out.println("#n " + controller.getCurrentViewN());
 			System.out.println("#f " + controller.getCurrentViewF());
@@ -113,9 +117,9 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 			System.out.println("#maxBatch= " + controller.getStaticConf().getMaxBatchSize());
 			System.out.println("#Using MACs = " + controller.getStaticConf().getUseMACs());
 			System.out.println("#Using Signatures = " + controller.getStaticConf().getUseSignatures());
-			//******* EDUARDO END **************//
-                        
-                        mainChannel = f.channel();
+			// ******* EDUARDO END **************//
+
+			mainChannel = f.channel();
 
 		} catch (NoSuchAlgorithmException ex) {
 			ex.printStackTrace();
@@ -124,46 +128,47 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 		}
 	}
 
-        private void closeChannelAndEventLoop(Channel c) {
-                c.flush();
-                c.deregister();
-                c.close();
-                c.eventLoop().shutdownGracefully();
-        }
-        
-        @Override
-        public void shutdown() {
-            
-            System.out.println("Shutting down Netty system");
-            
-            this.closed = true;
+	private void closeChannelAndEventLoop(Channel c) {
+		c.flush();
+		c.deregister();
+		c.close();
+		c.eventLoop().shutdownGracefully();
+	}
 
-            closeChannelAndEventLoop(mainChannel);
-                
-            rl.readLock().lock();
-            ArrayList<NettyClientServerSession> sessions = new ArrayList<>(sessionTable.values());
-            rl.readLock().unlock();
-            for (NettyClientServerSession ncss : sessions) {
-                
-                closeChannelAndEventLoop(ncss.getChannel());
-
-            }
-            
-            java.util.logging.Logger.getLogger(NettyClientServerCommunicationSystemServerSide.class.getName()).log(Level.INFO, "NettyClientServerCommunicationSystemServerSide is halting.");
-
-        }
-        
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
-		
-                if (this.closed) {
-                    closeChannelAndEventLoop(ctx.channel());
-                    return;
-                }
-            
-                if(cause instanceof ClosedChannelException)
+	public void shutdown() {
+
+		System.out.println("Shutting down Netty system");
+
+		this.closed = true;
+
+		closeChannelAndEventLoop(mainChannel);
+
+		rl.readLock().lock();
+		ArrayList<NettyClientServerSession> sessions = new ArrayList<>(sessionTable.values());
+		rl.readLock().unlock();
+		for (NettyClientServerSession ncss : sessions) {
+
+			closeChannelAndEventLoop(ncss.getChannel());
+
+		}
+
+		java.util.logging.Logger.getLogger(NettyClientServerCommunicationSystemServerSide.class.getName())
+				.log(Level.INFO, "NettyClientServerCommunicationSystemServerSide is halting.");
+
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+
+		if (this.closed) {
+			closeChannelAndEventLoop(ctx.channel());
+			return;
+		}
+
+		if (cause instanceof ClosedChannelException)
 			System.out.println("Connection with client closed.");
-		else if(cause instanceof ConnectException) {
+		else if (cause instanceof ConnectException) {
 			System.out.println("Impossible to connect to client.");
 		} else {
 			cause.printStackTrace(System.err);
@@ -173,36 +178,37 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, TOMMessage sm) throws Exception {
 
-                if (this.closed) {
-                    closeChannelAndEventLoop(ctx.channel());
-                    return;
-                }
-                            
-                //delivers message to TOMLayer
+		if (this.closed) {
+			closeChannelAndEventLoop(ctx.channel());
+			return;
+		}
+
+		// delivers message to TOMLayer
 		if (requestReceiver == null)
 			System.out.println("RECEIVER NULO!!!!!!!!!!!!");
-		else requestReceiver.requestReceived(sm);
+		else
+			requestReceiver.requestReceived(sm);
 	}
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) {
-            
-                if (this.closed) {
-                    closeChannelAndEventLoop(ctx.channel());
-                    return;
-                }
+
+		if (this.closed) {
+			closeChannelAndEventLoop(ctx.channel());
+			return;
+		}
 		Logger.println("Session Created, active clients=" + sessionTable.size());
 		System.out.println("Session Created, active clients=" + sessionTable.size());
 	}
 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) {
-            
-                if (this.closed) {
-                    closeChannelAndEventLoop(ctx.channel());
-                    return;
-                }
-                
+
+		if (this.closed) {
+			closeChannelAndEventLoop(ctx.channel());
+			return;
+		}
+
 		rl.writeLock().lock();
 		try {
 			Set s = sessionTable.entrySet();
@@ -218,8 +224,6 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 					break;
 				}
 			}
-			
-            
 
 		} finally {
 			rl.writeLock().unlock();
@@ -235,7 +239,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 	@Override
 	public void send(int[] targets, TOMMessage sm, boolean serializeClassHeaders) {
 
-		//serialize message
+		// serialize message
 		DataOutputStream dos = null;
 
 		byte[] data = null;
@@ -256,76 +260,82 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 			}
 		}
 
-		//replies are not signed in the current JBP version
+		// replies are not signed in the current JBP version
 		sm.signed = false;
-		//produce signature if necessary (never in the current version)
+		// produce signature if necessary (never in the current version)
 		if (sm.signed) {
-			//******* EDUARDO BEGIN **************//
+			// ******* EDUARDO BEGIN **************//
 			byte[] data2 = TOMUtil.signMessage(controller.getStaticConf().getRSAPrivateKey(), data);
-			//******* EDUARDO END **************//
+			// ******* EDUARDO END **************//
 			sm.serializedMessageSignature = data2;
 		}
 
 		for (int i = 0; i < targets.length; i++) {
 			rl.readLock().lock();
-			//sendLock.lock();
-			try {       
+			// sendLock.lock();
+			try {
 				NettyClientServerSession ncss = (NettyClientServerSession) sessionTable.get(targets[i]);
 				if (ncss != null) {
 					Channel session = ncss.getChannel();
 					sm.destination = targets[i];
-					//send message
-					session.writeAndFlush(sm); // This used to invoke "await". Removed to avoid blockage and race condition.
-                                
-                                ///////TODO: replace this patch for a proper client preamble
-                                } else if (sm.getSequence() >= 0 && sm.getSequence() <= 5) {
-                                    
-                                        final int id = targets[i];
-                                        final TOMMessage msg = sm;
-                                        
-                                        Thread t = new Thread() {
-                                                                                        
-                                            public void run() {
-                                                
-                                                System.out.println("Received request from " + id + " before establishing Netty connection. Re-trying until connection is established");
+					// send message
+					session.writeAndFlush(sm); // This used to invoke "await".
+												// Removed to avoid blockage and
+												// race condition.
 
-                                                NettyClientServerSession ncss = null;
-                                                while (ncss == null) {
+					/////// TODO: replace this patch for a proper client
+					/////// preamble
+				} else if (sm.getSequence() >= 0 && sm.getSequence() <= 5) {
 
-                                                    rl.readLock().lock();
-                                                    
-                                                    try {
-                                                        Thread.sleep(1000);
-                                                    } catch (InterruptedException ex) {
-                                                        java.util.logging.Logger.getLogger(NettyClientServerCommunicationSystemServerSide.class.getName()).log(Level.SEVERE, null, ex);
-                                                    }
-                                                    
-                                                    ncss = (NettyClientServerSession) sessionTable.get(id);
-                                                    if (ncss != null) {
-                                                            Channel session = ncss.getChannel();
-                                                            msg.destination = id;
-                                                            //send message
-                                                            session.writeAndFlush(msg);
-                                                    }
+					final int id = targets[i];
+					final TOMMessage msg = sm;
 
-                                                    rl.readLock().unlock();
-                                                    
-                                                }
-                                                 
-                                                System.out.println("Connection with " + id + " established!");
+					Thread t = new Thread() {
 
-                                                
-                                            }
-                                            
-                                        };
-                                        
-                                        t.start();
-                                        ///////////////////////////////////////////
+						public void run() {
+
+							System.out.println("Received request from " + id
+									+ " before establishing Netty connection. Re-trying until connection is established");
+
+							NettyClientServerSession ncss = null;
+							while (ncss == null) {
+
+								rl.readLock().lock();
+
+								try {
+									Thread.sleep(1000);
+								} catch (InterruptedException ex) {
+									java.util.logging.Logger
+											.getLogger(NettyClientServerCommunicationSystemServerSide.class.getName())
+											.log(Level.SEVERE, null, ex);
+								}
+
+								ncss = (NettyClientServerSession) sessionTable.get(id);
+								if (ncss != null) {
+									Channel session = ncss.getChannel();
+									msg.destination = id;
+									// send message
+									session.writeAndFlush(msg);
+								}
+
+								rl.readLock().unlock();
+
+							}
+
+							System.out.println("Connection with " + id + " established!");
+
+						}
+
+					};
+
+					t.start();
+					///////////////////////////////////////////
 				} else {
-                                    System.out.println("!!!!!!!!NettyClientServerSession NULL !!!!!! sequence: " + sm.getSequence() + ", ID; " + targets[i]);
-                                }
+					System.out.println("!!!!!!!!NettyClientServerSession NULL !!!!!! sequence: " + sm.getSequence()
+							+ ", ID; " + targets[i]);
+				}
 			} finally {
-				//sendLock.unlock();
+				// sendLock.unlock();
 				rl.readLock().unlock();
 			}
 		}

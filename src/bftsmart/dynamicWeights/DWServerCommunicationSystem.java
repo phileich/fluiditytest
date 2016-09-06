@@ -104,7 +104,7 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 				// cause clientsConn.send needs an int[]
 				int[] target = new int[1];
 				target[0] = targets[i];
-				if (controller.getStaticConf().measureClients()) {
+				if (controller.getStaticConf().measureClients()) {				//TODO no internal consensus -> latency!
 					((TOMMessage) sm).setDynamicWeightTimestamp(lmps.getClientTimestamp(targets[i]));
 					((TOMMessage) sm).setConsensusID(dwc.getInExec());
 					// remove from tmp storage to prevent overflow

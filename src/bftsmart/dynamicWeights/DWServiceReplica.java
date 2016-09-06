@@ -289,7 +289,6 @@ public class DWServiceReplica extends ServiceReplica {
 
 					} else if (request.getReqType() == TOMMessageType.INTERNAL_CONSENSUS) {
 						noop = false;
-						dwc.addInternalConsensusDataToStorage(request.getContent());
 
 						MessageContext msgCtx = new MessageContext(request.getSender(), request.getViewID(),
 								request.getReqType(), request.getSession(), request.getSequence(),
@@ -298,12 +297,31 @@ public class DWServiceReplica extends ServiceReplica {
 								leaders[consensusCount], consId[consensusCount],
 								cDecs[consensusCount].getConsMessages(), firstRequest, false);
 
+						if (requestCount + 1 == requestsFromConsensus.length) {
+
+							msgCtx.setLastInBatch();
+						}
+
+						dwc.addInternalConsensusDataToStorage(request.getContent());
+
 						// Send the replies back to the client
 						byte[] replies = (new String("ConsensusStored")).getBytes();
 
 						request.reply = new TOMMessage(id, request.getSession(), request.getSequence(), replies,
 								SVController.getCurrentViewId(), TOMMessageType.INTERNAL_CONSENSUS);
 						replier.manageReply(request, msgCtx);
+
+//						if (SVController.getStaticConf().getNumRepliers() > 0) {
+//							bftsmart.tom.util.Logger
+//									.println("(ServiceReplica.receiveMessages) sending reply to " + request.getSender()
+//											+ " with sequence number " + request.getSequence() + " via ReplyManager");
+//							repMan.send(request);
+//						} else {
+//							bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) sending reply to "
+//									+ request.getSender() + " with sequence number " + request.getSequence());
+//							cs.send(new int[] { request.getSender() }, request.reply);
+//						}
+
 					} else {
 						throw new RuntimeException("Should never reach here!");
 					}

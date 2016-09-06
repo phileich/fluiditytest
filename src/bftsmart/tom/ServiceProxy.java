@@ -272,6 +272,13 @@ public class ServiceProxy extends TOMSender {
 					canSendLock.unlock();
 					return invoke(request, TOMMessageType.ORDERED_REQUEST);
 				}
+			} else if (reqType == TOMMessageType.INTERNAL_CONSENSUS) {
+				if (response.getViewID() == getViewManager().getCurrentViewId()) {
+					ret = response.getContent(); // return the response
+				} else {
+					canSendLock.unlock();
+					return invoke(request, TOMMessageType.INTERNAL_CONSENSUS);
+				}
 			} else {
 				if (response.getViewID() > getViewManager().getCurrentViewId()) {
 					// Reply to a reconfigure request!
@@ -320,6 +327,10 @@ public class ServiceProxy extends TOMSender {
 	 */
 	@Override
 	public void replyReceived(TOMMessage reply) {
+		if (reply.getReqType() == TOMMessageType.INTERNAL_CONSENSUS) {
+			System.out.println("Received the internal consensus");
+		}
+
 		Logger.println("Synchronously received reply from " + reply.getSender() + " with sequence number "
 				+ reply.getSequence());
 
