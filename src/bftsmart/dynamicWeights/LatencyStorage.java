@@ -33,6 +33,10 @@ public class LatencyStorage {
 		return serverLatencies.size();
 	}
 
+	public int getServerProposeSize() {
+		return serverProposeLatencies.size();
+	}
+
 	/**
 	 * returns the last 'lastValues' entries
 	 * 

@@ -1,12 +1,15 @@
 package bftsmart.dynamicWeights;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class DynamicWeightGraph implements Comparable<DynamicWeightGraph> {
 
 	private DynamicWeightGraphNode root;
 	private DynamicWeightGraphNode[] leaves;
 	private Double[] weights;
+	private int quorumSize = 1;
 
 	public DynamicWeightGraph(DynamicWeightGraphNode root) {
 		this.root = root;
@@ -30,6 +33,14 @@ public class DynamicWeightGraph implements Comparable<DynamicWeightGraph> {
 		return weights;
 	}
 
+	public void setQuorumSize(int quorumSize) {
+		this.quorumSize = Math.max(1, quorumSize);
+	}
+
+	public int getQuorumSize() {
+		return quorumSize;
+	}
+
 	@Override
 	public int compareTo(DynamicWeightGraph o) {
 		if (getValue() > o.getValue()) {
@@ -43,14 +54,18 @@ public class DynamicWeightGraph implements Comparable<DynamicWeightGraph> {
 
 	/**
 	 * returns the value of the graph.
+	 * 
 	 * @return
 	 */
 	public double getValue() {
-		double value = 0;
+		ArrayList<Double> valueList = new ArrayList<>();
 		for (int i = 0; i < leaves.length; i++) {
-			value = value + leaves[i].getValue();
+			for (int j = 0; j < weights[i]; j++) {
+				valueList.add(leaves[i].getValue());
+			}
 		}
-		return value;
+		Collections.sort(valueList);
+		return valueList.get(Math.min(quorumSize, valueList.size()) - 1);
 	}
 
 	@Override

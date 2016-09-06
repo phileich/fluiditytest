@@ -39,7 +39,7 @@ public class ServerCommunicationSystem extends Thread {
     protected MessageHandler messageHandler = new MessageHandler();
     protected ServersCommunicationLayer serversConn;
     protected CommunicationSystemServerSide clientsConn;
-    private ServerViewController controller;
+    protected ServerViewController controller;
 
     /**
      * Creates a new instance of ServerCommunicationSystem

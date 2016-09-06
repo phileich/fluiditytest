@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import javax.sound.midi.ControllerEventListener;
+
 import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.communication.SystemMessage;
 import bftsmart.consensus.messages.ConsensusMessage;
@@ -43,23 +45,36 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 
 				if (sm != null) {
 					Logger.println("<-------receiving---------- " + sm);
-					if ((sm instanceof ConsensusMessage) && ((ConsensusMessage) sm).getPaxosVerboseType() == "ACCEPT") {
+					if ((sm instanceof ConsensusMessage) && ((ConsensusMessage) sm).getPaxosVerboseType() == "ACCEPT"
+							&& controller.getStaticConf().measureServers()) {
 						// store latency in volatile storage
 						lmps.addServerLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
+						messageHandler.processData(sm);
+						count++;
 					} else if ((sm instanceof ConsensusMessage)
 							&& (((ConsensusMessage) sm).getPaxosVerboseType() == "PROPOSE"
-									|| ((ConsensusMessage) sm).getPaxosVerboseType() == "DUMMY_PROPOSE")) {
+									|| ((ConsensusMessage) sm).getPaxosVerboseType() == "DUMMY_PROPOSE")
+							&& controller.getStaticConf().measureServers()) {
 						// send immediately back
 						ConsensusMessage cm = new ConsensusMessage(MessageFactory.DUMMY_PROPOSE_RESPONSE,
 								((ConsensusMessage) sm).getNumber(), 0, dwc.getID());
 						Logger.println("--------sending----------> " + cm + " to " + sm.getSender());
 						serversConn.send(new int[] { sm.getSender() }, cm, false);
+
+						if (((ConsensusMessage) sm).getPaxosVerboseType() == "PROPOSE") {
+							messageHandler.processData(sm);
+							count++;
+						}
+
 					} else if ((sm instanceof ConsensusMessage)
-							&& ((ConsensusMessage) sm).getPaxosVerboseType() == "DUMMY_PROPOSE_RESPONSE") {
+							&& ((ConsensusMessage) sm).getPaxosVerboseType() == "DUMMY_PROPOSE_RESPONSE"
+							&& controller.getStaticConf().measureServers()) {
 						lmps.addServerProposeLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
+					} else {
+						messageHandler.processData(sm);
+						count++;
 					}
-					messageHandler.processData(sm);
-					count++;
+
 				} else {
 					messageHandler.verifyPending();
 				}
@@ -89,10 +104,12 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 				// cause clientsConn.send needs an int[]
 				int[] target = new int[1];
 				target[0] = targets[i];
-				((TOMMessage) sm).setDynamicWeightTimestamp(lmps.getClientTimestamp(targets[i]));
-				((TOMMessage) sm).setConsensusID(dwc.getInExec());
-				// remove from tmp storage to prevent overflow
-				lmps.clearClientTimestamp(targets[i], dwc.getInExec());
+				if (controller.getStaticConf().measureClients()) {
+					((TOMMessage) sm).setDynamicWeightTimestamp(lmps.getClientTimestamp(targets[i]));
+					((TOMMessage) sm).setConsensusID(dwc.getInExec());
+					// remove from tmp storage to prevent overflow
+					lmps.clearClientTimestamp(targets[i], dwc.getInExec());
+				}
 
 				Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
 				clientsConn.send(target, (TOMMessage) sm, false);
@@ -108,7 +125,9 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 					// sm).setDynamicWeightTimestamp(System.currentTimeMillis());
 
 					// store latency in storage as sent
-					lmps.createLatency(targets[i], ((ConsensusMessage) sm).getNumber());
+					if (controller.getStaticConf().measureServers()) {
+						lmps.createLatency(targets[i], ((ConsensusMessage) sm).getNumber());
+					}
 					Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
 					serversConn.send(target, sm, true);
 				}

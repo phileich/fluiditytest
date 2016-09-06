@@ -75,14 +75,15 @@ public class LatencyMonitorPiggybackServer implements Storage {
 			tmpServerLatencies.remove(key);
 
 			// print
-			System.out.print("Server Latencies: ");
+			String serverLatenciesString = "Server Latencies: ";
+
 			for (Long name : serverLatencies.keySet()) {
 				String printKey = name.toString();
 				String value = Arrays.deepToString(serverLatencies.get(name));
-				System.out.print("(" + printKey + ":" + value + "); ");
+				serverLatenciesString = serverLatenciesString + "(" + printKey + ":" + value + "); ";
 
 			}
-			System.out.println("");
+			Logger.println(serverLatenciesString);
 		}
 
 	}
@@ -133,14 +134,13 @@ public class LatencyMonitorPiggybackServer implements Storage {
 			tmpServerProposeLatencies.remove(key);
 
 			// print
-			System.out.print("Server Propose Latencies: ");
+			String serverLatenciesString = "Server Propose Latencies: ";
 			for (Long name : serverProposeLatencies.keySet()) {
 				String printKey = name.toString();
 				String value = Arrays.deepToString(serverProposeLatencies.get(name));
-				System.out.print("(" + printKey + ":" + value + "); ");
-
+				serverLatenciesString = serverLatenciesString + "(" + printKey + ":" + value + "); ";
 			}
-			System.out.println("");
+			Logger.println(serverLatenciesString);
 		}
 
 	}
@@ -217,7 +217,7 @@ public class LatencyMonitorPiggybackServer implements Storage {
 	}
 
 	@Override
-	public synchronized List<Latency[]> getServerLatencies() {		
+	public synchronized List<Latency[]> getServerLatencies() {
 		List<Latency[]> latencies = new ArrayList<Latency[]>(serverLatencies.values());
 		return latencies;
 	}

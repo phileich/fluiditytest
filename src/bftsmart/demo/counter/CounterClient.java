@@ -21,13 +21,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import java.io.InputStreamReader;
 
 import bftsmart.dynamicWeights.DWServiceProxyLatencyMonitorPiggyBack;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.util.Logger;
-import java.util.logging.Level;
 
 /**
  * Example client that updates a BFT replicated service (a counter).
@@ -35,78 +33,75 @@ import java.util.logging.Level;
  */
 public class CounterClient {
 
-	public static void main(String[] args) throws IOException {
-		if (args.length < 2) {
-			System.out.println("Usage: java ...CounterClient <process id> <increment> [<number of operations>]");
-			System.out.println("       if <increment> equals 0 the request will be read-only");
-			System.out.println("       default <number of operations> equals 1000");
-			System.exit(-1);
-		}
+    public static void main(String[] args) throws IOException {
+        if (args.length < 2) {
+            System.out.println("Usage: java ...CounterClient <process id> <increment> [<number of operations>]");
+            System.out.println("       if <increment> equals 0 the request will be read-only");
+            System.out.println("       default <number of operations> equals 1000");
+            System.exit(-1);
+        }
 
-		ServiceProxy counterProxy = new ServiceProxy(Integer.parseInt(args[0]));
+        ServiceProxy counterProxy = new DWServiceProxyLatencyMonitorPiggyBack(Integer.parseInt(args[0]));
 
-		// counterProxy.setInvokeTimeout(1);
+        //counterProxy.setInvokeTimeout(1);
 
-		int result = 0;
+        int result = 0;
 
-		try {
+        try {
 
-			int inc = Integer.parseInt(args[1]);
-			int numberOfOps = (args.length > 2) ? Integer.parseInt(args[2]) : 1000;
+            int inc = Integer.parseInt(args[1]);
+            int numberOfOps = (args.length > 2) ? Integer.parseInt(args[2]) : 1000;
 
-			boolean wait = false;
+            boolean wait = false;
+            
+            if((args.length > 2 && args[2].equals("wait")) ||
+                    (args.length > 3 && args[3].equals("wait"))){
+                wait = true;
+            }
+            
+            
+            Logger.debug = false;
+            BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
 
-			if ((args.length > 2 && args[2].equals("wait")) || (args.length > 3 && args[3].equals("wait"))) {
-				wait = true;
-			}
+            for (int i = 0; i < numberOfOps; i++) {
 
-			Logger.debug = true;
-			BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
+                if (wait) {
+                    System.out.println("Iteration " + i);
+                    System.out.println("Press Enter for next iteration, type 'exit' to exit or type 'go' to run all remaining iterations");
 
-			for (int i = 0; i < numberOfOps; i++) {
+                    String lido = inReader.readLine();
 
-				if (wait) {
-					System.out.println("Iteration " + i);
-					System.out.println(
-							"Press Enter for next iteration, type 'exit' to exit or type 'go' to run all remaining iterations");
+                    if (lido.equals("exit")) {
+                        break;
+                    } else if (lido.equals("go")) {
+                        wait = false;
+                    }
+                }
 
-					String lido = inReader.readLine();
+                ByteArrayOutputStream out = new ByteArrayOutputStream(4);
+                new DataOutputStream(out).writeInt(inc);
 
-					if (lido.equals("exit")) {
-						break;
-					} else if (lido.equals("go")) {
-						wait = false;
-					}
-				}
+                System.out.println("Counter sending: " + i);
+                byte[] reply;
+                if(inc == 0)
+                	reply = counterProxy.invokeUnordered(out.toByteArray());
+                else
+                	reply = counterProxy.invokeOrdered(out.toByteArray());
+                if(reply != null) {
+                    int newValue = new DataInputStream(new ByteArrayInputStream(reply)).readInt();
+                    System.out.println("Counter value: " + newValue);
+                    result = 0;
+                } else {
+                    result = 1;
+                    break;
+                }
+            }
 
-				ByteArrayOutputStream out = new ByteArrayOutputStream(4);
-				new DataOutputStream(out).writeInt(inc);
-
-				System.out.println("Counter sending: " + i);
-				byte[] reply;
-				long start = System.currentTimeMillis();
-				if (inc == 0)
-					reply = counterProxy.invokeUnordered(out.toByteArray());
-				else
-					reply = counterProxy.invokeOrdered(out.toByteArray());
-
-				long end = System.currentTimeMillis();
-				System.out.println("Time: " + (end - start) + "ms");
-				if (reply != null) {
-					int newValue = new DataInputStream(new ByteArrayInputStream(reply)).readInt();
-					System.out.println("Counter value: " + newValue);
-					result = 0;
-				} else {
-					result = 1;
-					break;
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			result = 1;
-		} finally {
-			counterProxy.close();
-		}
-	}
+        } catch(Exception e){
+            e.printStackTrace();
+            result = 1;
+        } finally {
+            counterProxy.close();
+        }
+    }
 }
