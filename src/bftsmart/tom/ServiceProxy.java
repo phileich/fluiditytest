@@ -327,9 +327,6 @@ public class ServiceProxy extends TOMSender {
 	 */
 	@Override
 	public void replyReceived(TOMMessage reply) {
-		if (reply.getReqType() == TOMMessageType.INTERNAL_CONSENSUS) {
-			System.out.println("Received the internal consensus");
-		}
 
 		Logger.println("Synchronously received reply from " + reply.getSender() + " with sequence number "
 				+ reply.getSequence());
