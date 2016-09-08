@@ -41,4 +41,9 @@ public class DynamicWeightGraphNode {
 		this.value = value;
 	}
 
+	@Override
+	public String toString() {
+		return getValue() + "";
+	}
+
 }

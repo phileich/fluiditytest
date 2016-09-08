@@ -12,6 +12,16 @@ public class Latency implements Serializable, Comparable<Latency> {
 	private int to;
 	private long consensusID;
 
+	public Latency() {
+
+	}
+
+	public Latency(int from, int to, double value) {
+		this.from = from;
+		this.to = to;
+		this.ts_value = value;
+	}
+
 	public double getValue() {
 		return ts_value;
 	}
@@ -46,7 +56,7 @@ public class Latency implements Serializable, Comparable<Latency> {
 
 	public String toString() {
 		if (ts_value != null) {
-			return Double.toString(ts_value);
+			return "(" + from + "," + to + "," + Double.toString(ts_value) + ")";
 		} else {
 			return "null";
 		}
@@ -54,7 +64,7 @@ public class Latency implements Serializable, Comparable<Latency> {
 
 	@Override
 	public int compareTo(Latency o) {
-		//compares first by consensusID, then from, then to
+		// compares first by consensusID, then from, then to
 		if (consensusID > o.consensusID) {
 			return 1;
 		} else if (consensusID < o.consensusID) {

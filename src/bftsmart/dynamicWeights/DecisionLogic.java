@@ -2,6 +2,7 @@ package bftsmart.dynamicWeights;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -25,7 +26,7 @@ public class DecisionLogic {
 			double[][] serverLatencies) {
 		this.svController = svController;
 		this.reducedClientValues = clientLatencies;
-		this.reducedServerProposeValues = serverLatencies;
+		this.reducedServerProposeValues = proposeLatencies;
 		this.reducedServerValues = serverLatencies;
 
 		currentLeader = svController.getCurrentLeader();
@@ -36,9 +37,24 @@ public class DecisionLogic {
 		}
 	}
 
+	public DecisionLogic(ServerViewController svController, int leader, double[] clientLatencies,
+			double[][] proposeLatencies, double[][] serverLatencies) {
+		this.svController = svController;
+		this.reducedClientValues = clientLatencies;
+		this.reducedServerProposeValues = proposeLatencies;
+		this.reducedServerValues = serverLatencies;
+
+		currentLeader = leader;
+
+		currentWeightAssignment = new Double[svController.getCurrentViewN()];
+		for (int i = 0; i < currentWeightAssignment.length; i++) {
+			currentWeightAssignment[i] = svController.getCurrentView().getWeight(i);
+		}
+	}
+
 	private DynamicWeightGraph[] buildGraphs() {
 		// Build all graphs
-		Logger.println("Building Calculation Graphs");
+		System.out.println("Building Calculation Graphs");
 		int f = svController.getCurrentViewF();
 		int n = svController.getCurrentViewN();
 		double vMin = 1;
@@ -68,12 +84,12 @@ public class DecisionLogic {
 			System.out.println("Leader: " + i);
 			Permutations<Double> perm = new Permutations<Double>(weightassignment);
 			while (perm.hasNext()) {
-				Double[] permutation = perm.next();
+				Double[] permutation = perm.next().clone();
 				System.out.println(Arrays.toString(permutation));
 
 				// Create the graph
 				DynamicWeightGraphBuilder dwgBuilder = new DynamicWeightGraphBuilder().setWeights(permutation)
-						.setQuorumSize(getReplyQuorum());
+						.setQuorumSize(getReplyQuorum()).setLeader(i);
 
 				if (svController.getStaticConf().measureClients()) {
 					dwgBuilder.addClientRequest(0, reducedClientValues, permutation);
@@ -93,7 +109,7 @@ public class DecisionLogic {
 				if (Arrays.deepEquals(permutation, currentWeightAssignment) && i == currentLeader) {
 					currentCalculatedValue = dwGraph.getValue();
 				}
-				System.out.println("" + dwGraph.getValue());
+				System.out.println("" + dwGraph);
 				// add graph
 				dwGraphs[combCount] = dwGraph;
 
@@ -128,9 +144,10 @@ public class DecisionLogic {
 		// decide
 		// if any new result is better than 10% of the current result ->
 		// reconfig
-
-		ArrayList<DynamicWeightGraph> newPossibleGraphs = new ArrayList<>();
+		System.out.println("--------- calc Best -------------");
+		ArrayList<DynamicWeightGraph> newPossibleGraphs = new ArrayList<DynamicWeightGraph>();
 		for (DynamicWeightGraph dynamicWeightGraph : dwGraphs) {
+//			Logger.println(dynamicWeightGraph);
 			if (dynamicWeightGraph.getValue() < (currentCalculatedValue * betterPercentage)) {
 				newPossibleGraphs.add(dynamicWeightGraph);
 			}
