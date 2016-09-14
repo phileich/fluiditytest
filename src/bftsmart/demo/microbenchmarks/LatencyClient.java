@@ -41,6 +41,9 @@ public class LatencyClient {
 		TOMConfiguration conf = new TOMConfiguration(Integer.parseInt(args[0]));
 		if (conf.useDynamicWeights()) {
 			System.out.println("#using Dynamic Weights");
+			
+			
+			
 			counterProxy = new DWServiceProxyLatencyMonitorPiggyBack(Integer.parseInt(args[0]));
 		} else {
 			counterProxy = new ServiceProxy(Integer.parseInt(args[0]));
