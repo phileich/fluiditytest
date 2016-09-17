@@ -69,8 +69,7 @@ import java.util.Arrays;
  */
 @Sharable
 
-public class NettyClientServerCommunicationSystemClientSide
-		extends SimpleChannelInboundHandler<TOMMessage>
+public class NettyClientServerCommunicationSystemClientSide extends SimpleChannelInboundHandler<TOMMessage>
 		implements CommunicationSystemClientSide {
 
 	private int clientId;
@@ -87,34 +86,32 @@ public class NettyClientServerCommunicationSystemClientSide
 
 	private EventLoopGroup workerGroup;
 
-	private ChannelFuture connect(Bootstrap bootstrap,
-			SocketAddress remoteAddress, int clientId, int channelId)
-					throws UnknownHostException {
+	private ChannelFuture connect(Bootstrap bootstrap, SocketAddress remoteAddress, int clientId, int channelId)
+			throws UnknownHostException {
 		if (controller.getStaticConf().getLocalClients()) {
-			System.out.println(String.format(
-					"* C O N N E C T * (remote=%s, client=%d, channel=%d",
+			System.out.println(String.format("* C O N N E C T * (remote=%s, client=%d, channel=%d",
 					remoteAddress.toString(), clientId, channelId));
 
 			// TODO: Fix this client id modulo stuff.
+			System.out.println("localAdress: " + String.format("127.0.0.%d", 101 + (clientId % 1001) % 254));
+			System.out.println("localPort: " + (12000 + (clientId % 10010) * 10 + channelId));
 			return bootstrap.connect(remoteAddress,
 					new InetSocketAddress(
-							Inet4Address.getByName(String.format("127.0.0.%d",
-									(clientId % 1001) % 254)),
-					12000 + clientId * 10 + channelId));
+							Inet4Address.getByName(String.format("127.0.0.%d", 101 + (clientId % 1001) % 254)),
+							12000 + (clientId % 10010) * 10 + channelId));
+
 		} else {
 			return bootstrap.connect(remoteAddress);
 		}
 	}
 
-	public NettyClientServerCommunicationSystemClientSide(int clientId,
-			ClientViewController controller) {
+	public NettyClientServerCommunicationSystemClientSide(int clientId, ClientViewController controller) {
 		super();
 
 		this.clientId = clientId;
 		this.workerGroup = new NioEventLoopGroup();
 		try {
-			SecretKeyFactory fac = SecretKeyFactory
-					.getInstance("PBEWithMD5AndDES");
+			SecretKeyFactory fac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
 
 			this.controller = controller;
 			// this.st = new Storage(BENCHMARK_PERIOD);
@@ -143,38 +140,33 @@ public class NettyClientServerCommunicationSystemClientSide
 					b.handler(getChannelInitializer());
 
 					// Start the client.
-					future = connect(b, controller.getRemoteAddress(currV[i]),
-							clientId, i);
+					future = connect(b, controller.getRemoteAddress(currV[i]), clientId, i);
 
 					// ******* EDUARDO BEGIN **************//
 
 					// creates MAC stuff
-					Mac macSend = Mac.getInstance(
-							controller.getStaticConf().getHmacAlgorithm());
+					Mac macSend = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
 					macSend.init(authKey);
-					Mac macReceive = Mac.getInstance(
-							controller.getStaticConf().getHmacAlgorithm());
+					Mac macReceive = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
 					macReceive.init(authKey);
-					NettyClientServerSession cs = new NettyClientServerSession(
-							future.channel(), macSend, macReceive, currV[i]);
+					NettyClientServerSession cs = new NettyClientServerSession(future.channel(), macSend, macReceive,
+							currV[i]);
 					sessionTable.put(currV[i], cs);
 
-					System.out.println("Connecting to replica " + currV[i]
-							+ " at " + controller.getRemoteAddress(currV[i]));
+					System.out.println(
+							"Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
 					// ******* EDUARDO END **************//
 
 					future.awaitUninterruptibly();
 
 					if (!future.isSuccess()) {
-						System.err.println(
-								"Impossible to connect to " + currV[i]);
+						System.err.println("Impossible to connect to " + currV[i]);
 					}
 
 				} catch (java.lang.NullPointerException ex) {
 					// What the fuck is this??? This is not possible!!!
-					System.err.println(
-							"Should fix the problem, and I think it has no other implications :-), "
-									+ "but we must make the servers store the view in a different place.");
+					System.err.println("Should fix the problem, and I think it has no other implications :-), "
+							+ "but we must make the servers store the view in a different place.");
 				} catch (InvalidKeyException ex) {
 					ex.printStackTrace(System.err);
 				} catch (Exception ex) {
@@ -198,8 +190,7 @@ public class NettyClientServerCommunicationSystemClientSide
 					rl.readLock().unlock();
 					rl.writeLock().lock();
 
-					SecretKeyFactory fac = SecretKeyFactory
-							.getInstance("PBEWithMD5AndDES");
+					SecretKeyFactory fac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
 					try {
 						// Configure the client.
 
@@ -219,36 +210,29 @@ public class NettyClientServerCommunicationSystemClientSide
 						b.handler(getChannelInitializer());
 
 						// Start the client.
-						ChannelFuture future = connect(b,
-								controller.getRemoteAddress(currV[i]), clientId,
-								i);
+						ChannelFuture future = connect(b, controller.getRemoteAddress(currV[i]), clientId, i);
 
 						String str = this.clientId + ":" + currV[i];
 						PBEKeySpec spec = new PBEKeySpec(str.toCharArray());
 						SecretKey authKey = fac.generateSecret(spec);
 
 						// creates MAC stuff
-						Mac macSend = Mac.getInstance(
-								controller.getStaticConf().getHmacAlgorithm());
+						Mac macSend = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
 						macSend.init(authKey);
-						Mac macReceive = Mac.getInstance(
-								controller.getStaticConf().getHmacAlgorithm());
+						Mac macReceive = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
 						macReceive.init(authKey);
-						NettyClientServerSession cs = new NettyClientServerSession(
-								future.channel(), macSend, macReceive,
-								currV[i]);
+						NettyClientServerSession cs = new NettyClientServerSession(future.channel(), macSend,
+								macReceive, currV[i]);
 						sessionTable.put(currV[i], cs);
 
-						System.out.println("Connecting to replica " + currV[i]
-								+ " at "
-								+ controller.getRemoteAddress(currV[i]));
+						System.out.println(
+								"Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
 						// ******* EDUARDO END **************//
 
 						future.awaitUninterruptibly();
 
 						if (!future.isSuccess()) {
-							System.err.println(
-									"Impossible to connect to " + currV[i]);
+							System.err.println("Impossible to connect to " + currV[i]);
 						}
 					} catch (UnknownHostException ex) {
 						ex.printStackTrace();
@@ -268,8 +252,7 @@ public class NettyClientServerCommunicationSystemClientSide
 	}
 
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-			throws Exception {
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		if (cause instanceof ClosedChannelException) {
 			System.out.println("Connection with replica closed.");
 		} else if (cause instanceof ConnectException) {
@@ -281,8 +264,7 @@ public class NettyClientServerCommunicationSystemClientSide
 	}
 
 	@Override
-	public void channelRead0(ChannelHandlerContext ctx, TOMMessage sm)
-			throws Exception {
+	public void channelRead0(ChannelHandlerContext ctx, TOMMessage sm) throws Exception {
 
 		if (closed) {
 
@@ -313,8 +295,7 @@ public class NettyClientServerCommunicationSystemClientSide
 
 		// Iterator sessions = sessionTable.values().iterator();
 
-		ArrayList<NettyClientServerSession> sessions = new ArrayList<NettyClientServerSession>(
-				sessionTable.values());
+		ArrayList<NettyClientServerSession> sessions = new ArrayList<NettyClientServerSession>(sessionTable.values());
 		for (NettyClientServerSession ncss : sessions) {
 			if (ncss.getChannel() == ctx.channel()) {
 				try {
@@ -334,26 +315,21 @@ public class NettyClientServerCommunicationSystemClientSide
 
 					b.handler(getChannelInitializer());
 
-					if (controller
-							.getRemoteAddress(ncss.getReplicaId()) != null) {
+					if (controller.getRemoteAddress(ncss.getReplicaId()) != null) {
 
-						ChannelFuture future = connect(b,
-								controller
-										.getRemoteAddress(ncss.getReplicaId()),
-								clientId, ncss.getReplicaId());
+						ChannelFuture future = connect(b, controller.getRemoteAddress(ncss.getReplicaId()), clientId,
+								ncss.getReplicaId());
 
 						// creates MAC stuff
 						Mac macSend = ncss.getMacSend();
 						Mac macReceive = ncss.getMacReceive();
-						NettyClientServerSession cs = new NettyClientServerSession(
-								future.channel(), macSend, macReceive,
-								ncss.getReplicaId());
+						NettyClientServerSession cs = new NettyClientServerSession(future.channel(), macSend,
+								macReceive, ncss.getReplicaId());
 						sessionTable.remove(ncss.getReplicaId());
 						sessionTable.put(ncss.getReplicaId(), cs);
 
-						System.out.println("re-connecting to replica "
-								+ ncss.getReplicaId() + " at " + controller
-										.getRemoteAddress(ncss.getReplicaId()));
+						System.out.println("re-connecting to replica " + ncss.getReplicaId() + " at "
+								+ controller.getRemoteAddress(ncss.getReplicaId()));
 					} else {
 						// This cleans an olde server from the session table
 						sessionTable.remove(ncss.getReplicaId());
@@ -384,8 +360,7 @@ public class NettyClientServerCommunicationSystemClientSide
 	@Override
 	public void send(boolean sign, int[] targets, TOMMessage sm) {
 
-		Logger.println("Sending request from " + sm.getSender()
-				+ " with sequence number " + sm.getSequence() + " to "
+		Logger.println("Sending request from " + sm.getSender() + " with sequence number " + sm.getSequence() + " to "
 				+ Arrays.toString(targets));
 
 		if (sm.serializedMessage == null) {
@@ -414,8 +389,7 @@ public class NettyClientServerCommunicationSystemClientSide
 
 		// produce signature
 		if (sign && sm.serializedMessageSignature == null) {
-			sm.serializedMessageSignature = signMessage(
-					controller.getStaticConf().getRSAPrivateKey(),
+			sm.serializedMessageSignature = signMessage(controller.getStaticConf().getRSAPrivateKey(),
 					sm.serializedMessage);
 		}
 
@@ -424,16 +398,14 @@ public class NettyClientServerCommunicationSystemClientSide
 			sm.destination = targets[i];
 
 			rl.readLock().lock();
-			Channel channel = ((NettyClientServerSession) sessionTable
-					.get(targets[i])).getChannel();
+			Channel channel = ((NettyClientServerSession) sessionTable.get(targets[i])).getChannel();
 			rl.readLock().unlock();
 			if (channel.isActive()) {
 				sm.signed = sign;
 				channel.writeAndFlush(sm);
 				sent++;
 			} else {
-				Logger.println(
-						"Channel to " + targets[i] + " is not connected");
+				Logger.println("Channel to " + targets[i] + " is not connected");
 			}
 
 			try {
@@ -443,8 +415,7 @@ public class NettyClientServerCommunicationSystemClientSide
 			}
 		}
 
-		if (targets.length > controller.getCurrentViewF()
-				&& sent < controller.getCurrentViewF() + 1) {
+		if (targets.length > controller.getCurrentViewF() && sent < controller.getCurrentViewF() + 1) {
 			// if less than f+1 servers are connected send an exception to the
 			// client
 			throw new RuntimeException("Impossible to connect to servers!");
@@ -475,8 +446,7 @@ public class NettyClientServerCommunicationSystemClientSide
 
 		// ******* EDUARDO BEGIN **************//
 		// produce signature
-		byte[] data2 = signMessage(
-				controller.getStaticConf().getRSAPrivateKey(), data);
+		byte[] data2 = signMessage(controller.getStaticConf().getRSAPrivateKey(), data);
 		// ******* EDUARDO END **************//
 
 		sm.serializedMessageSignature = data2;
@@ -507,8 +477,7 @@ public class NettyClientServerCommunicationSystemClientSide
 		this.closed = true;
 		// Iterator sessions = sessionTable.values().iterator();
 		rl.readLock().lock();
-		ArrayList<NettyClientServerSession> sessions = new ArrayList<>(
-				sessionTable.values());
+		ArrayList<NettyClientServerSession> sessions = new ArrayList<>(sessionTable.values());
 		rl.readLock().unlock();
 		for (NettyClientServerSession ncss : sessions) {
 			Channel c = ncss.getChannel();
@@ -516,15 +485,12 @@ public class NettyClientServerCommunicationSystemClientSide
 		}
 	}
 
-	private ChannelInitializer getChannelInitializer()
-			throws NoSuchAlgorithmException {
+	private ChannelInitializer getChannelInitializer() throws NoSuchAlgorithmException {
 
-		Mac macDummy = Mac
-				.getInstance(controller.getStaticConf().getHmacAlgorithm());
+		Mac macDummy = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
 
-		final NettyClientPipelineFactory nettyClientPipelineFactory = new NettyClientPipelineFactory(
-				this, sessionTable, macDummy.getMacLength(), controller, rl,
-				signatureLength);
+		final NettyClientPipelineFactory nettyClientPipelineFactory = new NettyClientPipelineFactory(this, sessionTable,
+				macDummy.getMacLength(), controller, rl, signatureLength);
 
 		ChannelInitializer channelInitializer = new ChannelInitializer<SocketChannel>() {
 			@Override
@@ -539,8 +505,7 @@ public class NettyClientServerCommunicationSystemClientSide
 	}
 
 	@Override
-	public void channelUnregistered(final ChannelHandlerContext ctx)
-			throws Exception {
+	public void channelUnregistered(final ChannelHandlerContext ctx) throws Exception {
 		scheduleReconnect(ctx, 10);
 	}
 

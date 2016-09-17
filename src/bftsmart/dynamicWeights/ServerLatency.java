@@ -18,6 +18,14 @@ public class ServerLatency extends Latency {
 		calcValue();
 	}
 
+	public ServerLatency(Long ts_sent, Long ts_received, int from, int to) {
+		this.ts_received = ts_received;
+		this.ts_sent = ts_sent;
+		super.setFrom(from);
+		super.setTo(to);
+		calcValue();
+	}
+
 	public ServerLatency(Long ts_sent) {
 		this.ts_sent = ts_sent;
 	}

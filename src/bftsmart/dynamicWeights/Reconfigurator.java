@@ -40,18 +40,18 @@ public class Reconfigurator implements Runnable {
 			// reduce Data
 			LatencyReducer mean = new MedianReducer();
 			Latency[] reducedClients = mean.reduce2d(clientLatencies, currentN);
-			System.out.println("reducedClients: " + Arrays.deepToString(reducedClients));
 			reducedClientValues = new double[reducedClients.length];
 			for (int i = 0; i < reducedClientValues.length; i++) {
 				if (reducedClients[i] != null) {
-					reducedClientValues[i] = reducedClients[i].getValue() / 2;
+					reducedClientValues[i] = reducedClients[i].getValue();
 				}
 			}
 			System.out.println("reducedClients: " + Arrays.toString(reducedClientValues));
 		}
 
+		//--------------------------------- SERVER ---------------------------------------
 		if (serverLatencies.size() > 0) {
-			// build server latency matrix
+			// init with -1
 			reducedServerValues = new double[currentN][currentN];
 			for (int i = 0; i < reducedServerValues.length; i++) {
 				for (int j = 0; j < reducedServerValues[0].length; j++) {
@@ -86,12 +86,14 @@ public class Reconfigurator implements Runnable {
 			System.out.println("reducedServer: " + Arrays.deepToString(reducedServerValues));
 		}
 
+		
+		//--------------------------------- PROPOSE ---------------------------------------
 		if (serverProposeLatencies.size() > 0) {
 			// build server propose latency matrix
 			reducedServerProposeValues = new double[currentN][currentN];
 			for (int i = 0; i < reducedServerProposeValues.length; i++) {
 				for (int j = 0; j < reducedServerProposeValues[0].length; j++) {
-					reducedServerValues[i][j] = -1d;
+					reducedServerProposeValues[i][j] = -1d;
 				}
 			}
 
