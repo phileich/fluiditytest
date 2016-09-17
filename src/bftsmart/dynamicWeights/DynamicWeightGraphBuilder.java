@@ -172,7 +172,7 @@ public class DynamicWeightGraphBuilder {
 	 *            the quorumSize of the pattern
 	 * @return
 	 */
-	public DynamicWeightGraphBuilder addMultiCast(double[][] latencies, Double[] weights) {
+	public DynamicWeightGraphBuilder addMultiCast(double[][] latencies, Double[] weights) {		
 		// check if latencies size is equal
 		for (int i = 0; i < latencies.length; i++) {
 			if (latencies[i].length != latencies.length) {
@@ -224,7 +224,7 @@ public class DynamicWeightGraphBuilder {
 					values.add(value);
 				}
 			}
-			Collections.sort(values);
+			Collections.sort(values);			
 			newLeaves[i].setValue(values.get(dwGraph.getQuorumSize() - 1));
 		}
 

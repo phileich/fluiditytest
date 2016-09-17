@@ -58,7 +58,7 @@ public class LatencyMonitorPiggybackServer implements Storage {
 				latencyOfRound = new ServerLatency[n];
 				latencyOfRound[serverID] = storedLatency;
 				// my own latency with lat = 0
-				ServerLatency myLat = new ServerLatency(new Long(0), new Long(0));
+				ServerLatency myLat = new ServerLatency(new Long(0), new Long(0), myID, myID);
 				latencyOfRound[myID] = myLat;
 
 			} else {
@@ -117,7 +117,7 @@ public class LatencyMonitorPiggybackServer implements Storage {
 				latencyOfRound = new ServerLatency[n];
 				latencyOfRound[serverID] = storedLatency;
 				// my own latency with lat = 0
-				ServerLatency myLat = new ServerLatency(new Long(0), new Long(0));
+				ServerLatency myLat = new ServerLatency(new Long(0), new Long(0), myID, myID);
 				latencyOfRound[myID] = myLat;
 
 			} else {

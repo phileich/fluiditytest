@@ -24,17 +24,7 @@ public class DecisionLogic {
 
 	public DecisionLogic(ServerViewController svController, double[] clientLatencies, double[][] proposeLatencies,
 			double[][] serverLatencies) {
-		this.svController = svController;
-		this.reducedClientValues = clientLatencies;
-		this.reducedServerProposeValues = proposeLatencies;
-		this.reducedServerValues = serverLatencies;
-
-		currentLeader = svController.getCurrentLeader();
-
-		currentWeightAssignment = new Double[svController.getCurrentViewN()];
-		for (int i = 0; i < currentWeightAssignment.length; i++) {
-			currentWeightAssignment[i] = svController.getCurrentView().getWeight(i);
-		}
+		this(svController, svController.getCurrentLeader(), clientLatencies, proposeLatencies, serverLatencies);
 	}
 
 	public DecisionLogic(ServerViewController svController, int leader, double[] clientLatencies,
@@ -79,6 +69,7 @@ public class DecisionLogic {
 
 		// for each leader
 		int combCount = 0;
+		long start = System.currentTimeMillis();
 		for (int i = 0; i < n; i++) {
 			System.out.println("---------------------------------------");
 			System.out.println("Leader: " + i);
@@ -117,6 +108,8 @@ public class DecisionLogic {
 			}
 
 		}
+		long end = System.currentTimeMillis();
+		System.out.println("Building complete - " + (end - start) + "ms");
 		System.out.println("Current Leader is " + getCurrentLeader());
 		System.out.println("Current Weightassignment is " + Arrays.toString(getCurrentWeightAssignment()));
 		System.out.println("Current Value is " + getCurrentValue());
@@ -138,16 +131,18 @@ public class DecisionLogic {
 	}
 
 	public void calculateBestGraph() {
-
+		long start = System.currentTimeMillis();
+		System.out.println("--------- Calculation started -------------");
 		DynamicWeightGraph[] dwGraphs = buildGraphs();
 		double betterPercentage = 1.0;
 		// decide
 		// if any new result is better than 10% of the current result ->
 		// reconfig
+		long startBest = System.currentTimeMillis();
 		System.out.println("--------- calc Best -------------");
 		ArrayList<DynamicWeightGraph> newPossibleGraphs = new ArrayList<DynamicWeightGraph>();
 		for (DynamicWeightGraph dynamicWeightGraph : dwGraphs) {
-//			Logger.println(dynamicWeightGraph);
+			// Logger.println(dynamicWeightGraph);
 			if (dynamicWeightGraph.getValue() < (currentCalculatedValue * betterPercentage)) {
 				newPossibleGraphs.add(dynamicWeightGraph);
 			}
@@ -180,7 +175,9 @@ public class DecisionLogic {
 		} else {
 			System.out.println("No configuration is better than the current one! NO RECONFIG");
 		}
-
+		long end = System.currentTimeMillis();
+		System.out.println("--------- calc Best finished - " + (end - startBest) + "ms -------------");
+		System.out.println("--------- Calculation finished - " + (end - start) + "ms -------------");
 	}
 
 	private DynamicWeightGraph getMin(DynamicWeightGraph[] graphs) {

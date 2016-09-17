@@ -37,7 +37,7 @@ public class LatencyMonitorPiggybackClient implements Storage {
 		cl.setFrom(myID);
 		cl.setTo(serverID);
 		cl.setConsensusID(consensusID);
-		clientLatencies.add(cl);
+		clientLatencies.add(cl);		
 		Logger.println("Store Client Latency: latency:" + ts + ",id:" + serverID + ",consensusID:" + consensusID);
 		// print
 		Logger.println("CLientLatencies:" + clientLatencies);
