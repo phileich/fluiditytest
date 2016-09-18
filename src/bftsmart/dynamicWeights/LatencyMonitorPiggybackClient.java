@@ -9,10 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import bftsmart.reconfiguration.ClientViewController;
 import bftsmart.tom.util.Logger;
 
-public class LatencyMonitorPiggybackClient implements Storage {
-	// TODO Backup?
+public class LatencyMonitorPiggybackClient extends LatencyMonitor{
 	private List<ClientLatency> clientLatencies = Collections.synchronizedList(new ArrayList<ClientLatency>());
-	private List<ClientLatency> clientLatenciesBackup = Collections.synchronizedList(new ArrayList<ClientLatency>());
 	private int myID;
 
 	public LatencyMonitorPiggybackClient(int id, ClientViewController cvc) {
@@ -30,33 +28,28 @@ public class LatencyMonitorPiggybackClient implements Storage {
 	 */
 	public synchronized void addClientLatency(long timestamp, int serverID, long consensusID) {
 		long currTimestamp = System.currentTimeMillis();
-		// TODO check if consensusID = sequenzID
 		long ts = currTimestamp - timestamp;
 		ClientLatency cl = new ClientLatency();
 		cl.setValue(ts / 2); // half -> RTT
 		cl.setFrom(myID);
 		cl.setTo(serverID);
 		cl.setConsensusID(consensusID);
-		clientLatencies.add(cl);		
-		Logger.println("Store Client Latency: latency:" + ts + ",id:" + serverID + ",consensusID:" + consensusID);
-		// print
-		Logger.println("CLientLatencies:" + clientLatencies);
-		Logger.println("CLientLatenciesBackup:" + clientLatenciesBackup);
+		clientLatencies.add(cl);
+//		Logger.println("Store Client Latency: latency:" + ts + ",id:" + serverID + ",consensusID:" + consensusID);
+//		Logger.println("CLientLatencies:" + clientLatencies);
 
 	}
 
 	@Override
-	public synchronized List<Latency> getClientLatencies() {
+	public List<Latency> getClientLatencies() {
 		ArrayList<Latency> latencies = new ArrayList<Latency>(clientLatencies);
-		clientLatenciesBackup.addAll(clientLatencies);
-
 		clientLatencies.clear();
-		Logger.println("Sending latencies to server : " + StringUtils.join(latencies, ","));
+//		Logger.println("Sending latencies to server : " + StringUtils.join(latencies, ","));
 		return latencies;
 	}
 
 	@Override
-	public synchronized List<Latency[]> getServerLatencies() {
+	public  List<Latency[]> getServerLatencies() {
 		return null;
 	}
 
@@ -68,7 +61,13 @@ public class LatencyMonitorPiggybackClient implements Storage {
 	@Override
 	public void clearAll() {
 		clientLatencies.clear();
-		clientLatenciesBackup.clear();
+
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

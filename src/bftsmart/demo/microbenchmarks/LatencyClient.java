@@ -28,7 +28,6 @@ import bftsmart.tom.util.Storage;
  */
 public class LatencyClient {
 
-	@SuppressWarnings("static-access")
 	public static void main(String[] args) throws IOException {
 		if (args.length < 5) {
 			System.out.println(
@@ -41,9 +40,6 @@ public class LatencyClient {
 		TOMConfiguration conf = new TOMConfiguration(Integer.parseInt(args[0]));
 		if (conf.useDynamicWeights()) {
 			System.out.println("#using Dynamic Weights");
-			
-			
-			
 			counterProxy = new DWServiceProxyLatencyMonitorPiggyBack(Integer.parseInt(args[0]));
 		} else {
 			counterProxy = new ServiceProxy(Integer.parseInt(args[0]));

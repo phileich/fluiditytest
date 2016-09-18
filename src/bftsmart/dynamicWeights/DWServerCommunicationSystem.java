@@ -126,7 +126,7 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 
 					// store latency in storage as sent
 					if (controller.getStaticConf().measureServers()) {
-						lmps.createLatency(targets[i], ((ConsensusMessage) sm).getNumber());
+						lmps.createServerLatency(targets[i], ((ConsensusMessage) sm).getNumber());
 					}
 					Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
 					serversConn.send(target, sm, true);
