@@ -50,55 +50,6 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		// // get Latency
-		// int key = createHash(serverID, consensusID);
-		// ServerLatency storedLatency = tmpServerLatencies.get(key);
-		// if (storedLatency == null) {
-		// // error not created yet
-		// } else {
-		// storedLatency.setReceived(latReceived);
-		// Logger.println("Store Server Latency: latency:" +
-		// storedLatency.getValue() + ",id:" + serverID
-		// + ",consensusID:" + consensusID);
-		//
-		// ServerLatency[] latencyOfRound = serverLatencies.get(consensusID);
-		//
-		// if (latencyOfRound == null) {
-		// // this does not exist yet -> create
-		// int n = svc.getCurrentViewN();
-		// latencyOfRound = new ServerLatency[n];
-		// latencyOfRound[serverID] = storedLatency;
-		// // my own latency with lat = 0
-		// ServerLatency myLat = new ServerLatency(new Long(0), new Long(0),
-		// myID, myID);
-		// latencyOfRound[myID] = myLat;
-		//
-		// } else {
-		// // check if correct id
-		// if (serverID < latencyOfRound.length) {
-		// latencyOfRound[serverID] = storedLatency;
-		// } else {
-		// // ERROR!
-		// }
-		// }
-		// serverLatencies.put(consensusID, latencyOfRound);
-		//
-		// // remove tmpLatency, no longer needed to store
-		// tmpServerLatencies.remove(key);
-		//
-		// // print
-		// String serverLatenciesString = "Server Latencies: ";
-		//
-		// for (Long name : serverLatencies.keySet()) {
-		// String printKey = name.toString();
-		// String value = Arrays.deepToString(serverLatencies.get(name));
-		// serverLatenciesString = serverLatenciesString + "(" + printKey + ":"
-		// + value + "); ";
-		//
-		// }
-		// Logger.println(serverLatenciesString);
-		// }
-
 	}
 
 	/**
@@ -116,55 +67,6 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		// // get Latency
-		// int key = createHash(serverID, consensusID);
-		// ServerLatency storedLatency = tmpServerProposeLatencies.get(key);
-		// if (storedLatency == null) {
-		// // error not created yet
-		// } else {
-		// storedLatency.setReceived(latReceived);
-		// storedLatency.setValue(storedLatency.getValue() / 2); // half -> RTT
-		// Logger.println("Store Server Propose Latency: latency:" +
-		// storedLatency.getValue() + ",id:" + serverID
-		// + ",consensusID:" + consensusID);
-		//
-		// ServerLatency[] latencyOfRound =
-		// serverProposeLatencies.get(consensusID);
-		//
-		// if (latencyOfRound == null) {
-		// // this does not exist yet -> create
-		// int n = svc.getCurrentViewN();
-		// latencyOfRound = new ServerLatency[n];
-		// latencyOfRound[serverID] = storedLatency;
-		// // my own latency with lat = 0
-		// ServerLatency myLat = new ServerLatency(new Long(0), new Long(0),
-		// myID, myID);
-		// latencyOfRound[myID] = myLat;
-		//
-		// } else {
-		// // check if correct id
-		// if (serverID < latencyOfRound.length) {
-		// latencyOfRound[serverID] = storedLatency;
-		// } else {
-		// // ERROR!
-		// }
-		// }
-		// serverProposeLatencies.put(consensusID, latencyOfRound);
-		//
-		// // remove tmpLatency, no longer needed to store
-		// tmpServerProposeLatencies.remove(key);
-		//
-		// // print
-		// String serverLatenciesString = "Server Propose Latencies: ";
-		// for (Long name : serverProposeLatencies.keySet()) {
-		// String printKey = name.toString();
-		// String value = Arrays.deepToString(serverProposeLatencies.get(name));
-		// serverLatenciesString = serverLatenciesString + "(" + printKey + ":"
-		// + value + "); ";
-		// }
-		// Logger.println(serverLatenciesString);
-		// }
-
 	}
 
 	public synchronized void createServerLatency(int to, long consensusID) {
@@ -235,7 +137,8 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 
 	public synchronized void storeClientLatencies(ArrayList<ClientLatency> cls) {
 		clientLatencies.addAll(cls);
-//		Logger.println("Store client latencies: " + StringUtils.join(cls, ","));
+		// Logger.println("Store client latencies: " + StringUtils.join(cls,
+		// ","));
 	}
 
 	@Override
@@ -275,7 +178,7 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 
 	@Override
 	public void run() {
-//		System.out.println("LatencyMonitorPiggybackServer Thread started");
+		// System.out.println("LatencyMonitorPiggybackServer Thread started");
 		while (true) {
 			// check if addServerLatency
 			while (runServerLatencies.peek() != null) {

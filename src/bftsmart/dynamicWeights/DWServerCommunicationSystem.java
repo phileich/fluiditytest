@@ -54,7 +54,9 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 					} else if ((sm instanceof ConsensusMessage)
 							&& (((ConsensusMessage) sm).getPaxosVerboseType() == "PROPOSE"
 									|| ((ConsensusMessage) sm).getPaxosVerboseType() == "DUMMY_PROPOSE")
-							&& controller.getStaticConf().measureServers()) {
+							&& controller.getStaticConf().measureServers() && ((this.dwc.getLastExec() + 1)
+									% this.controller.getStaticConf().getServerMeasurementInterval() == 0)) {
+						System.out.println("Will send dummy response " + (this.dwc.getLastExec() + 1));
 						// send immediately back
 						ConsensusMessage cm = new ConsensusMessage(MessageFactory.DUMMY_PROPOSE_RESPONSE,
 								((ConsensusMessage) sm).getNumber(), 0, dwc.getID());
@@ -70,6 +72,8 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 							&& ((ConsensusMessage) sm).getPaxosVerboseType() == "DUMMY_PROPOSE_RESPONSE"
 							&& controller.getStaticConf().measureServers()) {
 						lmps.addServerProposeLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
+						System.out.println(
+								"added server propose " + sm.getSender() + " " + ((ConsensusMessage) sm).getNumber());
 					} else {
 						messageHandler.processData(sm);
 						count++;
@@ -104,7 +108,11 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 				// cause clientsConn.send needs an int[]
 				int[] target = new int[1];
 				target[0] = targets[i];
-				if (controller.getStaticConf().measureClients()) {				//TODO no internal consensus -> latency!
+				if (controller.getStaticConf().measureClients()) { // TODO no
+																	// internal
+																	// consensus
+																	// ->
+																	// latency!
 					((TOMMessage) sm).setDynamicWeightTimestamp(lmps.getClientTimestamp(targets[i]));
 					((TOMMessage) sm).setConsensusID(dwc.getInExec());
 					// remove from tmp storage to prevent overflow
@@ -125,7 +133,8 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 					// sm).setDynamicWeightTimestamp(System.currentTimeMillis());
 
 					// store latency in storage as sent
-					if (controller.getStaticConf().measureServers()) {
+					if (controller.getStaticConf().measureServers() && ((dwc.getLastExec() + 1)
+							% this.controller.getStaticConf().getServerMeasurementInterval() == 0)) {
 						lmps.createServerLatency(targets[i], ((ConsensusMessage) sm).getNumber());
 					}
 					Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));

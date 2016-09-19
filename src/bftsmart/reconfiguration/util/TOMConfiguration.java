@@ -67,6 +67,7 @@ public class TOMConfiguration extends Configuration {
 	private boolean measureServers;
 	private int useLastMeasurements;
 	private boolean localClients;
+	private int serverMeasurementInterval;
 
 	/** Creates a new instance of TOMConfiguration */
 	public TOMConfiguration(int processId) {
@@ -79,8 +80,7 @@ public class TOMConfiguration extends Configuration {
 	}
 
 	/** Creates a new instance of TOMConfiguration */
-	public TOMConfiguration(int processId, String configHome,
-			String hostsFileName) {
+	public TOMConfiguration(int processId, String configHome, String hostsFileName) {
 		super(processId, configHome, hostsFileName);
 	}
 
@@ -88,8 +88,7 @@ public class TOMConfiguration extends Configuration {
 	protected void init() {
 		super.init();
 		try {
-			n = Integer
-					.parseInt(configs.remove("system.servers.num").toString());
+			n = Integer.parseInt(configs.remove("system.servers.num").toString());
 			String s = (String) configs.remove("system.servers.f");
 			if (s == null) {
 				f = (int) Math.ceil((n - 1) / 3);
@@ -127,8 +126,7 @@ public class TOMConfiguration extends Configuration {
 				}
 			}
 
-			s = (String) configs
-					.remove("system.totalordermulticast.revival_highMark");
+			s = (String) configs.remove("system.totalordermulticast.revival_highMark");
 			if (s == null) {
 				revivalHighMark = 10;
 			} else {
@@ -138,8 +136,7 @@ public class TOMConfiguration extends Configuration {
 				}
 			}
 
-			s = (String) configs
-					.remove("system.totalordermulticast.timeout_highMark");
+			s = (String) configs.remove("system.totalordermulticast.timeout_highMark");
 			if (s == null) {
 				timeoutHighMark = 100;
 			} else {
@@ -149,8 +146,7 @@ public class TOMConfiguration extends Configuration {
 				}
 			}
 
-			s = (String) configs
-					.remove("system.totalordermulticast.maxbatchsize");
+			s = (String) configs.remove("system.totalordermulticast.maxbatchsize");
 			if (s == null) {
 				maxBatchSize = 100;
 			} else {
@@ -169,8 +165,7 @@ public class TOMConfiguration extends Configuration {
 				}
 			}
 
-			s = (String) configs.remove(
-					"system.totalordermulticast.replayVerificationTime");
+			s = (String) configs.remove("system.totalordermulticast.replayVerificationTime");
 			if (s == null) {
 				replyVerificationTime = 0;
 			} else {
@@ -212,16 +207,14 @@ public class TOMConfiguration extends Configuration {
 				useSignatures = Integer.parseInt(s);
 			}
 
-			s = (String) configs
-					.remove("system.totalordermulticast.state_transfer");
+			s = (String) configs.remove("system.totalordermulticast.state_transfer");
 			if (s == null) {
 				stateTransferEnabled = false;
 			} else {
 				stateTransferEnabled = Boolean.parseBoolean(s);
 			}
 
-			s = (String) configs
-					.remove("system.totalordermulticast.checkpoint_period");
+			s = (String) configs.remove("system.totalordermulticast.checkpoint_period");
 			if (s == null) {
 				checkpointPeriod = 1;
 			} else {
@@ -285,16 +278,14 @@ public class TOMConfiguration extends Configuration {
 				isToLog = false;
 			}
 
-			s = (String) configs
-					.remove("system.totalordermulticast.log_parallel");
+			s = (String) configs.remove("system.totalordermulticast.log_parallel");
 			if (s != null) {
 				parallelLog = Boolean.parseBoolean(s);
 			} else {
 				parallelLog = false;
 			}
 
-			s = (String) configs
-					.remove("system.totalordermulticast.log_to_disk");
+			s = (String) configs.remove("system.totalordermulticast.log_to_disk");
 			if (s != null) {
 				logToDisk = Boolean.parseBoolean(s);
 			} else {
@@ -308,8 +299,7 @@ public class TOMConfiguration extends Configuration {
 				syncLog = false;
 			}
 
-			s = (String) configs
-					.remove("system.totalordermulticast.checkpoint_to_disk");
+			s = (String) configs.remove("system.totalordermulticast.checkpoint_to_disk");
 			if (s == null) {
 				isToWriteCkpsToDisk = false;
 			} else {
@@ -323,8 +313,7 @@ public class TOMConfiguration extends Configuration {
 				syncCkp = Boolean.parseBoolean(s);
 			}
 
-			s = (String) configs.remove(
-					"system.totalordermulticast.global_checkpoint_period");
+			s = (String) configs.remove("system.totalordermulticast.global_checkpoint_period");
 			if (s == null) {
 				globalCheckpointPeriod = 1;
 			} else {
@@ -352,8 +341,7 @@ public class TOMConfiguration extends Configuration {
 
 			if (useWeights) {
 				s = (String) configs.remove("system.dw.useDynamicWeights");
-				useDynamicWeights = (s != null) ? Boolean.parseBoolean(s)
-						: false;
+				useDynamicWeights = (s != null) ? Boolean.parseBoolean(s) : false;
 
 				s = (String) configs.remove("system.dw.calculationInterval");
 				calculationInterval = Integer.parseInt(s);
@@ -363,6 +351,9 @@ public class TOMConfiguration extends Configuration {
 
 				s = (String) configs.remove("system.dw.measureServers");
 				measureServers = (s != null) ? Boolean.parseBoolean(s) : false;
+
+				s = (String) configs.remove("system.dw.serverMeasurementInterval");
+				serverMeasurementInterval = Integer.parseInt(s);
 
 				s = (String) configs.remove("system.dw.useLastMeasurements");
 				useLastMeasurements = Integer.parseInt(s);
@@ -379,8 +370,7 @@ public class TOMConfiguration extends Configuration {
 				useLastMeasurements = 0;
 				localClients = false;
 			}
-			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome,
-					defaultKeys);
+			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
 		}
@@ -602,6 +592,10 @@ public class TOMConfiguration extends Configuration {
 
 	public boolean getLocalClients() {
 		return localClients;
+	}
+
+	public int getServerMeasurementInterval() {
+		return serverMeasurementInterval;
 	}
 
 }

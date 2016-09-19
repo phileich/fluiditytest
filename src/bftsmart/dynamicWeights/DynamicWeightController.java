@@ -27,6 +27,7 @@ public class DynamicWeightController implements Runnable {
 	private int calculationInterval; // every x consensus the calculation is
 										// started
 	private long calcDuration;
+	private int currentReceivedInternalConsensus;
 	private LinkedBlockingQueue<byte[]> internalLatencies = new LinkedBlockingQueue<byte[]>();
 
 	public DynamicWeightController(int id, ServerViewController svController) {
@@ -56,24 +57,19 @@ public class DynamicWeightController implements Runnable {
 
 	@Override
 	public void run() {
+		currentReceivedInternalConsensus = 0;
 		while (true) {
-			while (internalLatencies.peek() != null) {
-				byte[] data = internalLatencies.poll();
+			byte[] data = internalLatencies.poll();
+			if (data != null) {
 				addToLatStorage(data);
-
+				currentReceivedInternalConsensus++;
 				// if n-f entries -> trigger calculation
-				if ((latStorage.getClientSize() >= (svController.getCurrentViewN() - svController.getCurrentViewF())
-						|| !svController.getStaticConf().measureClients())
-						&& (latStorage
-								.getServerSize() >= (svController.getCurrentViewN() - svController.getCurrentViewF())
-								|| !svController.getStaticConf().measureServers())
-						&& (latStorage
-								.getServerProposeSize() >= (svController.getCurrentViewN()
-										- svController.getCurrentViewF())
-								|| !svController.getStaticConf().measureServers())
-						&& !calcStarted) {
+				if (!calcStarted && currentReceivedInternalConsensus >= (svController.getCurrentViewN()
+						- svController.getCurrentViewF())) {
+
 					// wait for slower data
 					calcStarted = true;
+					System.out.println("n-f internal received- waiting for slower");
 					try {
 						Thread.sleep(5000);
 						// check if slower data has arrived -> add
@@ -107,6 +103,10 @@ public class DynamicWeightController implements Runnable {
 		} else {
 			return tl.getLastExec();
 		}
+	}
+
+	public int getLastExec() {
+		return tl.getLastExec();
 	}
 
 	public synchronized void receiveExec(int exec) {
@@ -209,6 +209,7 @@ public class DynamicWeightController implements Runnable {
 				+ (System.currentTimeMillis() - calcDuration) + "ms) ----------------");
 		this.reconfigInExec = false;
 		this.calcStarted = false;
+		this.currentReceivedInternalConsensus = 0;
 
 	}
 
