@@ -65,7 +65,6 @@ public class TOMConfiguration extends Configuration {
 	private int calculationInterval;
 	private boolean measureClients;
 	private boolean measureServers;
-	private int useLastMeasurements;
 	private boolean localClients;
 	private int serverMeasurementInterval;
 
@@ -355,9 +354,6 @@ public class TOMConfiguration extends Configuration {
 				s = (String) configs.remove("system.dw.serverMeasurementInterval");
 				serverMeasurementInterval = Integer.parseInt(s);
 
-				s = (String) configs.remove("system.dw.useLastMeasurements");
-				useLastMeasurements = Integer.parseInt(s);
-
 				s = (String) configs.remove("system.dw.localClients");
 				localClients = (s != null) ? Boolean.parseBoolean(s) : false;
 
@@ -367,7 +363,6 @@ public class TOMConfiguration extends Configuration {
 				calculationInterval = 0;
 				measureClients = false;
 				measureServers = false;
-				useLastMeasurements = 0;
 				localClients = false;
 			}
 			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
@@ -586,9 +581,6 @@ public class TOMConfiguration extends Configuration {
 		return calculationInterval;
 	}
 
-	public int getUseLastMeasurements() {
-		return useLastMeasurements;
-	}
 
 	public boolean getLocalClients() {
 		return localClients;

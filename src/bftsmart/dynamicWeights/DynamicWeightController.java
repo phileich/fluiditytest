@@ -23,7 +23,6 @@ public class DynamicWeightController implements Runnable {
 	private boolean reconfigInExec = false;
 	private boolean calcStarted = false;
 	private ServerCommunicationSystem scs;
-	private int windowSize; // use last windowSize latencies
 	private int calculationInterval; // every x consensus the calculation is
 										// started
 	private long calcDuration;
@@ -43,7 +42,7 @@ public class DynamicWeightController implements Runnable {
 		latencyMonitorThread.start();
 
 		this.latStorage = new LatencyStorage();
-		this.windowSize = svController.getStaticConf().getUseLastMeasurements();
+
 		this.calculationInterval = svController.getStaticConf().getCalculationInterval();
 
 		Thread controllerThread = new Thread(this, "ControllerThread");
@@ -135,72 +134,6 @@ public class DynamicWeightController implements Runnable {
 
 	public synchronized void addInternalConsensusDataToStorage(byte[] data) {
 		internalLatencies.add(data);
-		// try {
-		// DataInputStream dis = new DataInputStream(new
-		// ByteArrayInputStream(data));
-		// if (svController.getStaticConf().measureClients()) {
-		// int clientLength = dis.readInt();
-		// byte[] serializedClientLat = new byte[clientLength];
-		// dis.readFully(serializedClientLat);
-		// ClientLatency[] clientLatencies =
-		// SerializationUtils.deserialize(serializedClientLat);
-		// Logger.println("received Client Latencies from internal conensus: " +
-		// Arrays.toString(clientLatencies));
-		//
-		// latStorage.addClientLatencies(clientLatencies);
-		// }
-		//
-		// if (svController.getStaticConf().measureServers()) {
-		// int serverLength = dis.readInt();
-		// byte[] serializedServerLat = new byte[serverLength];
-		// dis.readFully(serializedServerLat);
-		// ServerLatency[] serverLatencies =
-		// SerializationUtils.deserialize(serializedServerLat);
-		//
-		// int serverProposeLength = dis.readInt();
-		// byte[] serializedServerProposeLat = new byte[serverProposeLength];
-		// dis.readFully(serializedServerProposeLat);
-		// ServerLatency[] serverProposeLatencies =
-		// SerializationUtils.deserialize(serializedServerProposeLat);
-		// Logger.println("received Server Latencies from internal conensus: " +
-		// Arrays.toString(serverLatencies));
-		// Logger.println("received Server Propose Latencies from internal
-		// conensus: "
-		// + Arrays.toString(serverProposeLatencies));
-		//
-		// latStorage.addServerLatencies(serverLatencies);
-		// latStorage.addServerProposeLatencies(serverProposeLatencies);
-		// }
-		//
-		// // if n-f entries -> trigger calculation
-		// if ((latStorage.getClientSize() >= (svController.getCurrentViewN() -
-		// svController.getCurrentViewF())
-		// || !svController.getStaticConf().measureClients())
-		// && (latStorage.getServerSize() >= (svController.getCurrentViewN() -
-		// svController.getCurrentViewF())
-		// || !svController.getStaticConf().measureServers())
-		// && (latStorage
-		// .getServerProposeSize() >= (svController.getCurrentViewN() -
-		// svController.getCurrentViewF())
-		// || !svController.getStaticConf().measureServers())
-		// && !calcStarted) {
-		// // wait a bit??
-		// calcStarted = true;
-		// try {
-		// Thread.sleep(5000);
-		// Thread reconfigThread = new Thread(new Reconfigurator(latStorage,
-		// svController, this),
-		// "ReconfigurationThread");
-		// reconfigThread.start();
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
-		// }
-		//
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-
 	}
 
 	public void notifyReconfigFinished() {
@@ -211,10 +144,6 @@ public class DynamicWeightController implements Runnable {
 		this.calcStarted = false;
 		this.currentReceivedInternalConsensus = 0;
 
-	}
-
-	public int getWindowSize() {
-		return windowSize;
 	}
 
 	private void addToLatStorage(byte[] data) {

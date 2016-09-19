@@ -24,9 +24,9 @@ public class Reconfigurator implements Runnable {
 		int currentN = svController.getCurrentViewN();
 
 		// get last 'windowSize' entries
-		List<Latency[]> clientLatencies = latStorage.getClientLatencies(dwController.getWindowSize());
-		List<Latency[]> serverLatencies = latStorage.getServerLatencies(dwController.getWindowSize());
-		List<Latency[]> serverProposeLatencies = latStorage.getServerProposeLatencies(dwController.getWindowSize());
+		List<Latency[]> clientLatencies = latStorage.getClientLatencies();
+		List<Latency[]> serverLatencies = latStorage.getServerLatencies();
+		List<Latency[]> serverProposeLatencies = latStorage.getServerProposeLatencies();
 
 		System.out.println("clientLatencies: " + Arrays.deepToString(clientLatencies.toArray()));
 		System.out.println("serverLatencies: " + Arrays.deepToString(serverLatencies.toArray()));
@@ -49,7 +49,8 @@ public class Reconfigurator implements Runnable {
 			System.out.println("reducedClients: " + Arrays.toString(reducedClientValues));
 		}
 
-		//--------------------------------- SERVER ---------------------------------------
+		// --------------------------------- SERVER
+		// ---------------------------------------
 		if (serverLatencies.size() > 0) {
 			// init with -1
 			reducedServerValues = new double[currentN][currentN];
@@ -86,8 +87,8 @@ public class Reconfigurator implements Runnable {
 			System.out.println("reducedServer: " + Arrays.deepToString(reducedServerValues));
 		}
 
-		
-		//--------------------------------- PROPOSE ---------------------------------------
+		// --------------------------------- PROPOSE
+		// ---------------------------------------
 		if (serverProposeLatencies.size() > 0) {
 			// build server propose latency matrix
 			reducedServerProposeValues = new double[currentN][currentN];

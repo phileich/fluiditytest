@@ -38,37 +38,38 @@ public class LatencyStorage {
 	}
 
 	/**
-	 * returns the last 'lastValues' entries
+	 * returns the last entries since last reconfig. Clears afterwards
 	 * 
 	 * @return
 	 */
-	public List<Latency[]> getServerLatencies(int lastValues) {
-		int start = Math.max(0, serverLatencies.size() - lastValues);
-		List<Latency[]> copyList = new ArrayList<Latency[]>(serverLatencies.subList(start, serverLatencies.size()));
-
+	public List<Latency[]> getServerLatencies() {
+		// int start = Math.max(0, serverLatencies.size() - lastValues);
+		List<Latency[]> copyList = new ArrayList<Latency[]>(serverLatencies);
+		serverLatencies.clear();
 		return copyList;
 	}
 
 	/**
-	 * returns the last 'lastValues' entries
+	 * returns the last entries since last reconfig. Clears afterwards
 	 * 
 	 * @return
 	 */
-	public List<Latency[]> getServerProposeLatencies(int lastValues) {
-		int start = Math.max(0, serverProposeLatencies.size() - lastValues);
-		List<Latency[]> copyList = new ArrayList<Latency[]>(
-				serverProposeLatencies.subList(start, serverProposeLatencies.size()));
+	public List<Latency[]> getServerProposeLatencies() {
+		// int start = Math.max(0, serverProposeLatencies.size() - lastValues);
+		List<Latency[]> copyList = new ArrayList<Latency[]>(serverProposeLatencies);
+		serverProposeLatencies.clear();
 		return copyList;
 	}
 
 	/**
-	 * returns the last 'lastValues' entries
+	 * returns the last entries since last reconfig. Clears afterwards
 	 * 
 	 * @return
 	 */
-	public List<Latency[]> getClientLatencies(int lastValues) {
-		int start = Math.max(0, clientLatencies.size() - lastValues);
-		List<Latency[]> copyList = new ArrayList<Latency[]>(clientLatencies.subList(start, clientLatencies.size()));
+	public List<Latency[]> getClientLatencies() {
+		// int start = Math.max(0, clientLatencies.size() - lastValues);
+		List<Latency[]> copyList = new ArrayList<Latency[]>(clientLatencies);
+		clientLatencies.clear();
 		return copyList;
 	}
 
