@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import bftsmart.reconfiguration.ServerViewController;
@@ -29,6 +30,7 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 
 	private LinkedBlockingQueue<LatencyPOJO> runServerLatencies = new LinkedBlockingQueue<LatencyPOJO>();
 	private LinkedBlockingQueue<LatencyPOJO> runProposeLatencies = new LinkedBlockingQueue<LatencyPOJO>();
+	private LinkedBlockingQueue<byte[]> runClientLatencies = new LinkedBlockingQueue<byte[]>();
 
 	public LatencyMonitorPiggybackServer(ServerViewController svc, int id) {
 		this.svc = svc;
@@ -114,19 +116,18 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 
 	}
 
-	public synchronized Long getClientTimestamp(int clientID) {
+	public Long getClientTimestamp(int clientID) {
 		Long[] timestampArr = tmpClientTimestamps.get(clientID);
 		if (timestampArr != null) {
 			long timstamp = timestampArr[0] + (System.currentTimeMillis() - timestampArr[1]);
 			return timstamp;
 		}
-		// error
+		// not received yet
 		return new Long(-1);
 
 	}
 
-	public synchronized void clearClientTimestamp(int clientID, long consensusID) {
-		// TODO check batching
+	public void clearClientTimestamp(int clientID, long consensusID) {
 		int key = createHash(clientID, consensusID);
 		tmpClientTimestamps.remove(key);
 	}
@@ -135,8 +136,8 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 		clientLatencies.add(cl);
 	}
 
-	public synchronized void storeClientLatencies(ArrayList<ClientLatency> cls) {
-		clientLatencies.addAll(cls);
+	public synchronized void storeClientLatencies(byte[] cls) {
+		runClientLatencies.add(cls);
 		// Logger.println("Store client latencies: " + StringUtils.join(cls,
 		// ","));
 	}
@@ -287,6 +288,12 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 					}
 					Logger.println(serverLatenciesString);
 				}
+			}
+
+			while (runClientLatencies.peek() != null) {
+				byte[] clientLat = runClientLatencies.poll();
+				ArrayList<ClientLatency> cls = SerializationUtils.deserialize(clientLat);
+				clientLatencies.addAll(cls);
 			}
 
 		}

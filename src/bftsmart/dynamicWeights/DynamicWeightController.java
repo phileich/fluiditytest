@@ -108,7 +108,7 @@ public class DynamicWeightController implements Runnable {
 		return tl.getLastExec();
 	}
 
-	public synchronized void receiveExec(int exec) {
+	public void receiveExec(int exec) {
 		// System.out.println("EXEC " + exec);
 		if (exec % calculationInterval == 0 && exec != 0) {
 			if (!reconfigInExec) {
@@ -132,7 +132,7 @@ public class DynamicWeightController implements Runnable {
 		this.scs = scs;
 	}
 
-	public synchronized void addInternalConsensusDataToStorage(byte[] data) {
+	public void addInternalConsensusDataToStorage(byte[] data) {
 		internalLatencies.add(data);
 	}
 
@@ -154,7 +154,7 @@ public class DynamicWeightController implements Runnable {
 				byte[] serializedClientLat = new byte[clientLength];
 				dis.readFully(serializedClientLat);
 				ClientLatency[] clientLatencies = SerializationUtils.deserialize(serializedClientLat);
-				Logger.println("received Client Latencies from internal conensus:" + Arrays.toString(clientLatencies));
+//				Logger.println("received Client Latencies from internal conensus:" + Arrays.toString(clientLatencies));
 
 				latStorage.addClientLatencies(clientLatencies);
 			}
@@ -169,9 +169,9 @@ public class DynamicWeightController implements Runnable {
 				byte[] serializedServerProposeLat = new byte[serverProposeLength];
 				dis.readFully(serializedServerProposeLat);
 				ServerLatency[] serverProposeLatencies = SerializationUtils.deserialize(serializedServerProposeLat);
-				Logger.println("received Server Latencies from internal conensus:" + Arrays.toString(serverLatencies));
-				Logger.println("received Server Propose Latencies from internal conensus: "
-						+ Arrays.toString(serverProposeLatencies));
+//				Logger.println("received Server Latencies from internal conensus:" + Arrays.toString(serverLatencies));
+//				Logger.println("received Server Propose Latencies from internal conensus: "
+//						+ Arrays.toString(serverProposeLatencies));
 
 				latStorage.addServerLatencies(serverLatencies);
 				latStorage.addServerProposeLatencies(serverProposeLatencies);
