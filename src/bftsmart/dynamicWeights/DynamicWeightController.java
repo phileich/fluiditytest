@@ -38,7 +38,7 @@ public class DynamicWeightController implements Runnable {
 		this.id = id;
 		this.latencyMonitor = latencyMonitor;
 		Thread latencyMonitorThread = new Thread(this.latencyMonitor, "LatencyMonitor");
-		latencyMonitorThread.setPriority(Thread.NORM_PRIORITY - 1);
+		latencyMonitorThread.setPriority(Thread.MIN_PRIORITY);
 		latencyMonitorThread.start();
 
 		this.latStorage = new LatencyStorage();
@@ -46,7 +46,7 @@ public class DynamicWeightController implements Runnable {
 		this.calculationInterval = svController.getStaticConf().getCalculationInterval();
 
 		Thread controllerThread = new Thread(this, "ControllerThread");
-		controllerThread.setPriority(Thread.NORM_PRIORITY - 1);
+		controllerThread.setPriority(Thread.MIN_PRIORITY);
 		controllerThread.start();
 	}
 
@@ -80,7 +80,7 @@ public class DynamicWeightController implements Runnable {
 						}
 						Thread reconfigThread = new Thread(new Reconfigurator(latStorage, svController, this),
 								"ReconfigurationThread");
-						reconfigThread.setPriority(Thread.NORM_PRIORITY - 1);
+						reconfigThread.setPriority(Thread.MIN_PRIORITY);
 						reconfigThread.start();
 					} catch (InterruptedException e) {
 						e.printStackTrace();
@@ -117,7 +117,7 @@ public class DynamicWeightController implements Runnable {
 				System.out.println("---------------- Calculation started ----------------");
 				Thread syncThread = new Thread(new Synchronizer(latencyMonitor, id, svController.getCurrentViewN(), scs,
 						svController.getStaticConf()), "SynchronizationThread");
-				syncThread.setPriority(Thread.NORM_PRIORITY - 1);
+				syncThread.setPriority(Thread.MIN_PRIORITY);
 				syncThread.start();
 			}
 		}

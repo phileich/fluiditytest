@@ -22,7 +22,6 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 	public DWServerCommunicationSystem(ServerViewController controller, ServiceReplica replica,
 			LatencyMonitorPiggybackServer lmps, DynamicWeightController dwc) throws Exception {
 		super(controller, replica);
-
 		this.lmps = lmps;
 		this.dwc = dwc;
 	}
@@ -126,21 +125,12 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 						&& (controller.getStaticConf().measureServers() && ((dwc.getLastExec() + 1)
 								% this.controller.getStaticConf().getServerMeasurementInterval() == 0))) {
 					for (int i = 0; i < targets.length; i++) {
-						// cause serversConn.send needs an int[]
-						int[] target = new int[1];
-						target[0] = targets[i];
-
 						// store latency in storage as sent
-
 						lmps.createServerLatency(targets[i], ((ConsensusMessage) sm).getNumber());
-
-						Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
-						serversConn.send(target, sm, true);
 					}
-				} else {
-					Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
-					serversConn.send(targets, sm, true);
 				}
+				Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
+				serversConn.send(targets, sm, true);
 			} else {
 				Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
 				serversConn.send(targets, sm, true);

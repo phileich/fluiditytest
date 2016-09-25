@@ -134,6 +134,8 @@ public class DecisionLogic {
 		long start = System.currentTimeMillis();
 		System.out.println("--------- Calculation started -------------");
 		DynamicWeightGraph[] dwGraphs = buildGraphs();
+		long endBuild = System.currentTimeMillis();
+		System.out.println("--------- Build Graphs complete (Duration: " + (endBuild - start) + "ms) -------------");
 		double betterPercentage = 1.0;
 		// decide
 		// if any new result is better than 10% of the current result ->
