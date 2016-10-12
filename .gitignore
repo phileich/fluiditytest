@@ -1,4 +1,6 @@
-<<<<<<< HEAD
+config/currentView
+
+
 ### ECLIPSE ####################################################### ECLIPSE ###
 .settings/
 .loadpath
@@ -74,11 +76,12 @@ Session.vim
 ### VIM START #################################################### VIM START ###
 
 ### MAC START #################################################### MAC START ### ###
+
+
 .DS_Store
-=======
 files
-config/currentView
-config/system.config
+#config/currentView
+#config/system.config
 bin
 bin/*
 
@@ -157,7 +160,6 @@ Session.vim
 ### VIM START #################################################### VIM START ###
 
 ### MAC START #################################################### MAC START ### ###.DS_Store
->>>>>>> refs/heads/wheat2
 .AppleDouble
 .LSOverride
 
