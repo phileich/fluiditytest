@@ -22,7 +22,6 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 	public DWServerCommunicationSystem(ServerViewController controller, ServiceReplica replica,
 			LatencyMonitorPiggybackServer lmps, DynamicWeightController dwc) throws Exception {
 		super(controller, replica);
-
 		this.lmps = lmps;
 		this.dwc = dwc;
 	}
@@ -54,7 +53,8 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 					} else if ((sm instanceof ConsensusMessage)
 							&& (((ConsensusMessage) sm).getPaxosVerboseType() == "PROPOSE"
 									|| ((ConsensusMessage) sm).getPaxosVerboseType() == "DUMMY_PROPOSE")
-							&& controller.getStaticConf().measureServers()) {
+							&& controller.getStaticConf().measureServers() && ((this.dwc.getLastExec() + 1)
+									% this.controller.getStaticConf().getServerMeasurementInterval() == 0)) {
 						// send immediately back
 						ConsensusMessage cm = new ConsensusMessage(MessageFactory.DUMMY_PROPOSE_RESPONSE,
 								((ConsensusMessage) sm).getNumber(), 0, dwc.getID());
@@ -99,38 +99,38 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 	 */
 	public void send(int[] targets, SystemMessage sm) {
 		if (sm instanceof TOMMessage) {
-			// Request Latencies from all clients for Dynamic Weight Calculation
-			for (int i = 0; i < targets.length; i++) {
-				// cause clientsConn.send needs an int[]
-				int[] target = new int[1];
-				target[0] = targets[i];
-				if (controller.getStaticConf().measureClients()) {				//TODO no internal consensus -> latency!
+			if (controller.getStaticConf().measureClients()) {
+				// Request Latencies from all clients for Dynamic Weight
+				// Calculation
+				for (int i = 0; i < targets.length; i++) {
+					// cause clientsConn.send needs an int[]
+					int[] target = new int[1];
+					target[0] = targets[i];
+
 					((TOMMessage) sm).setDynamicWeightTimestamp(lmps.getClientTimestamp(targets[i]));
 					((TOMMessage) sm).setConsensusID(dwc.getInExec());
 					// remove from tmp storage to prevent overflow
 					lmps.clearClientTimestamp(targets[i], dwc.getInExec());
+					Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
+					clientsConn.send(target, (TOMMessage) sm, false);
 				}
-
+			} else {
 				Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
-				clientsConn.send(target, (TOMMessage) sm, false);
+				clientsConn.send(targets, (TOMMessage) sm, false);
 			}
+
 		} else {
 			if (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getPaxosVerboseType() == "WRITE") {
-				for (int i = 0; i < targets.length; i++) {
-					// cause serversConn.send needs an int[]
-					int[] target = new int[1];
-					target[0] = targets[i];
-
-					// ((ConsensusMessage)
-					// sm).setDynamicWeightTimestamp(System.currentTimeMillis());
-
-					// store latency in storage as sent
-					if (controller.getStaticConf().measureServers()) {
-						lmps.createLatency(targets[i], ((ConsensusMessage) sm).getNumber());
+				if (controller.getStaticConf().measureServers()
+						&& (controller.getStaticConf().measureServers() && ((dwc.getLastExec() + 1)
+								% this.controller.getStaticConf().getServerMeasurementInterval() == 0))) {
+					for (int i = 0; i < targets.length; i++) {
+						// store latency in storage as sent
+						lmps.createServerLatency(targets[i], ((ConsensusMessage) sm).getNumber());
 					}
-					Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
-					serversConn.send(target, sm, true);
 				}
+				Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
+				serversConn.send(targets, sm, true);
 			} else {
 				Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
 				serversConn.send(targets, sm, true);

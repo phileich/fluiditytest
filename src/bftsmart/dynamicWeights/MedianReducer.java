@@ -19,13 +19,16 @@ public class MedianReducer implements LatencyReducer {
 		ClientLatency[] reducedLatencies = new ClientLatency[currentN];
 		for (int i = 0; i < latenciesArr.size(); i++) {
 			ArrayList<Latency> latencyOfReplica = latenciesArr.get(i);
-//			Logger.println("Data of Replica " + i + ": " + latencyOfReplica);
-			double reducedLatencyValue = median(latencyOfReplica);
-			ClientLatency reducedLatency = new ClientLatency();
-			reducedLatency.setValue(reducedLatencyValue);
-			reducedLatency.setFrom(latenciesArr.get(i).get(0).getFrom());
-			reducedLatency.setTo(latenciesArr.get(i).get(0).getTo());
-			reducedLatencies[i] = reducedLatency;
+			if (!latencyOfReplica.isEmpty()) {
+				// Logger.println("Data of Replica " + i + ": " +
+				// latencyOfReplica);
+				double reducedLatencyValue = median(latencyOfReplica);
+				ClientLatency reducedLatency = new ClientLatency();
+				reducedLatency.setValue(reducedLatencyValue);
+				reducedLatency.setFrom(latenciesArr.get(i).get(0).getFrom());
+				reducedLatency.setTo(latenciesArr.get(i).get(0).getTo());
+				reducedLatencies[i] = reducedLatency;
+			}
 		}
 
 		return reducedLatencies;
@@ -98,14 +101,16 @@ public class MedianReducer implements LatencyReducer {
 		ServerLatency[] reducedLatencies = new ServerLatency[currentN];
 		for (int i = 0; i < latenciesArr.size(); i++) {
 			ArrayList<Latency> latencyOfReplica = latenciesArr.get(i);
-//			Logger.println("Data of Replica " + i + ": " + latencyOfReplica);
-			double reducedLatencyValue = median(latencyOfReplica);
-			ServerLatency reducedLatency = new ServerLatency();
-			reducedLatency.setValue(reducedLatencyValue);
-			reducedLatency.setFrom(latenciesArr.get(i).get(0).getFrom());
-			reducedLatency.setTo(latenciesArr.get(i).get(0).getTo());
-
-			reducedLatencies[i] = reducedLatency;
+			if (!latencyOfReplica.isEmpty()) {
+				// Logger.println("Data of Replica " + i + ": " +
+				// latencyOfReplica);
+				double reducedLatencyValue = median(latencyOfReplica);
+				ServerLatency reducedLatency = new ServerLatency();
+				reducedLatency.setValue(reducedLatencyValue);
+				reducedLatency.setFrom(latenciesArr.get(i).get(0).getFrom());
+				reducedLatency.setTo(latenciesArr.get(i).get(0).getTo());				
+				reducedLatencies[i] = reducedLatency;
+			}
 		}
 
 		return reducedLatencies;

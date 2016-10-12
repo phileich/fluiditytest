@@ -1,6 +1,7 @@
 package bftsmart.dynamicWeights;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import bftsmart.tom.util.Logger;
@@ -23,6 +24,10 @@ public class DynamicWeightGraphBuilder {
 
 	public DynamicWeightGraphBuilder setQuorumSize(int quorumSize) {
 		dwGraph.setQuorumSize(quorumSize);
+		return this;
+	}
+	public DynamicWeightGraphBuilder setLeader(int leader) {
+		dwGraph.setLeader(leader);
 		return this;
 	}
 
@@ -69,6 +74,7 @@ public class DynamicWeightGraphBuilder {
 		}
 
 		dwGraph.setLeaves(newLeaves);
+		Logger.println("Client Request: " + Arrays.toString(newLeaves));
 		return this;
 	}
 
@@ -95,6 +101,7 @@ public class DynamicWeightGraphBuilder {
 		}
 
 		dwGraph.setLeaves(newLeaves);
+		Logger.println("Empty Client Request: " + Arrays.toString(newLeaves));
 		return this;
 	}
 
@@ -149,6 +156,7 @@ public class DynamicWeightGraphBuilder {
 		}
 
 		dwGraph.setLeaves(newLeaves);
+		Logger.println("Leader Propose: " + Arrays.toString(newLeaves));
 		return this;
 	}
 
@@ -164,7 +172,7 @@ public class DynamicWeightGraphBuilder {
 	 *            the quorumSize of the pattern
 	 * @return
 	 */
-	public DynamicWeightGraphBuilder addMultiCast(double[][] latencies, Double[] weights) {
+	public DynamicWeightGraphBuilder addMultiCast(double[][] latencies, Double[] weights) {		
 		// check if latencies size is equal
 		for (int i = 0; i < latencies.length; i++) {
 			if (latencies[i].length != latencies.length) {
@@ -216,11 +224,12 @@ public class DynamicWeightGraphBuilder {
 					values.add(value);
 				}
 			}
-			Collections.sort(values);
+			Collections.sort(values);			
 			newLeaves[i].setValue(values.get(dwGraph.getQuorumSize() - 1));
 		}
 
 		dwGraph.setLeaves(newLeaves);
+		Logger.println("Multicast: " + Arrays.toString(newLeaves));
 		return this;
 	}
 
@@ -283,6 +292,7 @@ public class DynamicWeightGraphBuilder {
 		newLeaves[0].setValue(values.get(dwGraph.getQuorumSize() - 1));
 
 		dwGraph.setLeaves(newLeaves);
+		Logger.println("Client Respose: " + Arrays.toString(newLeaves));
 		return this;
 	}
 }

@@ -9,6 +9,7 @@ public class DynamicWeightGraph implements Comparable<DynamicWeightGraph> {
 	private DynamicWeightGraphNode root;
 	private DynamicWeightGraphNode[] leaves;
 	private Double[] weights;
+	private int leader = -1;
 	private int quorumSize = 1;
 
 	public DynamicWeightGraph(DynamicWeightGraphNode root) {
@@ -31,6 +32,14 @@ public class DynamicWeightGraph implements Comparable<DynamicWeightGraph> {
 
 	public Double[] getWeights() {
 		return weights;
+	}
+
+	public void setLeader(int leader) {
+		this.leader = leader;
+	}
+
+	public int getLeader() {
+		return leader;
 	}
 
 	public void setQuorumSize(int quorumSize) {
@@ -70,7 +79,8 @@ public class DynamicWeightGraph implements Comparable<DynamicWeightGraph> {
 
 	@Override
 	public String toString() {
-		return "weightassignment: " + Arrays.toString(weights) + ", calculatedValue: " + getValue();
+		return "(leader: " + leader + ", weightassignment: " + Arrays.toString(weights) + ", calculatedValue: "
+				+ getValue() + ")";
 
 	}
 

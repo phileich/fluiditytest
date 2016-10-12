@@ -2,6 +2,7 @@ package bftsmart.dynamicWeights;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -23,12 +24,17 @@ public class DecisionLogic {
 
 	public DecisionLogic(ServerViewController svController, double[] clientLatencies, double[][] proposeLatencies,
 			double[][] serverLatencies) {
+		this(svController, svController.getCurrentLeader(), clientLatencies, proposeLatencies, serverLatencies);
+	}
+
+	public DecisionLogic(ServerViewController svController, int leader, double[] clientLatencies,
+			double[][] proposeLatencies, double[][] serverLatencies) {
 		this.svController = svController;
 		this.reducedClientValues = clientLatencies;
-		this.reducedServerProposeValues = serverLatencies;
+		this.reducedServerProposeValues = proposeLatencies;
 		this.reducedServerValues = serverLatencies;
 
-		currentLeader = svController.getCurrentLeader();
+		currentLeader = leader;
 
 		currentWeightAssignment = new Double[svController.getCurrentViewN()];
 		for (int i = 0; i < currentWeightAssignment.length; i++) {
@@ -38,7 +44,7 @@ public class DecisionLogic {
 
 	private DynamicWeightGraph[] buildGraphs() {
 		// Build all graphs
-		Logger.println("Building Calculation Graphs");
+		System.out.println("Building Calculation Graphs");
 		int f = svController.getCurrentViewF();
 		int n = svController.getCurrentViewN();
 		double vMin = 1;
@@ -63,17 +69,18 @@ public class DecisionLogic {
 
 		// for each leader
 		int combCount = 0;
+		long start = System.currentTimeMillis();
 		for (int i = 0; i < n; i++) {
 			System.out.println("---------------------------------------");
 			System.out.println("Leader: " + i);
 			Permutations<Double> perm = new Permutations<Double>(weightassignment);
 			while (perm.hasNext()) {
-				Double[] permutation = perm.next();
+				Double[] permutation = perm.next().clone();
 				System.out.println(Arrays.toString(permutation));
 
 				// Create the graph
 				DynamicWeightGraphBuilder dwgBuilder = new DynamicWeightGraphBuilder().setWeights(permutation)
-						.setQuorumSize(getReplyQuorum());
+						.setQuorumSize(getReplyQuorum()).setLeader(i);
 
 				if (svController.getStaticConf().measureClients()) {
 					dwgBuilder.addClientRequest(0, reducedClientValues, permutation);
@@ -93,7 +100,7 @@ public class DecisionLogic {
 				if (Arrays.deepEquals(permutation, currentWeightAssignment) && i == currentLeader) {
 					currentCalculatedValue = dwGraph.getValue();
 				}
-				System.out.println("" + dwGraph.getValue());
+				System.out.println("" + dwGraph);
 				// add graph
 				dwGraphs[combCount] = dwGraph;
 
@@ -101,6 +108,8 @@ public class DecisionLogic {
 			}
 
 		}
+		long end = System.currentTimeMillis();
+		System.out.println("Building complete - " + (end - start) + "ms");
 		System.out.println("Current Leader is " + getCurrentLeader());
 		System.out.println("Current Weightassignment is " + Arrays.toString(getCurrentWeightAssignment()));
 		System.out.println("Current Value is " + getCurrentValue());
@@ -122,15 +131,20 @@ public class DecisionLogic {
 	}
 
 	public void calculateBestGraph() {
-
+		long start = System.currentTimeMillis();
+		System.out.println("--------- Calculation started -------------");
 		DynamicWeightGraph[] dwGraphs = buildGraphs();
+		long endBuild = System.currentTimeMillis();
+		System.out.println("--------- Build Graphs complete (Duration: " + (endBuild - start) + "ms) -------------");
 		double betterPercentage = 1.0;
 		// decide
 		// if any new result is better than 10% of the current result ->
 		// reconfig
-
-		ArrayList<DynamicWeightGraph> newPossibleGraphs = new ArrayList<>();
+		long startBest = System.currentTimeMillis();
+		System.out.println("--------- calc Best -------------");
+		ArrayList<DynamicWeightGraph> newPossibleGraphs = new ArrayList<DynamicWeightGraph>();
 		for (DynamicWeightGraph dynamicWeightGraph : dwGraphs) {
+			// Logger.println(dynamicWeightGraph);
 			if (dynamicWeightGraph.getValue() < (currentCalculatedValue * betterPercentage)) {
 				newPossibleGraphs.add(dynamicWeightGraph);
 			}
@@ -163,7 +177,9 @@ public class DecisionLogic {
 		} else {
 			System.out.println("No configuration is better than the current one! NO RECONFIG");
 		}
-
+		long end = System.currentTimeMillis();
+		System.out.println("--------- calc Best finished - " + (end - startBest) + "ms -------------");
+		System.out.println("--------- Calculation finished - " + (end - start) + "ms -------------");
 	}
 
 	private DynamicWeightGraph getMin(DynamicWeightGraph[] graphs) {

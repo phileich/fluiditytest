@@ -1,9 +1,6 @@
 package bftsmart.dynamicWeights;
 
-import java.util.ArrayList;
 import java.util.logging.Level;
-
-import org.apache.commons.lang3.SerializationUtils;
 
 import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.consensus.Consensus;
@@ -77,20 +74,22 @@ public class DWTOMLayer extends TOMLayer {
 		}
 		if (controller.getStaticConf().measureClients()) {
 			if (msg.getLatencyData() != null) {
-				Logger.println("received TOM with latenciesData: ");
-				ArrayList<ClientLatency> cls = SerializationUtils.deserialize(msg.getLatencyData());
-				lmps.storeClientLatencies(cls);
+				Logger.println("received TOM with latenciesData");
+				lmps.storeClientLatencies(msg.getLatencyData());
 			}
 			lmps.storeClientTimestamp(msg.getDynamicWeightTimestamp(), currTimestamp, msg.getSender());
 		}
-		if (controller.getStaticConf().measureServers()) {
-			if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
-				// create Dummy Propose
-				lmps.createProposeLatencies(lmps.getCurrentViewOtherAcceptors(), dwController.getInExec() + 1);
-				communication.send(lmps.getCurrentViewAcceptors(), new ConsensusMessage(MessageFactory.DUMMY_PROPOSE,
-						dwController.getInExec() + 1, 0, dwController.getID()));
-			}
+
+		if (controller.getStaticConf().measureServers()
+				&& ((dwController.getLastExec() + 1)
+						% this.controller.getStaticConf().getServerMeasurementInterval() == 0)
+				&& (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId())) {
+			// create Dummy Propose
+			lmps.createProposeLatencies(lmps.getCurrentViewOtherAcceptors(), dwController.getLastExec() + 1);
+			communication.send(lmps.getCurrentViewAcceptors(), new ConsensusMessage(MessageFactory.DUMMY_PROPOSE,
+					dwController.getInExec() + 1, 0, dwController.getID()));
 		}
+
 	}
 
 	/**

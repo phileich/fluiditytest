@@ -28,7 +28,6 @@ import bftsmart.tom.util.Storage;
  */
 public class LatencyClient {
 
-	@SuppressWarnings("static-access")
 	public static void main(String[] args) throws IOException {
 		if (args.length < 5) {
 			System.out.println(

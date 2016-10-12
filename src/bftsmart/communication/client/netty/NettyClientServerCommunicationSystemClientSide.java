@@ -1,17 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and
+ * the authors indicated in the @author tags
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package bftsmart.communication.client.netty;
 
@@ -33,6 +34,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.Inet4Address;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.ClosedChannelException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -63,6 +68,7 @@ import java.util.Arrays;
  * @author Paulo
  */
 @Sharable
+
 public class NettyClientServerCommunicationSystemClientSide extends SimpleChannelInboundHandler<TOMMessage>
 		implements CommunicationSystemClientSide {
 
@@ -79,6 +85,25 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 	private boolean closed = false;
 
 	private EventLoopGroup workerGroup;
+
+	private ChannelFuture connect(Bootstrap bootstrap, SocketAddress remoteAddress, int clientId, int channelId)
+			throws UnknownHostException {
+		if (controller.getStaticConf().getLocalClients()) {
+			System.out.println(String.format("* C O N N E C T * (remote=%s, client=%d, channel=%d",
+					remoteAddress.toString(), clientId, channelId));
+
+			// TODO: Fix this client id modulo stuff.
+			System.out.println("localAdress: " + String.format("127.0.0.%d", 101 + (clientId % 1001) % 254));
+			System.out.println("localPort: " + (12000 + (clientId % 10010) * 10 + channelId));
+			return bootstrap.connect(remoteAddress,
+					new InetSocketAddress(
+							Inet4Address.getByName(String.format("127.0.0.%d", 101 + (clientId % 1001) % 254)),
+							12000 + (clientId % 10010) * 10 + channelId));
+
+		} else {
+			return bootstrap.connect(remoteAddress);
+		}
+	}
 
 	public NettyClientServerCommunicationSystemClientSide(int clientId, ClientViewController controller) {
 		super();
@@ -115,7 +140,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 					b.handler(getChannelInitializer());
 
 					// Start the client.
-					future = b.connect(controller.getRemoteAddress(currV[i]));
+					future = connect(b, controller.getRemoteAddress(currV[i]), clientId, i);
 
 					// ******* EDUARDO BEGIN **************//
 
@@ -185,7 +210,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 						b.handler(getChannelInitializer());
 
 						// Start the client.
-						ChannelFuture future = b.connect(controller.getRemoteAddress(currV[i]));
+						ChannelFuture future = connect(b, controller.getRemoteAddress(currV[i]), clientId, i);
 
 						String str = this.clientId + ":" + currV[i];
 						PBEKeySpec spec = new PBEKeySpec(str.toCharArray());
@@ -209,7 +234,8 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 						if (!future.isSuccess()) {
 							System.err.println("Impossible to connect to " + currV[i]);
 						}
-
+					} catch (UnknownHostException ex) {
+						ex.printStackTrace();
 					} catch (InvalidKeyException ex) {
 						ex.printStackTrace();
 					} catch (InvalidKeySpecException ex) {
@@ -239,6 +265,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 
 	@Override
 	public void channelRead0(ChannelHandlerContext ctx, TOMMessage sm) throws Exception {
+
 		if (closed) {
 
 			closeChannelAndEventLoop(ctx.channel());
@@ -261,24 +288,11 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 		System.out.println("Channel active");
 	}
 
-	@Override
-	public void channelInactive(ChannelHandlerContext ctx) {
-
-		if (closed) {
-
-			closeChannelAndEventLoop(ctx.channel());
-
-			return;
-		}
-
-		try {
-			// sleeps 10 seconds before trying to reconnect
-			Thread.sleep(10000);
-		} catch (InterruptedException ex) {
-			ex.printStackTrace();
-		}
+	public void reconnect(final ChannelHandlerContext ctx) {
 
 		rl.writeLock().lock();
+		Logger.println("try to reconnect");
+
 		// Iterator sessions = sessionTable.values().iterator();
 
 		ArrayList<NettyClientServerSession> sessions = new ArrayList<NettyClientServerSession>(sessionTable.values());
@@ -303,7 +317,8 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 
 					if (controller.getRemoteAddress(ncss.getReplicaId()) != null) {
 
-						ChannelFuture future = b.connect(controller.getRemoteAddress(ncss.getReplicaId()));
+						ChannelFuture future = connect(b, controller.getRemoteAddress(ncss.getReplicaId()), clientId,
+								ncss.getReplicaId());
 
 						// creates MAC stuff
 						Mac macSend = ncss.getMacSend();
@@ -321,9 +336,10 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 					}
 				} catch (NoSuchAlgorithmException ex) {
 					ex.printStackTrace();
+				} catch (UnknownHostException ex) {
+					ex.printStackTrace();
 				}
 			}
-
 		}
 
 		// closes all other channels to avoid messages being sent to only a
@@ -486,28 +502,19 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 			}
 		};
 		return channelInitializer;
-
 	}
 
 	@Override
 	public void channelUnregistered(final ChannelHandlerContext ctx) throws Exception {
-		if (closed) {
-			closeChannelAndEventLoop(ctx.channel());
+		scheduleReconnect(ctx, 10);
+	}
 
-			return;
-		}
-
-		final EventLoop loop = ctx.channel().eventLoop();
-		loop.schedule(new Runnable() {
-			@Override
-			public void run() {
-				channelInactive(ctx);
-			}
-		}, 0, TimeUnit.SECONDS);
+	@Override
+	public void channelInactive(final ChannelHandlerContext ctx) {
+		scheduleReconnect(ctx, 10);
 	}
 
 	private void closeChannelAndEventLoop(Channel c) {
-
 		// once having an event in your handler (EchoServerHandler)
 		// Close the current channel
 		c.close();
@@ -516,6 +523,21 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 			c.parent().close();
 		// c.eventLoop().shutdownGracefully();
 		workerGroup.shutdownGracefully();
-
 	}
+
+	private void scheduleReconnect(final ChannelHandlerContext ctx, int time) {
+		if (closed) {
+			closeChannelAndEventLoop(ctx.channel());
+			return;
+		}
+
+		final EventLoop loop = ctx.channel().eventLoop();
+		loop.schedule(new Runnable() {
+			@Override
+			public void run() {
+				reconnect(ctx);
+			}
+		}, time, TimeUnit.SECONDS);
+	}
+
 }

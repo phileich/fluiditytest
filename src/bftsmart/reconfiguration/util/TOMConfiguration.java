@@ -1,18 +1,19 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and
+ * the authors indicated in the @author tags
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package bftsmart.reconfiguration.util;
 
 import java.security.PrivateKey;
@@ -64,7 +65,8 @@ public class TOMConfiguration extends Configuration {
 	private int calculationInterval;
 	private boolean measureClients;
 	private boolean measureServers;
-	private int useLastMeasurements;
+	private boolean localClients;
+	private int serverMeasurementInterval;
 
 	/** Creates a new instance of TOMConfiguration */
 	public TOMConfiguration(int processId) {
@@ -349,8 +351,11 @@ public class TOMConfiguration extends Configuration {
 				s = (String) configs.remove("system.dw.measureServers");
 				measureServers = (s != null) ? Boolean.parseBoolean(s) : false;
 
-				s = (String) configs.remove("system.dw.useLastMeasurements");
-				useLastMeasurements = Integer.parseInt(s);
+				s = (String) configs.remove("system.dw.serverMeasurementInterval");
+				serverMeasurementInterval = Integer.parseInt(s);
+
+				s = (String) configs.remove("system.dw.localClients");
+				localClients = (s != null) ? Boolean.parseBoolean(s) : false;
 
 			} else {
 				// needs weights
@@ -358,7 +363,7 @@ public class TOMConfiguration extends Configuration {
 				calculationInterval = 0;
 				measureClients = false;
 				measureServers = false;
-				useLastMeasurements = 0;
+				localClients = false;
 			}
 			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
 		} catch (Exception e) {
@@ -576,8 +581,13 @@ public class TOMConfiguration extends Configuration {
 		return calculationInterval;
 	}
 
-	public int getUseLastMeasurements() {
-		return useLastMeasurements;
+
+	public boolean getLocalClients() {
+		return localClients;
+	}
+
+	public int getServerMeasurementInterval() {
+		return serverMeasurementInterval;
 	}
 
 }

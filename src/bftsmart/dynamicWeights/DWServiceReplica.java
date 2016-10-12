@@ -310,18 +310,6 @@ public class DWServiceReplica extends ServiceReplica {
 						request.reply = new TOMMessage(id, request.getSession(), request.getSequence(), replies,
 								SVController.getCurrentViewId(), TOMMessageType.INTERNAL_CONSENSUS);
 						replier.manageReply(request, msgCtx);
-
-//						if (SVController.getStaticConf().getNumRepliers() > 0) {
-//							bftsmart.tom.util.Logger
-//									.println("(ServiceReplica.receiveMessages) sending reply to " + request.getSender()
-//											+ " with sequence number " + request.getSequence() + " via ReplyManager");
-//							repMan.send(request);
-//						} else {
-//							bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) sending reply to "
-//									+ request.getSender() + " with sequence number " + request.getSequence());
-//							cs.send(new int[] { request.getSender() }, request.reply);
-//						}
-
 					} else {
 						throw new RuntimeException("Should never reach here!");
 					}

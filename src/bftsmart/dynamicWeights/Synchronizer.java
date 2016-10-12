@@ -17,10 +17,11 @@ public class Synchronizer implements Runnable {
 	private int id;
 	private int n;
 	private ServerCommunicationSystem scs;
-	private Storage latencyMonitor;
+	private LatencyMonitor latencyMonitor;
 	private TOMConfiguration conf;
 
-	public Synchronizer(Storage latencyMonitor, int id, int n, ServerCommunicationSystem scs, TOMConfiguration conf) {
+	public Synchronizer(LatencyMonitor latencyMonitor, int id, int n, ServerCommunicationSystem scs,
+			TOMConfiguration conf) {
 		this.latReducer = new MedianReducer();
 		this.id = id;
 		this.scs = scs;
@@ -40,20 +41,33 @@ public class Synchronizer implements Runnable {
 				// get latencies since last reconfig
 				List<Latency> clientLatencies = latencyMonitor.getClientLatencies();
 				// reduce
+				// System.out.println("Sync - pre Reduce Client: " +
+				// clientLatencies);
 				Latency[] reducedClientLat = latReducer.reduce(clientLatencies, n);
+				// System.out.println("Sync - post Reduce Client: " +
+				// Arrays.deepToString(reducedClientLat));
 				// send
 				byte[] serializeClientLat = SerializationUtils.serialize(reducedClientLat);
 				dos.writeInt(serializeClientLat.length);
 				dos.write(serializeClientLat);
-				Logger.println("Sending client latencies to internal consensus: " + Arrays.toString(reducedClientLat));
+				// Logger.println("Sending client latencies to internal
+				// consensus: " + Arrays.toString(reducedClientLat));
 			}
 			if (conf.measureServers()) {
 				// get latencies since last reconfig
 				List<Latency[]> serverLatencies = latencyMonitor.getServerLatencies();
 				List<Latency[]> serverProposeLatencies = latencyMonitor.getServerProposeLatencies();
 				// reduce
+				// System.out.println("Sync - pre Reduce Server: " +
+				// Arrays.deepToString(serverLatencies.toArray()));
 				Latency[] reducedServerLat = latReducer.reduce2d(serverLatencies, n);
+				// System.out.println("Sync - post Reduce Server: " +
+				// Arrays.deepToString(reducedServerLat));
+
+//				System.out
+//						.println("Sync - pre Reduce Propose: " + Arrays.deepToString(serverProposeLatencies.toArray()));
 				Latency[] reducedServerProposeLat = latReducer.reduce2d(serverProposeLatencies, n);
+//				System.out.println("Sync - post Reduce Propose: " + Arrays.deepToString(reducedServerProposeLat));
 				// send
 				byte[] serializeServerLat = SerializationUtils.serialize(reducedServerLat);
 				byte[] serializeServerProposeLat = SerializationUtils.serialize(reducedServerProposeLat);

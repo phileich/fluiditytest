@@ -1,5 +1,7 @@
 config/currentView
 
+server*
+client*
 
 ### ECLIPSE ####################################################### ECLIPSE ###
 .settings/
