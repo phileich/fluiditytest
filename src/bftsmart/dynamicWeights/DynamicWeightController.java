@@ -110,7 +110,7 @@ public class DynamicWeightController implements Runnable {
 
 	public void receiveExec(int exec) {
 		// System.out.println("EXEC " + exec);
-		if (exec % calculationInterval == 0 && exec != 0) {
+		if (((exec + 1) % calculationInterval == 0) && (exec != -1)) {
 			if (!reconfigInExec) {
 				reconfigInExec = true;
 				calcDuration = System.currentTimeMillis();

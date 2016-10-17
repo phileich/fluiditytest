@@ -26,6 +26,7 @@ public class MessageFactory{
     public static final int ACCEPT  = 44783;
     public static final int DUMMY_PROPOSE  = 44784;
     public static final int DUMMY_PROPOSE_RESPONSE  = 44785;
+    public static final int WRITE_RESPONSE  = 44786;
 
     private int from; // Replica ID of the process which sent this message
 

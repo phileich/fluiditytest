@@ -67,6 +67,7 @@ public class TOMConfiguration extends Configuration {
 	private boolean measureServers;
 	private boolean localClients;
 	private int serverMeasurementInterval;
+	private boolean use_write_response;
 
 	/** Creates a new instance of TOMConfiguration */
 	public TOMConfiguration(int processId) {
@@ -356,6 +357,9 @@ public class TOMConfiguration extends Configuration {
 
 				s = (String) configs.remove("system.dw.localClients");
 				localClients = (s != null) ? Boolean.parseBoolean(s) : false;
+				
+				s = (String) configs.remove("system.dw.useWriteResponse");
+				use_write_response = (s != null) ? Boolean.parseBoolean(s) : false;
 
 			} else {
 				// needs weights
@@ -588,6 +592,10 @@ public class TOMConfiguration extends Configuration {
 
 	public int getServerMeasurementInterval() {
 		return serverMeasurementInterval;
+	}
+	
+	public boolean useWriteResponse(){
+		return use_write_response;
 	}
 
 }

@@ -235,6 +235,8 @@ public class ConsensusMessage extends SystemMessage {
 			return "DUMMY_PROPOSE";
 		else if (paxosType == MessageFactory.DUMMY_PROPOSE_RESPONSE)
 			return "DUMMY_PROPOSE_RESPONSE";
+		else if (paxosType == MessageFactory.WRITE_RESPONSE)
+			return "WRITE_RESPONSE";
 		else
 			return "";
 	}

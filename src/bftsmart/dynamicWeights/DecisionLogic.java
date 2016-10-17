@@ -91,6 +91,10 @@ public class DecisionLogic {
 				if (svController.getStaticConf().measureServers()) {
 					dwgBuilder.addLeaderPropose(i, reducedServerProposeValues[i], permutation);
 					dwgBuilder.addMultiCast(reducedServerValues, permutation);
+					if (svController.getStaticConf().useWriteResponse()) {
+						//add a second for the accept phase
+						dwgBuilder.addMultiCast(reducedServerValues, permutation);
+					}
 				}
 				if (svController.getStaticConf().measureClients()) {
 					dwgBuilder.addClientResponse(reducedClientValues, permutation);

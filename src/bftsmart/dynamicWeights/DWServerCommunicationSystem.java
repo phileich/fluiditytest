@@ -6,6 +6,8 @@ import java.util.logging.Level;
 
 import javax.sound.midi.ControllerEventListener;
 
+import org.apache.commons.math3.optim.linear.SolutionCallback;
+
 import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.communication.SystemMessage;
 import bftsmart.consensus.messages.ConsensusMessage;
@@ -45,9 +47,28 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 				if (sm != null) {
 					Logger.println("<-------receiving---------- " + sm);
 					if ((sm instanceof ConsensusMessage) && ((ConsensusMessage) sm).getPaxosVerboseType() == "ACCEPT"
-							&& controller.getStaticConf().measureServers()) {
+							&& controller.getStaticConf().measureServers()
+							&& !controller.getStaticConf().useWriteResponse()) {
 						// store latency in volatile storage
 						lmps.addServerLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
+						messageHandler.processData(sm);
+						count++;
+					} else if ((sm instanceof ConsensusMessage)
+							&& ((ConsensusMessage) sm).getPaxosVerboseType() == "WRITE_RESPONSE"
+							&& controller.getStaticConf().measureServers()
+							&& controller.getStaticConf().useWriteResponse()) {
+						// store latency in volatile storage
+						lmps.addServerLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
+						System.out.println("stored Write response");
+					} else if ((sm instanceof ConsensusMessage)
+							&& ((ConsensusMessage) sm).getPaxosVerboseType() == "WRITE"
+							&& controller.getStaticConf().measureServers()
+							&& controller.getStaticConf().useWriteResponse()) {
+						// send immediately back
+						ConsensusMessage cm = new ConsensusMessage(MessageFactory.WRITE_RESPONSE,
+								((ConsensusMessage) sm).getNumber(), 0, dwc.getID());
+						Logger.println("--------sending----------> " + cm + " to " + sm.getSender());
+						serversConn.send(new int[] { sm.getSender() }, cm, false);
 						messageHandler.processData(sm);
 						count++;
 					} else if ((sm instanceof ConsensusMessage)
