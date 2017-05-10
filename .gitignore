@@ -323,7 +323,13 @@ sympy-plots-for-*.tex/
 
 # WinEdt
 *.bak
+
 *.sav
 
 
 ### TEX END ######################################################## TEX END ###
+
+
+############# IntelliJ Idea ######################
+.idea/
+jk-bft-smart.iml
