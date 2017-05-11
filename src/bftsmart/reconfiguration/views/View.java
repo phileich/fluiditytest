@@ -89,8 +89,7 @@ public class View implements Serializable {
 		for (int i = 0; i < u; i++)
 			this.weights.put(processes[i], wMax);
 
-		// Dismiss +1 due to array starting at 0
-		int offset = ((isBFT == true) ? (3 * f) : (2 * f)) + delta;
+		int offset = ((isBFT == true) ? (3 * f) : (2 * f)) + 1 + delta;
 		for (int i = offset; i < this.processes.length; i++) {
 			this.weights.put(processes[i], wZero);
 		}
