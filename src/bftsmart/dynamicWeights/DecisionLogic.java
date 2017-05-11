@@ -50,7 +50,7 @@ public class DecisionLogic {
 		double vMin = 1;
 		// 3f+1 for BFT
 		int requiredN = (3 * f) + 1;
-		int deltaN = n - requiredN;
+		int deltaN = n - requiredN; //TODO get delta from fluidity not n
 		double vMax = 1 + (deltaN / f);
 		// nr of combinations
 		int comb = n * binCoeff(n, 2 * f);
@@ -63,9 +63,14 @@ public class DecisionLogic {
 		for (int i = 0; i < (2 * f); i++) {
 			weightassignment[i] = vMax;
 		}
-		for (int i = (2 * f); i < weightassignment.length; i++) {
+		for (int i = (2 * f); i < weightassignment.length; i++) { //TODO assign weight 0
 			weightassignment[i] = vMin;
 		}
+		//TODO At the graph calculation of dynwheat with the write and accept phase:
+		// When the array with the multiplied latencies gets sorted the ones with weight 0
+		// have latency 0 ms due to 0 * xx ms is 0, so we have to exclude the weight 0
+		// replicas from the configuration calculation at this point and leave them out of
+		// the array.
 
 		// for each leader
 		int combCount = 0;
