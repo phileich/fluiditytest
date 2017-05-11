@@ -69,6 +69,8 @@ public class TOMConfiguration extends Configuration {
 	private int serverMeasurementInterval;
 	private boolean use_write_response;
 
+	private boolean useFluidity;
+
 	/** Creates a new instance of TOMConfiguration */
 	public TOMConfiguration(int processId) {
 		super(processId);
@@ -333,11 +335,6 @@ public class TOMConfiguration extends Configuration {
 			s = (String) configs.remove("system.useweights");
 			useWeights = (s != null) ? Boolean.parseBoolean(s) : false;
 
-			if (useWeights) {
-				delta = n - ((isBFT ? 3 * f : 2 * f) + 1);
-			} else {
-				delta = 0;
-			}
 
 			if (useWeights) {
 				s = (String) configs.remove("system.dw.useDynamicWeights");
@@ -369,6 +366,19 @@ public class TOMConfiguration extends Configuration {
 				measureServers = false;
 				localClients = false;
 			}
+
+			s = (String) configs.remove("system.useFluidity");
+			useFluidity = (s != null) ? Boolean.parseBoolean(s) : false;
+
+			if (useFluidity && useWeights) {
+				s = (String) configs.remove("system.delta");
+				delta = (s != null) ? Integer.parseInt(s) : 0;
+			} else if (useWeights && !useFluidity) {
+				delta = n - ((isBFT ? 3 * f : 2 * f) + 1);
+			} else {
+				delta = 0;
+			}
+
 			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
