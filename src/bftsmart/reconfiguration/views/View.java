@@ -81,12 +81,19 @@ public class View implements Serializable {
 
 		double wMax = 1.00 + ((double) delta / (double) f);
 		double wMin = 1.00;
+		double wZero = 0.00;
 
 		for (int i = 0; i < this.processes.length; i++)
 			this.weights.put(processes[i], wMin);
 
 		for (int i = 0; i < u; i++)
 			this.weights.put(processes[i], wMax);
+
+		// Dismiss +1 due to array starting at 0
+		int offset = ((isBFT == true) ? (3 * f) : (2 * f)) + delta;
+		for (int i = offset; i < this.processes.length; i++) {
+			this.weights.put(processes[i], wZero);
+		}
 
 	}
 
