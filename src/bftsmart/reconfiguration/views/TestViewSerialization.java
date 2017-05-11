@@ -23,13 +23,15 @@ public class TestViewSerialization {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        int[] ids = {1,2,3,4};
-        InetSocketAddress[] in = new InetSocketAddress[4];
+        int[] ids = {1,2,3,4,5,6};
+        InetSocketAddress[] in = new InetSocketAddress[6];
         in[0] = new InetSocketAddress("127.0.0.1",1234);
         in[1] = new InetSocketAddress("127.0.0.1",1234);
         in[2] = new InetSocketAddress("127.0.0.1",1234);
         in[3] = new InetSocketAddress("127.0.0.1",1234);
-        View v = new View(10, ids,1,in,true,0);
+        in[4] = new InetSocketAddress("127.0.0.1",1234);
+        in[5] = new InetSocketAddress("127.0.0.1",1234);
+        View v = new View(10, ids,1,in,true,1);
         ViewStorage st = new DefaultViewStorage();
         st.storeView(v);
         
