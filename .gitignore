@@ -333,3 +333,4 @@ sympy-plots-for-*.tex/
 ############# IntelliJ Idea ######################
 .idea/
 jk-bft-smart.iml
+fluidity.iml
