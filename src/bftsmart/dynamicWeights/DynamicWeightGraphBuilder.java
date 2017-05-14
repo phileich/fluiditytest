@@ -224,7 +224,7 @@ public class DynamicWeightGraphBuilder {
 					values.add(value);
 				}
 			}
-			Collections.sort(values);			
+			Collections.sort(values);			//TODO The calculation has to exclude the 0 weights
 			newLeaves[i].setValue(values.get(dwGraph.getQuorumSize() - 1));
 		}
 
