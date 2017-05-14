@@ -124,6 +124,10 @@ public class View implements Serializable {
 
 	public int getN() {
 		return this.processes.length;
+	} //TODO Change for fluidity mode on and/or
+	//TODO Introduce a getDelta() method for fluidity on
+	public int getDelta() {
+		return delta;
 	}
 
 	public int[] getProcesses() {

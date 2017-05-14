@@ -66,7 +66,7 @@ public class DynamicWeightGraph implements Comparable<DynamicWeightGraph> {
 	 * 
 	 * @return
 	 */
-	public double getValue() {
+	public double getValue() { //TODO This could be the ordering of the arraylist with the weights
 		ArrayList<Double> valueList = new ArrayList<>();
 		for (int i = 0; i < leaves.length; i++) {
 			for (int j = 0; j < weights[i]; j++) {

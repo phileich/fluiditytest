@@ -96,6 +96,10 @@ public class ViewController {
         return getCurrentView().getN();
     }
 
+    public int getCurrentViewDelta() {
+        return getCurrentView().getDelta();
+    }
+
     public int getCurrentViewPos(int id) {
         return getCurrentView().getPos(id);
     }

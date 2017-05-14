@@ -50,7 +50,8 @@ public class DecisionLogic {
 		double vMin = 1;
 		// 3f+1 for BFT
 		int requiredN = (3 * f) + 1;
-		int deltaN = n - requiredN; //TODO get delta from fluidity not n
+		//int deltaN = n - requiredN;
+		int deltaN = svController.getCurrentViewDelta(); //TODO check for fluidity
 		double vMax = 1 + (deltaN / f);
 		// nr of combinations
 		int comb = n * binCoeff(n, 2 * f);
