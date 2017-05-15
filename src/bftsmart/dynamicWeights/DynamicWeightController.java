@@ -64,7 +64,7 @@ public class DynamicWeightController implements Runnable {
 				currentReceivedInternalConsensus++;
 				// if n-f entries -> trigger calculation
 				if (!calcStarted && currentReceivedInternalConsensus >= (svController.getCurrentViewN()
-						- svController.getCurrentViewF())) {
+						- svController.getCurrentViewF())) { //TODO Maybe problem with n-f being bigger
 
 					// wait for slower data
 					calcStarted = true;
