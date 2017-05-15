@@ -23,7 +23,7 @@ public class TestViewSerialization {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        int[] ids = {1,2,3,4,5,6};
+        int[] ids = {0,1,2,3,4,5};
         InetSocketAddress[] in = new InetSocketAddress[6];
         in[0] = new InetSocketAddress("127.0.0.1",1234);
         in[1] = new InetSocketAddress("127.0.0.1",1234);
