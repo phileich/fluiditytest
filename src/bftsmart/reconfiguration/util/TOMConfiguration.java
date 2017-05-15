@@ -583,6 +583,10 @@ public class TOMConfiguration extends Configuration {
 		return useDynamicWeights;
 	}
 
+	public boolean useFluidity() {
+		return useFluidity;
+	}
+
 	public boolean measureClients() {
 		return measureClients;
 	}

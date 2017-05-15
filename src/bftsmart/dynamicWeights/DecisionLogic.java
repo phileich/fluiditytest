@@ -49,9 +49,16 @@ public class DecisionLogic {
 		int n = svController.getCurrentViewN();
 		double vMin = 1;
 		// 3f+1 for BFT
-		int requiredN = (3 * f) + 1;
-		//int deltaN = n - requiredN;
-		int deltaN = svController.getCurrentViewDelta(); //TODO check for fluidity
+		int requiredN = (3 * f) + 1; // Why is there no check for isBFT?
+
+		int deltaN;
+		boolean useFluidity = svController.isCurrentViewUseFluidity();
+		if (useFluidity) {
+			deltaN = svController.getCurrentViewDelta();
+		} else {
+			deltaN = n - requiredN;
+		}
+
 		double vMax = 1 + (deltaN / f);
 		// nr of combinations
 		int comb = n * binCoeff(n, 2 * f);

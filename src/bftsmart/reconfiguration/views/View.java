@@ -42,7 +42,9 @@ public class View implements Serializable {
 	private int overlayN;
 	private Map<Integer, Double> weights;
 
-	public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta) {
+	private boolean useFluidity;
+
+	public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta, boolean useFluidity) {
 		this.id = id;
 		this.processes = processes;
 		this.isBFT = isBFT;
@@ -50,6 +52,8 @@ public class View implements Serializable {
 		this.weights = new HashMap<Integer, Double>();
 		this.f = f;
 		this.delta = delta;
+		//this.delta = delta;
+		this.useFluidity = useFluidity;
 
 		for (int i = 0; i < this.processes.length; i++)
 			this.addresses.put(processes[i], addresses[i]);
@@ -124,10 +128,14 @@ public class View implements Serializable {
 
 	public int getN() {
 		return this.processes.length;
-	} //TODO Change for fluidity mode on and/or
-	//TODO Introduce a getDelta() method for fluidity on
+	}
+
 	public int getDelta() {
 		return delta;
+	}
+
+	public boolean isUseFluidity()  {
+		return useFluidity;
 	}
 
 	public int[] getProcesses() {

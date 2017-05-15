@@ -100,6 +100,10 @@ public class ViewController {
         return getCurrentView().getDelta();
     }
 
+    public boolean isCurrentViewUseFluidity() {
+        return getCurrentView().isUseFluidity();
+    }
+
     public int getCurrentViewPos(int id) {
         return getCurrentView().getPos(id);
     }
