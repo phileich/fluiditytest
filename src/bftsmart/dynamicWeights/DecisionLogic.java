@@ -48,8 +48,13 @@ public class DecisionLogic {
 		int f = svController.getCurrentViewF();
 		int n = svController.getCurrentViewN();
 		double vMin = 1;
+		double vZero = 0.0;
+		boolean isBFT = true; //TODO get the value of isBFT
+		int u = (isBFT ? (2*f) : f);
+
 		// 3f+1 for BFT
-		int requiredN = (3 * f) + 1; // Why is there no check for isBFT?
+		//int requiredN = (3 * f) + 1; // TODO Why is there no check for isBFT?
+		int requiredN = (isBFT ? (3*f) : (2*f)) + 1;
 
 		int deltaN;
 		boolean useFluidity = svController.isCurrentViewUseFluidity();
@@ -61,7 +66,7 @@ public class DecisionLogic {
 
 		double vMax = 1 + (deltaN / f);
 		// nr of combinations
-		int comb = n * binCoeff(n, 2 * f);
+		int comb = n * binCoeff(n, 2 * f); //TODO no hardcoded bft assignment
 
 		DynamicWeightGraph[] dwGraphs = new DynamicWeightGraph[comb];
 
@@ -71,8 +76,17 @@ public class DecisionLogic {
 		for (int i = 0; i < (2 * f); i++) {
 			weightassignment[i] = vMax;
 		}
-		for (int i = (2 * f); i < weightassignment.length; i++) { //TODO assign weight 0
+
+		// The rest of the replicas which are no special replicas
+		int numOfSpecialReplica = n - ((isBFT ? (3*f) : (2*f)) + 1 + deltaN);
+		int dynWheatLength =  weightassignment.length - numOfSpecialReplica;
+		for (int i = (2 * f); i < dynWheatLength; i++) { //TODO assign weight 0
 			weightassignment[i] = vMin;
+		}
+
+		// Assign weight 0 to all the rest
+		for (int i = dynWheatLength; i < n; i++) {
+			weightassignment[i] = vZero;
 		}
 		//TODO At the graph calculation of dynwheat with the write and accept phase:
 		// When the array with the multiplied latencies gets sorted the ones with weight 0
