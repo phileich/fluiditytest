@@ -53,7 +53,7 @@ public class DecisionLogic {
 		int u = (isBFT ? (2*f) : f);
 
 		// 3f+1 for BFT
-		//int requiredN = (3 * f) + 1; // TODO Why is there no check for isBFT?
+		//int requiredN = (3 * f) + 1;
 		int requiredN = (isBFT ? (3*f) : (2*f)) + 1;
 
 		int deltaN;
@@ -66,21 +66,21 @@ public class DecisionLogic {
 
 		double vMax = 1 + (deltaN / f);
 		// nr of combinations
-		int comb = n * binCoeff(n, 2 * f); //TODO no hardcoded bft assignment
+		int comb = n * binCoeff(n, 2 * f);
 
 		DynamicWeightGraph[] dwGraphs = new DynamicWeightGraph[comb];
 
 		// create weight assignment list
 		// 2f replicas have weight vmax
 		Double[] weightassignment = new Double[n];
-		for (int i = 0; i < (2 * f); i++) {
+		for (int i = 0; i < u; i++) {
 			weightassignment[i] = vMax;
 		}
 
 		// The rest of the replicas which are no special replicas
 		int numOfSpecialReplica = n - ((isBFT ? (3*f) : (2*f)) + 1 + deltaN);
 		int dynWheatLength =  weightassignment.length - numOfSpecialReplica;
-		for (int i = (2 * f); i < dynWheatLength; i++) { //TODO assign weight 0
+		for (int i = (2 * f); i < dynWheatLength; i++) {
 			weightassignment[i] = vMin;
 		}
 
@@ -236,7 +236,7 @@ public class DecisionLogic {
 		return result;
 	}
 
-	protected int getReplyQuorum() {
+	protected int getReplyQuorum() { //TODO Check if those calculations are correct
 
 		// code for classic quorums
 		/*
