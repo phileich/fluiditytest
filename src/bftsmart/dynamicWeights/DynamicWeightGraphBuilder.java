@@ -214,17 +214,17 @@ public class DynamicWeightGraphBuilder {
 		}
 
 		// calculate
-		for (int i = 0; i < newLeaves.length; i++) {
+		for (int i = 0; i < newLeaves.length; i++) { //TODO The calculation has to exclude the 0 weights
 			ArrayList<Double> values = new ArrayList<Double>();
 			// calculate every value of incoming edges
 			for (DynamicWeightGraphEdge edge : newLeaves[i].getIncomingEdges()) {
 				double value = edge.getFrom().getValue() + edge.getValue();
 				// add for each weight
-				for (int j = 0; j < edge.getWeight(); j++) {
+				for (int j = 0; j < edge.getWeight(); j++) { //Does the exclusion already solve the problem?
 					values.add(value);
 				}
 			}
-			Collections.sort(values);			//TODO The calculation has to exclude the 0 weights
+			Collections.sort(values);
 			newLeaves[i].setValue(values.get(dwGraph.getQuorumSize() - 1));
 		}
 

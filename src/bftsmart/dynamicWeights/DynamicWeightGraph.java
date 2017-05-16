@@ -74,7 +74,7 @@ public class DynamicWeightGraph implements Comparable<DynamicWeightGraph> {
 			}
 		}
 		Collections.sort(valueList);
-		return valueList.get(Math.min(quorumSize, valueList.size()) - 1);
+		return valueList.get(Math.min(quorumSize, valueList.size()) - 1); //Always returns 0 for weights >= 1.0
 	}
 
 	@Override
