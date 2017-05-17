@@ -66,15 +66,19 @@ public class DynamicWeightGraph implements Comparable<DynamicWeightGraph> {
 	 * 
 	 * @return
 	 */
-	public double getValue() { //TODO This could be the ordering of the arraylist with the weights
-		ArrayList<Double> valueList = new ArrayList<>();
-		for (int i = 0; i < leaves.length; i++) {
-			for (int j = 0; j < weights[i]; j++) { //TODO problem with j < weight 0
-				valueList.add(leaves[i].getValue());
-			}
-		}
-		Collections.sort(valueList);
-		return valueList.get(Math.min(quorumSize, valueList.size()) - 1); //Always returns 0 for weights >= 1.0
+//	public double getValue() { //TODO This could be the ordering of the arraylist with the weights
+//		ArrayList<Double> valueList = new ArrayList<>();
+//		for (int i = 0; i < leaves.length; i++) {
+//			for (int j = 0; j < weights[i]; j++) { //TODO problem with j < weight 0. Why is weight important?
+//				valueList.add(leaves[i].getValue());
+//			}
+//		}
+//		Collections.sort(valueList);
+//		return valueList.get(Math.min(quorumSize, valueList.size()) - 1); //Always returns 0 for weights >= 1.0
+//	}
+
+	public double getValue() {
+		return leaves[0].getValue();
 	}
 
 	@Override
