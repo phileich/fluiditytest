@@ -104,6 +104,10 @@ public class ViewController {
         return getCurrentView().isUseFluidity();
     }
 
+    public boolean isCurrentViewUseBFT() {
+        return getCurrentView().isBFT();
+    }
+
     public int getCurrentViewPos(int id) {
         return getCurrentView().getPos(id);
     }

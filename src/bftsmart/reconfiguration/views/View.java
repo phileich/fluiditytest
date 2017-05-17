@@ -138,6 +138,10 @@ public class View implements Serializable {
 		return useFluidity;
 	}
 
+	public boolean isBFT() {
+		return isBFT;
+	}
+
 	public int[] getProcesses() {
 		return processes;
 	}
