@@ -64,9 +64,10 @@ public class DecisionLogic {
 			deltaN = n - requiredN;
 		}
 
+		int dynWheatN = (isBFT ? (3*f) : (2*f)) + 1 + deltaN;
 		double vMax = 1 + (deltaN / f);
 		// nr of combinations
-		int comb = n * binCoeff(n, 2 * f);
+		int comb = n * n * binCoeff(dynWheatN, 2 * f); //TODO Extend to new number of configs
 
 		DynamicWeightGraph[] dwGraphs = new DynamicWeightGraph[comb];
 
