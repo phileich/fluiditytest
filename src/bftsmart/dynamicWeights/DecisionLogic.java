@@ -49,7 +49,7 @@ public class DecisionLogic {
 		int n = svController.getCurrentViewN();
 		double vMin = 1;
 		double vZero = 0.0;
-		boolean isBFT = true; //TODO get the value of isBFT
+		boolean isBFT = svController.isCurrentViewUseBFT();
 		int u = (isBFT ? (2*f) : f);
 
 		// 3f+1 for BFT
@@ -65,9 +65,12 @@ public class DecisionLogic {
 		}
 
 		int dynWheatN = (isBFT ? (3*f) : (2*f)) + 1 + deltaN;
+		int fluidityDelta = n - dynWheatN;
 		double vMax = 1 + (deltaN / f);
 		// nr of combinations
-		int comb = n * n * binCoeff(dynWheatN, 2 * f); //TODO Extend to new number of configs
+
+		int numOfFluidityComp = binCoeff(n, fluidityDelta);
+		int comb = n * binCoeff(dynWheatN, 2 * f) * numOfFluidityComp; //TODO Check if 2*f is also correct for CFT mode
 
 		DynamicWeightGraph[] dwGraphs = new DynamicWeightGraph[comb];
 
@@ -89,11 +92,6 @@ public class DecisionLogic {
 		for (int i = dynWheatLength; i < n; i++) {
 			weightassignment[i] = vZero;
 		}
-		//TODO At the graph calculation of dynwheat with the write and accept phase:
-		// When the array with the multiplied latencies gets sorted the ones with weight 0
-		// have latency 0 ms due to 0 * xx ms is 0, so we have to exclude the weight 0
-		// replicas from the configuration calculation at this point and leave them out of
-		// the array.
 
 		// for each leader
 		int combCount = 0;
