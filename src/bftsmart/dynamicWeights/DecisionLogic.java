@@ -187,7 +187,7 @@ public class DecisionLogic {
 					newPossibleGraphs.toArray(new DynamicWeightGraph[newPossibleGraphs.size()]));
 			System.out.println("Reconfig to:  " + newConfig);
 
-			// reconfig to newConfig Graph
+			// reconfig to newConfig graph
 
 			// map weights to processes
 			HashMap<Integer, Double> weights = new HashMap<Integer, Double>();
