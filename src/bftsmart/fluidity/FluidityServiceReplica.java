@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 /**
  * Created by philipp on 19.06.17.
  */
-public class FluidityServiceReplica extends ServiceReplica{
+public class FluidityServiceReplica extends ServiceReplica {
 
     class MessageContextPair {
 
@@ -47,12 +47,9 @@ public class FluidityServiceReplica extends ServiceReplica{
     /**
      * Constructor
      *
-     * @param id
-     *            Replica ID
-     * @param executor
-     *            Executor
-     * @param recoverer
-     *            Recoverer
+     * @param id        Replica ID
+     * @param executor  Executor
+     * @param recoverer Recoverer
      */
     public FluidityServiceReplica(int id, Executable executor, Recoverable recoverer) {
         this(id, "", executor, recoverer, null, new DefaultReplier());
@@ -61,14 +58,10 @@ public class FluidityServiceReplica extends ServiceReplica{
     /**
      * Constructor
      *
-     * @param id
-     *            Replica ID
-     * @param executor
-     *            Executor
-     * @param recoverer
-     *            Recoverer
-     * @param verifier
-     *            Requests verifier
+     * @param id        Replica ID
+     * @param executor  Executor
+     * @param recoverer Recoverer
+     * @param verifier  Requests verifier
      */
     public FluidityServiceReplica(int id, Executable executor, Recoverable recoverer, RequestVerifier verifier) {
         this(id, "", executor, recoverer, verifier, new DefaultReplier());
@@ -77,40 +70,29 @@ public class FluidityServiceReplica extends ServiceReplica{
     /**
      * Constructor
      *
-     * @param id
-     *            Replica ID
-     * @param executor
-     *            Executor
-     * @param recoverer
-     *            Recoverer
-     * @param verifier
-     *            Requests verifier
-     * @param replier
-     *            Replier
+     * @param id        Replica ID
+     * @param executor  Executor
+     * @param recoverer Recoverer
+     * @param verifier  Requests verifier
+     * @param replier   Replier
      */
     public FluidityServiceReplica(int id, Executable executor, Recoverable recoverer, RequestVerifier verifier,
-                            Replier replier) {
+                                  Replier replier) {
         this(id, "", executor, recoverer, verifier, replier);
     }
 
     /**
      * Constructor
      *
-     * @param id
-     *            Process ID
-     * @param configHome
-     *            Configuration directory for JBP
-     * @param executor
-     *            Executor
-     * @param recoverer
-     *            Recoverer
-     * @param verifier
-     *            Requests verifier
-     * @param replier
-     *            Replier
+     * @param id         Process ID
+     * @param configHome Configuration directory for JBP
+     * @param executor   Executor
+     * @param recoverer  Recoverer
+     * @param verifier   Requests verifier
+     * @param replier    Replier
      */
     public FluidityServiceReplica(int id, String configHome, Executable executor, Recoverable recoverer,
-                            RequestVerifier verifier, Replier replier) {
+                                  RequestVerifier verifier, Replier replier) {
         super();
         this.id = id;
         this.SVController = new ServerViewController(id, configHome);
@@ -312,7 +294,7 @@ public class FluidityServiceReplica extends ServiceReplica{
                     // state
                     // transfer)
 
-                    tomLayer.getCommunication().send(new int[] { request.getSender() },
+                    tomLayer.getCommunication().send(new int[]{request.getSender()},
                             new TOMMessage(SVController.getStaticConf().getProcessId(), request.getSession(),
                                     request.getSequence(), TOMUtil.getBytes(SVController.getCurrentView()),
                                     SVController.getCurrentViewId()));
@@ -405,7 +387,7 @@ public class FluidityServiceReplica extends ServiceReplica{
                 } else {
                     bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) sending reply to "
                             + request.getSender() + " with sequence number " + request.getSequence());
-                    cs.send(new int[] { request.getSender() }, request.reply);
+                    cs.send(new int[]{request.getSender()}, request.reply);
                 }
             }
             // DEBUG
@@ -416,10 +398,8 @@ public class FluidityServiceReplica extends ServiceReplica{
     /**
      * This method initializes the object
      *
-     * @param cs
-     *            Server side communication System
-     * @param conf
-     *            Total order messaging configuration
+     * @param cs   Server side communication System
+     * @param conf Total order messaging configuration
      */
     protected void initTOMLayer() {
         if (tomStackCreated) { // if this object was already initialized, don't
@@ -464,4 +444,4 @@ public class FluidityServiceReplica extends ServiceReplica{
     }
 }
 
-}
+
