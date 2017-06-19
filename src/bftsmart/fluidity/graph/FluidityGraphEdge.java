@@ -1,40 +1,38 @@
 package bftsmart.fluidity.graph;
 
-import bftsmart.fluidity.FluidityGraph;
-
 /**
  * This class represents an edge of the fluidity graph containing information about the latencies between
  * the data centers, which are represented by the FluidityGraphNodes
  */
 public class FluidityGraphEdge {
-    private FluidityGraphNode nodeA;
-    private FluidityGraphNode nodeB;
+    private FluidityGraphNode nodeFrom;
+    private FluidityGraphNode nodeTo;
     private double latencyValue;
 
-    public FluidityGraphEdge(FluidityGraphNode nodeA, FluidityGraphNode nodeB, double value) {
-        this.nodeA = nodeA;
-        this.nodeB = nodeB;
+    public FluidityGraphEdge(FluidityGraphNode nodeFrom, FluidityGraphNode nodeTo, double value) {
+        this.nodeFrom = nodeFrom;
+        this.nodeTo = nodeTo;
         this.latencyValue = value;
     }
 
-    public FluidityGraphNode getNodeA() {
-        return nodeA;
+    public FluidityGraphNode getNodeFrom() {
+        return nodeFrom;
     }
 
-    public FluidityGraphNode getNodeB() {
-        return nodeB;
+    public FluidityGraphNode getNodeTo() {
+        return nodeTo;
     }
 
     public double getLatencyValue() {
         return latencyValue;
     }
 
-    public void setNodeA(FluidityGraphNode nodeA) {
-        this.nodeA = nodeA;
+    public void setNodeFrom(FluidityGraphNode nodeFrom) {
+        this.nodeFrom = nodeFrom;
     }
 
-    public void setNodeB(FluidityGraphNode nodeB) {
-        this.nodeB = nodeB;
+    public void setNodeTo(FluidityGraphNode nodeTo) {
+        this.nodeTo = nodeTo;
     }
 
     public void setLatencyValue(double latencyValue) {
