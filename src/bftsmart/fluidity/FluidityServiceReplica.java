@@ -423,6 +423,7 @@ public class FluidityServiceReplica extends ServiceReplica {
 
         acceptor.setExecutionManager(executionManager);
 
+        //TODO Do ew need own TOMLayer?
         tomLayer = new DWTOMLayer(executionManager, this, recoverer, acceptor, cs, SVController, verifier, dwc, lmps);
 
         executionManager.setTOMLayer(tomLayer);
