@@ -43,6 +43,7 @@ public class FluidityServiceReplica extends ServiceReplica {
 
     private LatencyMonitorPiggybackServer lmps = null;
     private DynamicWeightController dwc = null;
+    private FluidityController fc = null;
 
     /**
      * Constructor
@@ -97,7 +98,9 @@ public class FluidityServiceReplica extends ServiceReplica {
         this.id = id;
         this.SVController = new ServerViewController(id, configHome);
         this.lmps = new LatencyMonitorPiggybackServer(this.SVController, this.id);
-        this.dwc = new DynamicWeightController(this.id, this.SVController, this.lmps);
+        //this.dwc = new DynamicWeightController(this.id, this.SVController, this.lmps);
+        this.fc = new FluidityController(this.id, this.SVController, this.lmps);
+        this.dwc = fc.getDynamicWeightController();
         this.executor = executor;
         this.recoverer = recoverer;
         this.replier = replier;
