@@ -7,10 +7,12 @@ import java.util.ArrayList;
  * information about the replicas etc which are running within that data center
  */
 public class FluidityGraphNode {
+    private int dataCenterId;
     private ArrayList<Integer> replicas;
     private int maximumNumberOfReplicas;
 
-    public FluidityGraphNode(ArrayList<Integer> replicas, int maximumNumberOfReplicas) {
+    public FluidityGraphNode(int id, ArrayList<Integer> replicas, int maximumNumberOfReplicas) {
+        this.dataCenterId = id;
         this.replicas = replicas;
         this.maximumNumberOfReplicas = maximumNumberOfReplicas;
     }
