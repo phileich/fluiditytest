@@ -13,19 +13,16 @@ public class FluidityController implements Runnable {
     private ServerViewController svController;
     private LatencyMonitor latencyMonitor;
 
-    public FluidityController(int id, ServerViewController svController, LatencyMonitor latencyMonitor) {
+    public FluidityController(int id, ServerViewController svController, LatencyMonitor latencyMonitor,
+                              DynamicWeightController dynamicWeightController) {
         this.replicaId = id;
         this.svController = svController;
         this.latencyMonitor = latencyMonitor;
-        this.dwc = new DynamicWeightController(replicaId, svController, latencyMonitor);
+        this.dwc = dynamicWeightController;
     }
 
     @Override
     public void run() {
 
-    }
-
-    public DynamicWeightController getDynamicWeightController() {
-        return dwc;
     }
 }

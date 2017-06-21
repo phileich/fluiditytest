@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import bftsmart.fluidity.FluidityController;
 import org.apache.commons.lang3.SerializationUtils;
 
 import bftsmart.communication.ServerCommunicationSystem;
@@ -37,6 +38,7 @@ public class DynamicWeightController implements Runnable {
 		this.svController = svController;
 		this.id = id;
 		this.latencyMonitor = latencyMonitor;
+
 		Thread latencyMonitorThread = new Thread(this.latencyMonitor, "LatencyMonitor");
 		latencyMonitorThread.setPriority(Thread.MIN_PRIORITY);
 		latencyMonitorThread.start();
@@ -49,6 +51,7 @@ public class DynamicWeightController implements Runnable {
 		controllerThread.setPriority(Thread.MIN_PRIORITY);
 		controllerThread.start();
 	}
+
 
 	public int getID() {
 		return id;
@@ -143,6 +146,14 @@ public class DynamicWeightController implements Runnable {
 		this.reconfigInExec = false;
 		this.calcStarted = false;
 		this.currentReceivedInternalConsensus = 0;
+
+		// If Fluidity is chosen then start thread
+		if (svController.getStaticConf().useFluidity()) {
+			Thread fluidityThread = new Thread(new FluidityController(this.id, this.svController, this.latencyMonitor,
+					this), "FluidityThread");
+			fluidityThread.setPriority(Thread.MIN_PRIORITY);
+			fluidityThread.start();
+		}
 
 	}
 
