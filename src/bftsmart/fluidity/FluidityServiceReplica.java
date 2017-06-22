@@ -107,6 +107,8 @@ public class FluidityServiceReplica extends ServiceReplica {
         this.recoverer.setReplicaContext(replicaCtx);
         this.replier.setReplicaContext(replicaCtx);
 
+        //TODO Initialize fluidity graph
+
     }
 
     // this method initializes the object
