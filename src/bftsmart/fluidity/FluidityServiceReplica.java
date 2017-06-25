@@ -7,6 +7,8 @@ import bftsmart.dynamicWeights.DWServerCommunicationSystem;
 import bftsmart.dynamicWeights.DWTOMLayer;
 import bftsmart.dynamicWeights.DynamicWeightController;
 import bftsmart.dynamicWeights.LatencyMonitorPiggybackServer;
+import bftsmart.fluidity.graph.FluidityGraph;
+import bftsmart.fluidity.graph.FluidityGraphBuilder;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ReplicaContext;
@@ -44,6 +46,8 @@ public class FluidityServiceReplica extends ServiceReplica {
     private LatencyMonitorPiggybackServer lmps = null;
     private DynamicWeightController dwc = null;
     private FluidityController fc = null;
+    private FluidityGraphBuilder fluidityGraphBuilder;
+    private FluidityGraph fluidityGraph;
 
     /**
      * Constructor
@@ -103,6 +107,10 @@ public class FluidityServiceReplica extends ServiceReplica {
         this.recoverer = recoverer;
         this.replier = replier;
         this.verifier = verifier;
+
+        this.fluidityGraphBuilder = new FluidityGraphBuilder();
+        this.fluidityGraphBuilder.generateGraphFromXML(SVController.getXMLGraphPath);
+
         this.init();
         this.recoverer.setReplicaContext(replicaCtx);
         this.replier.setReplicaContext(replicaCtx);
