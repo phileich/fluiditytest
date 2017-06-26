@@ -30,6 +30,8 @@ public class DynamicWeightController implements Runnable {
 	private int currentReceivedInternalConsensus;
 	private LinkedBlockingQueue<byte[]> internalLatencies = new LinkedBlockingQueue<byte[]>();
 
+	private FluidityController fc;
+
 	public DynamicWeightController(int id, ServerViewController svController) {
 		this(id, svController, new DummyStorage());
 	}
@@ -149,12 +151,15 @@ public class DynamicWeightController implements Runnable {
 
 		// If Fluidity is chosen then start thread
 		if (svController.getStaticConf().useFluidity()) {
-			Thread fluidityThread = new Thread(new FluidityController(this.id, this.svController, this.latencyMonitor,
-					this), "FluidityThread");
+			Thread fluidityThread = new Thread(fc, "FluidityThread");
 			fluidityThread.setPriority(Thread.MIN_PRIORITY);
 			fluidityThread.start();
 		}
 
+	}
+
+	public void setFluidityController(FluidityController fluidityController) {
+		this.fc = fluidityController;
 	}
 
 	private void addToLatStorage(byte[] data) {
