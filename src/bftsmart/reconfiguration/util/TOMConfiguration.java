@@ -70,6 +70,7 @@ public class TOMConfiguration extends Configuration {
 	private boolean use_write_response;
 
 	private boolean useFluidity;
+	private String fluidityGraphPath;
 
 	/** Creates a new instance of TOMConfiguration */
 	public TOMConfiguration(int processId) {
@@ -379,6 +380,11 @@ public class TOMConfiguration extends Configuration {
 				delta = 0;
 			}
 
+			if (useFluidity) {
+				s = (String) configs.remove("system.fluidityGraphPath");
+				fluidityGraphPath = (s != null) ? s : "";
+			}
+
 			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -610,6 +616,10 @@ public class TOMConfiguration extends Configuration {
 	
 	public boolean useWriteResponse(){
 		return use_write_response;
+	}
+
+	public String getFluidityGraphPath()  {
+		return fluidityGraphPath;
 	}
 
 }
