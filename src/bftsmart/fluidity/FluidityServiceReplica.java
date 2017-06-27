@@ -48,6 +48,7 @@ public class FluidityServiceReplica extends ServiceReplica {
     private FluidityController fc = null;
     private FluidityGraphBuilder fluidityGraphBuilder;
     private FluidityGraph fluidityGraph;
+    private int datacenterId;
 
     /**
      * Constructor
@@ -55,9 +56,10 @@ public class FluidityServiceReplica extends ServiceReplica {
      * @param id        Replica ID
      * @param executor  Executor
      * @param recoverer Recoverer
+     * @param datacenterId The ID of the data center the replica is running in
      */
-    public FluidityServiceReplica(int id, Executable executor, Recoverable recoverer) {
-        this(id, "", executor, recoverer, null, new DefaultReplier());
+    public FluidityServiceReplica(int id, Executable executor, Recoverable recoverer, int datacenterId) {
+        this(id, "", executor, recoverer, null, new DefaultReplier(), datacenterId);
     }
 
     /**
@@ -67,9 +69,10 @@ public class FluidityServiceReplica extends ServiceReplica {
      * @param executor  Executor
      * @param recoverer Recoverer
      * @param verifier  Requests verifier
+     * @param datacenterId The ID of the data center the replica is running in
      */
-    public FluidityServiceReplica(int id, Executable executor, Recoverable recoverer, RequestVerifier verifier) {
-        this(id, "", executor, recoverer, verifier, new DefaultReplier());
+    public FluidityServiceReplica(int id, Executable executor, Recoverable recoverer, RequestVerifier verifier, int datacenterId) {
+        this(id, "", executor, recoverer, verifier, new DefaultReplier(), datacenterId);
     }
 
     /**
@@ -80,10 +83,11 @@ public class FluidityServiceReplica extends ServiceReplica {
      * @param recoverer Recoverer
      * @param verifier  Requests verifier
      * @param replier   Replier
+     * @param datacenterId The ID of the data center the replica is running in
      */
     public FluidityServiceReplica(int id, Executable executor, Recoverable recoverer, RequestVerifier verifier,
-                                  Replier replier) {
-        this(id, "", executor, recoverer, verifier, replier);
+                                  Replier replier, int datacenterId) {
+        this(id, "", executor, recoverer, verifier, replier, datacenterId);
     }
 
     /**
@@ -95,9 +99,10 @@ public class FluidityServiceReplica extends ServiceReplica {
      * @param recoverer  Recoverer
      * @param verifier   Requests verifier
      * @param replier    Replier
+     * @param datacenterId The ID of the data center the replica is running in
      */
     public FluidityServiceReplica(int id, String configHome, Executable executor, Recoverable recoverer,
-                                  RequestVerifier verifier, Replier replier) {
+                                  RequestVerifier verifier, Replier replier, int datacenterId) {
         super();
         this.id = id;
         this.SVController = new ServerViewController(id, configHome);
@@ -108,15 +113,17 @@ public class FluidityServiceReplica extends ServiceReplica {
         this.replier = replier;
         this.verifier = verifier;
 
+        this.datacenterId = datacenterId;
         this.fluidityGraphBuilder = new FluidityGraphBuilder();
-        this.fluidityGraphBuilder.generateGraphFromXML(SVController.getXMLGraphPath);
+        this.fluidityGraph = this.fluidityGraphBuilder.generateGraphFromXML(SVController.getStaticConf().getFluidityGraphPath());
+        this.fluidityGraph.addReplicaToNode(this.datacenterId, this.id);
+        this.fc = new FluidityController(this.id, this.SVController, this.lmps, this.dwc, this.fluidityGraph);
+
+        this.dwc.setFluidityController(fc);
 
         this.init();
         this.recoverer.setReplicaContext(replicaCtx);
         this.replier.setReplicaContext(replicaCtx);
-
-        //TODO Initialize fluidity graph
-
     }
 
     // this method initializes the object
@@ -272,6 +279,7 @@ public class FluidityServiceReplica extends ServiceReplica {
                         }
 
                         dwc.addInternalConsensusDataToStorage(request.getContent());
+                        //TODO Add graph consensus as well
 
                         // Send the replies back to the client
                         byte[] replies = (new String("ConsensusStored")).getBytes();
