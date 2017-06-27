@@ -50,7 +50,7 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 							&& controller.getStaticConf().measureServers()
 							&& !controller.getStaticConf().useWriteResponse()) {
 						// store latency in volatile storage
-						lmps.addServerLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
+						lmps.addServerLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber()); //TODO see here for graph exchange
 						messageHandler.processData(sm);
 						count++;
 					} else if ((sm instanceof ConsensusMessage)
@@ -148,6 +148,7 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 					for (int i = 0; i < targets.length; i++) {
 						// store latency in storage as sent
 						lmps.createServerLatency(targets[i], ((ConsensusMessage) sm).getNumber());
+						//TODO exchange graph nodes here or in an own section
 					}
 				}
 				Logger.println("--------sending----------> " + sm + " to " + Arrays.toString(targets));
