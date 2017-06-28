@@ -77,7 +77,7 @@ public class DWTOMLayer extends TOMLayer {
 				Logger.println("received TOM with latenciesData");
 				lmps.storeClientLatencies(msg.getLatencyData());
 			}
-			lmps.storeClientTimestamp(msg.getDynamicWeightTimestamp(), currTimestamp, msg.getSender());
+			lmps.storeClientTimestamp(msg.getDynamicWeightTimestamp(), currTimestamp, msg.getSender()); //TODO Here the timestamps are stored in latency monitor
 		}
 
 		if (controller.getStaticConf().measureServers()

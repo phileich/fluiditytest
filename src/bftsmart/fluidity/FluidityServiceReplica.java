@@ -279,7 +279,7 @@ public class FluidityServiceReplica extends ServiceReplica {
                         }
 
                         dwc.addInternalConsensusDataToStorage(request.getContent());
-                        //TODO Add graph consensus as well
+                        //TODO Add graph consensus as well and filter for graph/latency
 
                         // Send the replies back to the client
                         byte[] replies = (new String("ConsensusStored")).getBytes();
