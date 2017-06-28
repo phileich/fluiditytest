@@ -52,6 +52,14 @@ public class FluidityGraph {
         getNodeById(nodeId).setMaximumNumberOfReplicas(maxNumOfRep);
     }
 
+    public ArrayList<FluidityGraphNode> getNodes() {
+        return nodes;
+    }
+
+    public ArrayList<FluidityGraphEdge> getEdges() {
+        return edges;
+    }
+
     private FluidityGraphNode getNodeById(int nodeId) {
         FluidityGraphNode neededNode = new FluidityGraphNode(nodeId, null, -1);
 

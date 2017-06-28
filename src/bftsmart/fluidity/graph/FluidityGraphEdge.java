@@ -1,10 +1,13 @@
 package bftsmart.fluidity.graph;
 
+import java.io.Serializable;
+
 /**
  * This class represents an edge of the fluidity graph containing information about the latencies between
  * the data centers, which are represented by the FluidityGraphNodes
  */
-public class FluidityGraphEdge {
+public class FluidityGraphEdge implements Serializable, Comparable<FluidityGraphEdge> {
+    private static final long serialVersionUID = -1850607097492041897L;
     private FluidityGraphNode nodeFrom;
     private FluidityGraphNode nodeTo;
     private double latencyValue;
@@ -55,5 +58,11 @@ public class FluidityGraphEdge {
         int result = nodeFrom.hashCode();
         result = 31 * result + nodeTo.hashCode();
         return result;
+    }
+
+    @Override
+    public int compareTo(FluidityGraphEdge fluidityGraphEdge) {
+        return 0;
+        //TODO Change
     }
 }

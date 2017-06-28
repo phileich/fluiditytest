@@ -1,12 +1,14 @@
 package bftsmart.fluidity.graph;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * This class implements a node of the FluidityGraph representing a data center. This data center contains
  * information about the replicas etc which are running within that data center
  */
-public class FluidityGraphNode {
+public class FluidityGraphNode implements Serializable, Comparable<FluidityGraphNode> {
+    private static final long serialVersionUID = -482321466345422089L;
     private int dataCenterId;
     private ArrayList<Integer> replicas;
     private int maximumNumberOfReplicas;
@@ -69,5 +71,11 @@ public class FluidityGraphNode {
     @Override
     public int hashCode() {
         return dataCenterId;
+    }
+
+    @Override
+    public int compareTo(FluidityGraphNode fluidityGraphNode) {
+        return 0;
+        //TODO Change
     }
 }
