@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by philipp on 25.06.17.
@@ -40,11 +41,21 @@ public class FluidityGraphBuilder {
                     int datacenterId = Integer.parseInt(
                             nodeElement.getAttribute("datacenterid"));
 
+                    int numOfReplicas = nodeElement.getElementsByTagName("replicaId").getLength();
+                    ArrayList<Integer> replicaList = new ArrayList<>();
+
+                    for (int j = 0; j < numOfReplicas; j++) {
+                        int replicaId = Integer.parseInt(
+                                nodeElement.getElementsByTagName("replicaId")
+                                        .item(j).getTextContent());
+                        replicaList.add(replicaId);
+                    }
+
                     int maxNumOfRep = Integer.parseInt(
                             nodeElement.getElementsByTagName("maximumNumberOfElements")
                                     .item(0).getTextContent());
 
-                    fluidityGraph.addNode(datacenterId, null, maxNumOfRep);
+                    fluidityGraph.addNode(datacenterId, replicaList, maxNumOfRep);
                 }
             }
 
