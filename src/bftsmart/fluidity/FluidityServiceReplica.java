@@ -116,7 +116,7 @@ public class FluidityServiceReplica extends ServiceReplica {
         this.datacenterId = datacenterId;
         this.fluidityGraphBuilder = new FluidityGraphBuilder();
         this.fluidityGraph = this.fluidityGraphBuilder.generateGraphFromXML(SVController.getStaticConf().getFluidityGraphPath());
-        this.fluidityGraph.addReplicaToNode(this.datacenterId, this.id);
+        //this.fluidityGraph.addReplicaToNode(this.datacenterId, this.id);
         this.fc = new FluidityController(this.id, this.SVController, this.lmps, this.dwc, this.fluidityGraph);
 
         this.dwc.setFluidityController(fc);
