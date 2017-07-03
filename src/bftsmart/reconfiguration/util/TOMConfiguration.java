@@ -71,6 +71,7 @@ public class TOMConfiguration extends Configuration {
 
 	private boolean useFluidity;
 	private String fluidityGraphPath;
+	private String fluidityDistributionStrategy;
 
 	/** Creates a new instance of TOMConfiguration */
 	public TOMConfiguration(int processId) {
@@ -385,6 +386,11 @@ public class TOMConfiguration extends Configuration {
 				fluidityGraphPath = (s != null) ? s : "";
 			}
 
+			if (useFluidity) {
+				s = (String) configs.remove("system.fluidityDistributionStrategy");
+				fluidityDistributionStrategy = (s != null) ? s : "";
+			}
+
 			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -591,6 +597,10 @@ public class TOMConfiguration extends Configuration {
 
 	public boolean useFluidity() {
 		return useFluidity;
+	}
+
+	public String getFluidityDistributionStrategy() {
+		return fluidityDistributionStrategy;
 	}
 
 	public boolean measureClients() {
