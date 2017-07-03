@@ -159,6 +159,10 @@ public class View implements Serializable {
 		return overlayN;
 	}
 
+	public Map<Integer, Double> getWeights() {
+		return weights;
+	}
+
 	@Override
 	public String toString() {
 		String ret = "ID:" + id + "; F:" + f + "; N-O:" + overlayN + "; F-O:" + overlayF + "; D: " + delta

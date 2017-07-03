@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import bftsmart.fluidity.FluidityController;
+import bftsmart.reconfiguration.views.View;
 import org.apache.commons.lang3.SerializationUtils;
 
 import bftsmart.communication.ServerCommunicationSystem;
