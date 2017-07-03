@@ -7,8 +7,7 @@ import java.util.ArrayList;
  * This class implements a node of the FluidityGraph representing a data center. This data center contains
  * information about the replicas etc which are running within that data center
  */
-public class FluidityGraphNode implements Serializable, Comparable<FluidityGraphNode> {
-    private static final long serialVersionUID = -482321466345422089L;
+public class FluidityGraphNode {
     private int dataCenterId;
     private ArrayList<Integer> replicas;
     private int maximumNumberOfReplicas;
@@ -73,9 +72,4 @@ public class FluidityGraphNode implements Serializable, Comparable<FluidityGraph
         return dataCenterId;
     }
 
-    @Override
-    public int compareTo(FluidityGraphNode fluidityGraphNode) {
-        return 0;
-        //TODO Change
-    }
 }
