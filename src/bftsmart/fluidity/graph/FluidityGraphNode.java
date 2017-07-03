@@ -20,6 +20,10 @@ public class FluidityGraphNode {
         this.maximumNumberOfReplicas = maximumNumberOfReplicas;
     }
 
+    protected ArrayList<Integer> getReplicas() {
+        return replicas;
+    }
+
     protected int getDataCenterId() {
         return dataCenterId;
     }

@@ -4,8 +4,14 @@ import bftsmart.dynamicWeights.DynamicWeightController;
 import bftsmart.dynamicWeights.LatencyMonitor;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphBuilder;
+import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.reconfiguration.ServerViewController;
+import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.util.Logger;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * This class is the main controller for the fluidity approach
@@ -16,6 +22,9 @@ public class FluidityController implements Runnable {
     private ServerViewController svController;
     private LatencyMonitor latencyMonitor;
     private FluidityGraph fluidityGraph;
+    private View currentView;
+    private ArrayList<FluidityGraphNode> nodeOfGraph;
+
 
     public FluidityController(int id, ServerViewController svController, LatencyMonitor latencyMonitor,
                               DynamicWeightController dynamicWeightController,
@@ -58,7 +67,25 @@ public class FluidityController implements Runnable {
     }
 
     private void randomDistribution() {
-        
+        currentView = svController.getCurrentView();
+        nodeOfGraph = fluidityGraph.getNodes();
+
+        // Get the weight assignment from the old and current view
+        //Map<Integer, Double> oldWeightAssignment = oldView.getWeights();
+        Map<Integer, Double> currentWeightAssignment = currentView.getWeights();
+        ArrayList<Integer> newlyMutedReplicas = new ArrayList<>();
+
+        //Check whether the assignment has changes since the last reconfiguration
+        for (int processId :
+                currentWeightAssignment.keySet()) {
+            if (currentWeightAssignment.get(processId) == 0) {
+                newlyMutedReplicas.add(processId);
+            }
+            //TODO Set processId replica passive and randomly create a new replica
+            getNodesForNewReplica(newlyMutedReplicas.size());
+        }
+
+
     }
 
     private void dataCenterDistribution() {
@@ -74,5 +101,30 @@ public class FluidityController implements Runnable {
     }
 
 
+    private ArrayList<FluidityGraphNode> getNodesForNewReplica(int numOfReplicas) {
+        //TODO Randomly select nodes for replicas
+        ArrayList<FluidityGraphNode> returnNodes = new ArrayList<>();
 
+        for (int i = 0; i < numOfReplicas; i++) {
+            boolean notYetFound = false;
+            while (notYetFound) {
+                int nodeNr = getRandomNumberForNode(nodeOfGraph.size());
+                FluidityGraphNode tempNode = nodeOfGraph.get(nodeNr);
+
+                if (fluidityGraph.checkForCapacity(tempNode)) {
+                    returnNodes.add(tempNode);
+                    notYetFound = false;
+                } else {
+                    notYetFound = true;
+                }
+            }
+        }
+
+        return returnNodes;
+    }
+
+    private int getRandomNumberForNode(int range) {
+        Random randomGenerator = new Random(1234);
+        return randomGenerator.nextInt(range);
+    }
 }

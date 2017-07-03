@@ -60,6 +60,19 @@ public class FluidityGraph {
         return edges;
     }
 
+    public int getMaxNumOfRepByNode(FluidityGraphNode node) {
+        return node.getMaximumNumberOfReplicas();
+    }
+
+    // Checks whether the maximum capacity is already reached or not
+    public boolean checkForCapacity(FluidityGraphNode node) {
+        if (node.getReplicas().size() < node.getMaximumNumberOfReplicas()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private FluidityGraphNode getNodeById(int nodeId) {
         FluidityGraphNode neededNode = new FluidityGraphNode(nodeId, null, -1);
 
