@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import bftsmart.fluidity.FluidityController;
@@ -32,6 +33,8 @@ public class DynamicWeightController implements Runnable {
 	private LinkedBlockingQueue<byte[]> internalLatencies = new LinkedBlockingQueue<byte[]>();
 
 	private FluidityController fc;
+	private int bestLeader;
+	private Map<Integer, Double> bestWeightAssignment;
 
 	public DynamicWeightController(int id, ServerViewController svController) {
 		this(id, svController, new DummyStorage());
@@ -142,13 +145,16 @@ public class DynamicWeightController implements Runnable {
 		internalLatencies.add(data);
 	}
 
-	public void notifyReconfigFinished() {
+	public void notifyReconfigFinished(int bestLeader, Map<Integer, Double> bestWeightAssignment) {
 		// restart and clear everything for new Calc
 		System.out.println("---------------- Calculation finished (duration: "
 				+ (System.currentTimeMillis() - calcDuration) + "ms) ----------------");
 		this.reconfigInExec = false;
 		this.calcStarted = false;
 		this.currentReceivedInternalConsensus = 0;
+
+		this.bestLeader = bestLeader;
+		this.bestWeightAssignment = bestWeightAssignment;
 
 		// If Fluidity is chosen then start thread
 		if (svController.getStaticConf().useFluidity()) {
@@ -157,6 +163,14 @@ public class DynamicWeightController implements Runnable {
 			fluidityThread.start();
 		}
 
+	}
+
+	public int getBestLeader() {
+		return bestLeader;
+	}
+
+	public Map<Integer, Double> getBestWeightAssignment() {
+		return bestWeightAssignment;
 	}
 
 	public void setFluidityController(FluidityController fluidityController) {

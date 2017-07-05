@@ -72,13 +72,16 @@ public class FluidityController implements Runnable {
 
         // Get the weight assignment from the old and current view
         //Map<Integer, Double> oldWeightAssignment = oldView.getWeights();
-        Map<Integer, Double> currentWeightAssignment = currentView.getWeights();
+        //Map<Integer, Double> currentWeightAssignment = currentView.getWeights();
+
+        Map<Integer, Double>  weightAssignment = dwc.getBestWeightAssignment();
+
         ArrayList<Integer> newlyMutedReplicas = new ArrayList<>();
 
         //Check whether the assignment has changes since the last reconfiguration
         for (int processId :
-                currentWeightAssignment.keySet()) {
-            if (currentWeightAssignment.get(processId) == 0) {
+                weightAssignment.keySet()) {
+            if (weightAssignment.get(processId) == 0) {
                 newlyMutedReplicas.add(processId);
             }
             //TODO Set processId replica passive and randomly create a new replica
@@ -106,7 +109,7 @@ public class FluidityController implements Runnable {
         ArrayList<FluidityGraphNode> returnNodes = new ArrayList<>();
 
         for (int i = 0; i < numOfReplicas; i++) {
-            boolean notYetFound = false;
+            boolean notYetFound = true;
             while (notYetFound) {
                 int nodeNr = getRandomNumberForNode(nodeOfGraph.size());
                 FluidityGraphNode tempNode = nodeOfGraph.get(nodeNr);
@@ -114,8 +117,6 @@ public class FluidityController implements Runnable {
                 if (fluidityGraph.checkForCapacity(tempNode)) {
                     returnNodes.add(tempNode);
                     notYetFound = false;
-                } else {
-                    notYetFound = true;
                 }
             }
         }

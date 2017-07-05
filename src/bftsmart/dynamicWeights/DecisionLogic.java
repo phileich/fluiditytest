@@ -1,11 +1,6 @@
 package bftsmart.dynamicWeights;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.*;
 
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.util.Logger;
@@ -19,7 +14,7 @@ public class DecisionLogic {
 	private int currentLeader;
 	private Double[] currentWeightAssignment;
 	private double bestCalculatedValue;
-	private Double[] bestWeightAssignment;
+	private Map<Integer, Double> bestWeightAssignment;
 	private int bestLeader;
 
 	public DecisionLogic(ServerViewController svController, double[] clientLatencies, double[][] proposeLatencies,
@@ -192,7 +187,7 @@ public class DecisionLogic {
 			// map weights to processes
 			HashMap<Integer, Double> weights = new HashMap<Integer, Double>();
 			for (int i = 0; i < newConfig.getWeights().length; i++) {
-				weights.put(i, newConfig.getWeights()[i]);
+				weights.put(i, newConfig.getWeights()[i]); //TODO Is i really the process ID? normally they start with 1
 			}
 
 			TreeMap<Integer, Double> sortedMap = sortMapByValue(weights);
@@ -280,7 +275,7 @@ public class DecisionLogic {
 		return bestLeader;
 	}
 
-	public Double[] getBestWeightAssignment() {
+	public Map<Integer, Double> getBestWeightAssignment() {
 		return bestWeightAssignment;
 	}
 
