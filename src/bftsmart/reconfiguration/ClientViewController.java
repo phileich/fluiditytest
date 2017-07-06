@@ -30,7 +30,7 @@ public class ClientViewController extends ViewController {
         if(cv == null){
             reconfigureTo(new View(0, getStaticConf().getInitialView(), 
                 getStaticConf().getF(), getInitAdddresses(), getStaticConf().isBFT(), getStaticConf().getDelta(),
-                    getStaticConf().useFluidity()));
+                    getStaticConf().useFluidity(), getStaticConf().getFluidityGraphPath()));
         }else{
             reconfigureTo(cv);
         }
@@ -42,7 +42,7 @@ public class ClientViewController extends ViewController {
         if(cv == null){
             reconfigureTo(new View(0, getStaticConf().getInitialView(), 
                 getStaticConf().getF(), getInitAdddresses(), getStaticConf().isBFT(), getStaticConf().getDelta(),
-                    getStaticConf().useFluidity()));
+                    getStaticConf().useFluidity(), getStaticConf().getFluidityGraphPath()));
         }else{
             reconfigureTo(cv);
         }

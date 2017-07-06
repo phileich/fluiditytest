@@ -15,6 +15,9 @@ limitations under the License.
 */
 package bftsmart.reconfiguration.views;
 
+import bftsmart.fluidity.graph.FluidityGraph;
+import bftsmart.fluidity.graph.FluidityGraphBuilder;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.net.InetSocketAddress;
@@ -43,8 +46,11 @@ public class View implements Serializable {
 	private Map<Integer, Double> weights;
 
 	private boolean useFluidity;
+	private String fluidityGraphPath;
+	private FluidityGraph fluidityGraph;
 
-	public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta, boolean useFluidity) {
+	public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta, boolean useFluidity,
+				String fluidityGraphPath) {
 		this.id = id;
 		this.processes = processes;
 		this.isBFT = isBFT;
@@ -54,6 +60,7 @@ public class View implements Serializable {
 		this.delta = delta;
 		//this.delta = delta;
 		this.useFluidity = useFluidity;
+		this.fluidityGraphPath = fluidityGraphPath;
 
 		for (int i = 0; i < this.processes.length; i++)
 			this.addresses.put(processes[i], addresses[i]);
@@ -68,6 +75,17 @@ public class View implements Serializable {
 		}
 
 		Arrays.sort(this.processes);
+
+		if (useFluidity) {
+			buildFluidtiyGraph();
+		}
+
+	}
+
+	private void buildFluidtiyGraph() {
+		FluidityGraphBuilder fluidityGraphBuilder = new FluidityGraphBuilder();
+		this.fluidityGraph = fluidityGraphBuilder.generateGraphFromXML(fluidityGraphPath);
+
 
 	}
 
@@ -164,7 +182,7 @@ public class View implements Serializable {
 	}
 
 	@Override
-	public String toString() {
+	public String toString() { //TODO Change to check for fluidity and graph
 		String ret = "ID:" + id + "; F:" + f + "; N-O:" + overlayN + "; F-O:" + overlayF + "; D: " + delta
 				+ "; Processes:";
 		for (int i = 0; i < processes.length; i++) {
@@ -179,7 +197,7 @@ public class View implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object obj) { //TODO Change to check for fluidity and graph
 		if (obj instanceof View) {
 			View v = (View) obj;
 			return (this.addresses.equals(v.addresses) &&
