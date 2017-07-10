@@ -177,6 +177,10 @@ public class DynamicWeightController implements Runnable {
 		this.fc = fluidityController;
 	}
 
+	public LatencyStorage getLatStorage() {
+		return latStorage;
+	}
+
 	private void addToLatStorage(byte[] data) {
 		try {
 			DataInputStream dis = new DataInputStream(new ByteArrayInputStream(data));

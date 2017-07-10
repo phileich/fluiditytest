@@ -181,6 +181,10 @@ public class View implements Serializable {
 		return weights;
 	}
 
+	public FluidityGraph getFluidityGraph() {
+		return fluidityGraph;
+	}
+
 	@Override
 	public String toString() { //TODO Change to check for fluidity and graph
 		String ret = "ID:" + id + "; F:" + f + "; N-O:" + overlayN + "; F-O:" + overlayF + "; D: " + delta

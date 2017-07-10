@@ -133,7 +133,7 @@ public class Reconfigurator implements Runnable {
 		dl.getBestWeightAssignment();
 		dl.getBestLeader();
 
-		dwController.notifyReconfigFinished();
+		dwController.notifyReconfigFinished(dl.getBestLeader(), dl.getBestWeightAssignment());
 
 	}
 

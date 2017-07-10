@@ -43,6 +43,9 @@ public class FluidityController implements Runnable {
         //TODO Run once when called from DWC
         String distributionStrategy = svController.getStaticConf().getFluidityDistributionStrategy();
 
+        // TODO Convert the String into the Strategyclass and give it to the FluidityReconfigurator (With Types
+        // for the strategies)
+
         switch (distributionStrategy) {
             case "Random Distribution":
                 randomDistribution();
@@ -127,5 +130,9 @@ public class FluidityController implements Runnable {
     private int getRandomNumberForNode(int range) {
         Random randomGenerator = new Random(1234);
         return randomGenerator.nextInt(range);
+    }
+
+    public DynamicWeightController getDwc() {
+        return dwc;
     }
 }
