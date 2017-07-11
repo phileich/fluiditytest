@@ -87,7 +87,8 @@ public class FluidityReconfigurator implements Runnable {
                 reduceList.add(graphLatencies.get(index));
             }
 
-
+            // TODO median reducer aufrufen, latenz in graph einfügen und
+            // Einträge in graphLatencies löschen
         }
 
         return returnGraph;
