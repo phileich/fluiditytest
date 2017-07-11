@@ -1,5 +1,8 @@
 package bftsmart.fluidity.graph;
 
+import org.w3c.dom.NodeList;
+
+import javax.xml.soap.Node;
 import java.util.ArrayList;
 
 /**
@@ -37,6 +40,20 @@ public class FluidityGraph {
 
         FluidityGraphEdge tempEdge = getEdgeByNodes(nodeFrom, nodeTo);
         tempEdge.setLatencyValue(newLatencyData);
+    }
+
+    public int getNodeIdFromReplicaId(int replicaId) {
+        int nodeId = -1;
+
+        for (FluidityGraphNode tempNode : nodes) {
+            for (int tempReplicaId : tempNode.getReplicas()) {
+                if (tempReplicaId == replicaId) {
+                    nodeId = tempNode.getDataCenterId();
+                }
+            }
+        }
+
+        return nodeId;
     }
 
     public void addReplicaToNode(int nodeId, int replicaId) {

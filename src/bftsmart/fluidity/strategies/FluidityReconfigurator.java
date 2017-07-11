@@ -3,6 +3,7 @@ package bftsmart.fluidity.strategies;
 import bftsmart.dynamicWeights.DynamicWeightController;
 import bftsmart.dynamicWeights.Latency;
 import bftsmart.dynamicWeights.LatencyStorage;
+import bftsmart.dynamicWeights.ServerLatency;
 import bftsmart.fluidity.FluidityController;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.reconfiguration.ServerViewController;
@@ -47,6 +48,25 @@ public class FluidityReconfigurator implements Runnable {
         // This class first completes the latency information of the graph with the one from the latency
         // storage and then calls the strategy
         // TODO The above
+
+        for (Latency[] latency : serverLatencies) {
+            for (int i = 0; i < latency.length; i++) {
+                Latency tempLatency = latency[i];
+                int replicaFrom = tempLatency.getFrom();
+                int replicaTo = tempLatency.getTo();
+                double latencyValue = tempLatency.getValue();
+
+                int nodeFrom = returnGraph.getNodeIdFromReplicaId(replicaFrom);
+                int nodeTo = returnGraph.getNodeIdFromReplicaId(replicaTo);
+
+                // TODO Erst alle latenzen zwischen gleichen nodes speichern und dann
+                // erst auf einen Wert reduzieren und anschließend in Graph eintragen
+
+                if (nodeFrom != nodeTo) {
+                    returnGraph.changeEdgeLatencyData(nodeFrom, nodeTo, latencyValue);
+                }
+            }
+        }
 
         return returnGraph;
     }
