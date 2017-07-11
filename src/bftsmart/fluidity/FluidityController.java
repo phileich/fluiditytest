@@ -25,6 +25,8 @@ public class FluidityController implements Runnable {
     private View currentView;
     private ArrayList<FluidityGraphNode> nodeOfGraph;
 
+    private FluidityGraph newFluidityGraph;
+
 
     public FluidityController(int id, ServerViewController svController, LatencyMonitor latencyMonitor,
                               DynamicWeightController dynamicWeightController,
@@ -134,5 +136,9 @@ public class FluidityController implements Runnable {
 
     public DynamicWeightController getDwc() {
         return dwc;
+    }
+
+    public void notifyNewFluidityGraph(FluidityGraph fluidityGraph) {
+        this.newFluidityGraph = fluidityGraph;
     }
 }

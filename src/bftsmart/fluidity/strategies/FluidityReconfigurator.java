@@ -1,5 +1,6 @@
 package bftsmart.fluidity.strategies;
 
+import bftsmart.dynamicWeights.DynamicWeightController;
 import bftsmart.dynamicWeights.Latency;
 import bftsmart.dynamicWeights.LatencyStorage;
 import bftsmart.fluidity.FluidityController;
@@ -15,20 +16,27 @@ public class FluidityReconfigurator implements Runnable {
     private DistributionStrategy strategy;
     private ServerViewController serverViewController;
     private FluidityController fluidityController;
+    private DynamicWeightController dynamicWeightController;
+
+    private FluidityGraph newFluidityGraph;
+
 
     public FluidityReconfigurator(DistributionStrategy strategy, ServerViewController svController,
                                   FluidityController fluidityController) {
         this.strategy = strategy;
         this.serverViewController = svController;
         this.fluidityController = fluidityController;
+        this.dynamicWeightController = this.fluidityController.getDwc();
     }
 
     @Override
     public void run() {
         LatencyStorage latencyStorage = fluidityController.getDwc().getLatStorage();
-        fillGraphWithLatency(latencyStorage.getServerLatencies());
+        FluidityGraph filledFluidityGraph = fillGraphWithLatency(latencyStorage.getServerLatencies());
 
-        // TODO Call strategy
+        newFluidityGraph = strategy.getReconfigGraph(filledFluidityGraph, dynamicWeightController.getBestWeightAssignment());
+
+        fluidityController.notifyNewFluidityGraph(newFluidityGraph);
     }
 
 
