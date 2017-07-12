@@ -86,10 +86,20 @@ public class FluidityReconfigurator implements Runnable {
             for(int index : indexList) {
                 reduceList.add(graphLatencies.get(index));
             }
+            
+            ArrayList<Double> reduceValues = new ArrayList<>();
+            for (FluidityGraphLatency fgl : reduceList) {
+                reduceValues.add(fgl.getLatencyValue());
+            }
 
-            // TODO median reducer aufrufen, latenz in graph einfügen und
-            // Einträge in graphLatencies löschen
-        }
+            double medianValue = medianReducer(reduceValues);
+
+            returnGraph.changeEdgeLatencyData(from, to, medianValue);
+
+            for(int index : indexList) {
+                graphLatencies.remove(index);
+            }
+         }
 
         return returnGraph;
     }
@@ -108,12 +118,22 @@ public class FluidityReconfigurator implements Runnable {
 
     private double medianReducer(ArrayList<Double> list) {
         double[] value = new double[list.size()];
-        value = list.toArray(value); //TODO Fix it
+        Double[] tempValue = new Double[list.size()];
+        tempValue = list.toArray(tempValue);
+        value = convertDouble(tempValue);
         Median median = new Median();
 
         median.setData(value);
 
         return median.evaluate();
+    }
+
+    private double[] convertDouble(Double[] array) {
+        double[] tempArray = new double[array.length];
+        for (int i = 0; i < array.length; i++) {
+            tempArray[i] = array[i];
+        }
+        return tempArray;
     }
 
     private class FluidityGraphLatency {
