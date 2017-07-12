@@ -63,9 +63,6 @@ public class FluidityReconfigurator implements Runnable {
 
                 FluidityGraphLatency latencyEntry = new FluidityGraphLatency(nodeFrom, nodeTo, latencyValue);
                 fluidityGraphLatencies.add(latencyEntry);
-
-                // TODO Erst alle latenzen zwischen gleichen nodes speichern und dann
-                // erst auf einen Wert reduzieren und anschließend in Graph eintragen
             }
         }
 
@@ -86,7 +83,7 @@ public class FluidityReconfigurator implements Runnable {
             for(int index : indexList) {
                 reduceList.add(graphLatencies.get(index));
             }
-            
+
             ArrayList<Double> reduceValues = new ArrayList<>();
             for (FluidityGraphLatency fgl : reduceList) {
                 reduceValues.add(fgl.getLatencyValue());
