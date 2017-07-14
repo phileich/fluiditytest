@@ -5,6 +5,7 @@ import bftsmart.dynamicWeights.LatencyMonitor;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphBuilder;
 import bftsmart.fluidity.graph.FluidityGraphNode;
+import bftsmart.fluidity.strategies.FluidityReconfigurator;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.util.Logger;
@@ -26,6 +27,7 @@ public class FluidityController implements Runnable {
     private ArrayList<FluidityGraphNode> nodeOfGraph;
 
     private FluidityGraph newFluidityGraph;
+    private FluidityReconfigurator fluidityReconfigurator;
 
 
     public FluidityController(int id, ServerViewController svController, LatencyMonitor latencyMonitor,
@@ -36,6 +38,7 @@ public class FluidityController implements Runnable {
         this.latencyMonitor = latencyMonitor;
         this.dwc = dynamicWeightController;
         this.fluidityGraph = fluidityGraph;
+        this.fluidityReconfigurator = new FluidityReconfigurator(svController, this);
 
 
     }
@@ -45,8 +48,7 @@ public class FluidityController implements Runnable {
         //TODO Run once when called from DWC
         String distributionStrategy = svController.getStaticConf().getFluidityDistributionStrategy();
 
-        // TODO Convert the String into the Strategyclass and give it to the FluidityReconfigurator (With Types
-        // for the strategies)
+        // TODO Use strategypattern
 
         switch (distributionStrategy) {
             case "Random Distribution":
@@ -72,29 +74,9 @@ public class FluidityController implements Runnable {
     }
 
     private void randomDistribution() {
-        currentView = svController.getCurrentView();
-        nodeOfGraph = fluidityGraph.getNodes();
-
-        // Get the weight assignment from the old and current view
-        //Map<Integer, Double> oldWeightAssignment = oldView.getWeights();
-        //Map<Integer, Double> currentWeightAssignment = currentView.getWeights();
-
-        Map<Integer, Double>  weightAssignment = dwc.getBestWeightAssignment();
-
-        ArrayList<Integer> newlyMutedReplicas = new ArrayList<>();
-
-        //Check whether the assignment has changes since the last reconfiguration
-        for (int processId :
-                weightAssignment.keySet()) {
-            if (weightAssignment.get(processId) == 0) {
-                newlyMutedReplicas.add(processId);
-            }
-            //TODO Set processId replica passive and randomly create a new replica
-            getNodesForNewReplica(newlyMutedReplicas.size());
-        }
-
 
     }
+
 
     private void dataCenterDistribution() {
 
@@ -109,30 +91,7 @@ public class FluidityController implements Runnable {
     }
 
 
-    private ArrayList<FluidityGraphNode> getNodesForNewReplica(int numOfReplicas) {
-        //TODO Randomly select nodes for replicas
-        ArrayList<FluidityGraphNode> returnNodes = new ArrayList<>();
 
-        for (int i = 0; i < numOfReplicas; i++) {
-            boolean notYetFound = true;
-            while (notYetFound) {
-                int nodeNr = getRandomNumberForNode(nodeOfGraph.size());
-                FluidityGraphNode tempNode = nodeOfGraph.get(nodeNr);
-
-                if (fluidityGraph.checkForCapacity(tempNode)) {
-                    returnNodes.add(tempNode);
-                    notYetFound = false;
-                }
-            }
-        }
-
-        return returnNodes;
-    }
-
-    private int getRandomNumberForNode(int range) {
-        Random randomGenerator = new Random(1234);
-        return randomGenerator.nextInt(range);
-    }
 
     public DynamicWeightController getDwc() {
         return dwc;

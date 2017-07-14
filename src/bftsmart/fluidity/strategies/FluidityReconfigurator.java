@@ -23,9 +23,8 @@ public class FluidityReconfigurator implements Runnable {
     private FluidityGraph newFluidityGraph;
 
 
-    public FluidityReconfigurator(DistributionStrategy strategy, ServerViewController svController,
+    public FluidityReconfigurator(ServerViewController svController,
                                   FluidityController fluidityController) {
-        this.strategy = strategy;
         this.serverViewController = svController;
         this.fluidityController = fluidityController;
         this.dynamicWeightController = this.fluidityController.getDwc();
@@ -37,11 +36,13 @@ public class FluidityReconfigurator implements Runnable {
         FluidityGraph filledFluidityGraph = fillGraphWithLatency(latencyStorage.getServerLatencies());
 
         newFluidityGraph = strategy.getReconfigGraph(filledFluidityGraph, dynamicWeightController.getBestWeightAssignment());
-
+        //TODO Check difference between graphs (deep copy)
         fluidityController.notifyNewFluidityGraph(newFluidityGraph);
     }
 
-
+    public void setDistributionStrategy(DistributionStrategy strategy) {
+        this.strategy = strategy;
+    }
 
     private FluidityGraph fillGraphWithLatency(List<Latency[]> serverLatencies) {
         FluidityGraph returnGraph = serverViewController.getCurrentView().getFluidityGraph();
