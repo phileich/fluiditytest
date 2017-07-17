@@ -107,6 +107,18 @@ public class FluidityGraph {
         }
     }
 
+    public int numOfPossibleNodes() {
+        int counter = 0;
+
+        for (FluidityGraphNode node : nodes) {
+            if (!hasAlreadyActiveReplica(node)) {
+                counter++;
+            }
+        }
+
+        return counter;
+    }
+
     public FluidityGraphNode getNodeById(int nodeId) {
         FluidityGraphNode neededNode = new FluidityGraphNode(nodeId, null, -1);
 

@@ -107,7 +107,7 @@ public class StrategyRandom implements DistributionStrategy {
                 int nodeNr = getRandomNumberForNode(nodeOfGraph.size());
                 FluidityGraphNode tempNode = nodeOfGraph.get(nodeNr);
                 // TODO If numOfReplicas is higher than the number of available data centers, then we are in a loop
-
+                int maxNumOfNodes = fluidityGraph.numOfPossibleNodes();
 
                 if (fluidityGraph.checkForCapacity(tempNode)) {
                     if (!fluidityGraph.hasAlreadyActiveReplica(tempNode)) {
