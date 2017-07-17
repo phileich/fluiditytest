@@ -69,6 +69,11 @@ public class FluidityGraph {
         getNodeById(nodeId).deleteReplica(replicaId);
     }
 
+    public void removeReplicaFromNode(int replicaId) {
+        int nodeId = getNodeIdFromReplicaId(replicaId);
+        getNodeById(nodeId).deleteReplica(replicaId);
+    }
+
     public void changeMaxNumOfRep(int nodeId, int maxNumOfRep) {
         getNodeById(nodeId).setMaximumNumberOfReplicas(maxNumOfRep);
     }

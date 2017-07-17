@@ -47,20 +47,30 @@ public class StrategyRandom implements DistributionStrategy {
 
         // Distribute new Replicas
         newNodes = getNodesForNewReplica(newlyMutedReplicas.size());
-        oldNodes = getNodesByReplicaId(newlyMutedReplicas);
+        //oldNodes = getNodesByReplicaId(newlyMutedReplicas);
 
-        for (FluidityGraphNode node : newNodes) {
-                if (oldNodes.contains(node)) {
-                    // do not change node
+        // Small optimization to let old and new replicas running
+        for (int replicaId : newlyMutedReplicas) {
+            int nodeId = fluidityGraph.getNodeIdFromReplicaId(replicaId);
+            FluidityGraphNode node = fluidityGraph.getNodeById(nodeId);
+                if (newNodes.contains(node)) {
+                    newNodes.remove(node); // TODO Make sure that only one muted replica per node
+                    newlyMutedReplicas.remove(replicaId);
                 }
         }
 
         newReplicas = generateNewReplicas(newlyMutedReplicas.size());
 
+        // Add new replicas to the graph
         for (int proId : newReplicas) {
             FluidityGraphNode graphNode = newNodes.get(0); //TODO Check if remove really shifts
             fluidityGraph.addReplicaToNode(graphNode, proId);
             newNodes.remove(0);
+        }
+
+        // Delete the old replicas from the graph
+        for (int repId : newlyMutedReplicas) {
+            fluidityGraph.removeReplicaFromNode(repId);
         }
 
     }
@@ -98,9 +108,8 @@ public class StrategyRandom implements DistributionStrategy {
             while (!foundNode) {
                 int nodeNr = getRandomNumberForNode(nodeOfGraph.size());
                 FluidityGraphNode tempNode = nodeOfGraph.get(nodeNr);
-                /*
-                If numOfReplicas is higher than the number of available data centers, then we are in a loop
-                 */
+                // TODO If numOfReplicas is higher than the number of available data centers, then we are in a loop
+
 
                 if (fluidityGraph.checkForCapacity(tempNode)) {
                     if (!fluidityGraph.hasAlreadyActiveReplica(tempNode)) {
