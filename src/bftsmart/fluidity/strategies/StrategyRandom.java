@@ -31,9 +31,8 @@ public class StrategyRandom implements DistributionStrategy {
 
     private void randomDistribution() {
         ArrayList<Integer> newlyMutedReplicas = new ArrayList<>();
-        ArrayList<FluidityGraphNode> newNodes = new ArrayList<>();
-        ArrayList<Integer> newReplicas = new ArrayList<>();
-        ArrayList<FluidityGraphNode> oldNodes = new ArrayList<>();
+        ArrayList<FluidityGraphNode> newNodes;
+        ArrayList<Integer> newReplicas;
 
         for (int processId : bestWeightAssignment.keySet()) {
             if (bestWeightAssignment.get(processId) == 0) {
@@ -47,7 +46,6 @@ public class StrategyRandom implements DistributionStrategy {
 
         // Distribute new Replicas
         newNodes = getNodesForNewReplica(newlyMutedReplicas.size());
-        //oldNodes = getNodesByReplicaId(newlyMutedReplicas);
 
         // Small optimization to let old and new replicas running
         for (int replicaId : newlyMutedReplicas) {
