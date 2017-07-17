@@ -61,6 +61,10 @@ public class FluidityGraph {
 
     }
 
+    public void addReplicaToNode(FluidityGraphNode node, int replicaId) {
+        node.addReplica(replicaId);
+    }
+
     public void removeReplicaFromNode(int nodeId, int replicaId) {
         getNodeById(nodeId).deleteReplica(replicaId);
     }
@@ -90,7 +94,15 @@ public class FluidityGraph {
         }
     }
 
-    private FluidityGraphNode getNodeById(int nodeId) {
+    public boolean hasAlreadyActiveReplica(FluidityGraphNode node) {
+        if (node.getReplicas().size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public FluidityGraphNode getNodeById(int nodeId) {
         FluidityGraphNode neededNode = new FluidityGraphNode(nodeId, null, -1);
 
         int index = nodes.indexOf(neededNode);
