@@ -2,12 +2,15 @@ package bftsmart.fluidity.graph;
 
 import bftsmart.reconfiguration.views.View;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by philipp on 19.06.17.
  */
-public class FluidityGraph {
+public class FluidityGraph implements Serializable{
+    private static final long serialVersionUID = 5117021765431291618L;
+
     private ArrayList<FluidityGraphNode> nodes;
     private ArrayList<FluidityGraphEdge> edges;
     private View view;

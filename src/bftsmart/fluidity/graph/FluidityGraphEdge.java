@@ -6,7 +6,9 @@ import java.io.Serializable;
  * This class represents an edge of the fluidity graph containing information about the latencies between
  * the data centers, which are represented by the FluidityGraphNodes
  */
-public class FluidityGraphEdge {
+public class FluidityGraphEdge implements Serializable{
+    private static final long serialVersionUID = -7826915885674484359L;
+
     private FluidityGraphNode nodeFrom;
     private FluidityGraphNode nodeTo;
     private double latencyValue;
