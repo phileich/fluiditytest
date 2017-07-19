@@ -144,4 +144,21 @@ public class FluidityGraph {
 
         return edges.get(index);
     }
+
+    public boolean checkForConsistencyWithRules() {
+        for (FluidityGraphNode node : nodes) {
+            int count = 0;
+            for (int proId : node.getReplicas()) {
+                if (view.getWeight(proId) == 0) {
+                    count++;
+                }
+            }
+
+            if (count > 1) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

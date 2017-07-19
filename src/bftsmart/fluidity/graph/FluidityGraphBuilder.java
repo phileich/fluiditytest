@@ -91,7 +91,9 @@ public class FluidityGraphBuilder {
             e.printStackTrace();
         }
 
-
-        return fluidityGraph;
+        if (fluidityGraph.checkForConsistencyWithRules()) {
+            return fluidityGraph;
+        }
+        return null;
     }
 }
