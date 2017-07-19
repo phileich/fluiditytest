@@ -1,5 +1,6 @@
 package bftsmart.fluidity.graph;
 
+import bftsmart.reconfiguration.views.View;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -19,8 +20,8 @@ import java.util.ArrayList;
 public class FluidityGraphBuilder {
     private FluidityGraph fluidityGraph;
 
-    public FluidityGraphBuilder() {
-        fluidityGraph = new FluidityGraph();
+    public FluidityGraphBuilder(View view) {
+        fluidityGraph = new FluidityGraph(view);
     }
 
     public FluidityGraph generateGraphFromXML(String filePath) {

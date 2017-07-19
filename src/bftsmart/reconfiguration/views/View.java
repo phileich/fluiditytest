@@ -83,7 +83,7 @@ public class View implements Serializable {
 	}
 
 	private void buildFluidtiyGraph() {
-		FluidityGraphBuilder fluidityGraphBuilder = new FluidityGraphBuilder();
+		FluidityGraphBuilder fluidityGraphBuilder = new FluidityGraphBuilder(this);
 		this.fluidityGraph = fluidityGraphBuilder.generateGraphFromXML(fluidityGraphPath);
 
 

@@ -1,8 +1,7 @@
 package bftsmart.fluidity.graph;
 
-import org.w3c.dom.NodeList;
+import bftsmart.reconfiguration.views.View;
 
-import javax.xml.soap.Node;
 import java.util.ArrayList;
 
 /**
@@ -11,10 +10,12 @@ import java.util.ArrayList;
 public class FluidityGraph {
     private ArrayList<FluidityGraphNode> nodes;
     private ArrayList<FluidityGraphEdge> edges;
+    private View view;
 
-    public FluidityGraph() {
+    public FluidityGraph(View view) {
         nodes = new ArrayList<>();
         edges = new ArrayList<>();
+        this.view = view;
     }
 
     public void addNode(int id, ArrayList<Integer> replicas, int maxNumOfRep) {
@@ -99,9 +100,18 @@ public class FluidityGraph {
         }
     }
 
-    public boolean hasAlreadyActiveReplica(FluidityGraphNode node) {
+    /**
+    Returns true if there are unmuted replicas in the given node, else false.
+     */
+    public boolean hasAlreadyUnmutedReplica(FluidityGraphNode node) {
         if (node.getReplicas().size() > 0) {
-            return true;
+            ArrayList<Integer> nodeReplicas = node.getReplicas();
+            for (int proId : nodeReplicas) {
+                if (view.getWeight(proId) > 0) {
+                    return true;
+                }
+            }
+            return false;
         } else {
             return false;
         }
@@ -111,7 +121,7 @@ public class FluidityGraph {
         int counter = 0;
 
         for (FluidityGraphNode node : nodes) {
-            if (!hasAlreadyActiveReplica(node)) {
+            if (!hasAlreadyUnmutedReplica(node)) {
                 counter++;
             }
         }
