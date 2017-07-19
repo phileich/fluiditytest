@@ -5,6 +5,7 @@ import bftsmart.dynamicWeights.Latency;
 import bftsmart.dynamicWeights.LatencyStorage;
 import bftsmart.fluidity.FluidityController;
 import bftsmart.fluidity.graph.FluidityGraph;
+import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.reconfiguration.ServerViewController;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
@@ -39,7 +40,11 @@ public class FluidityReconfigurator implements Runnable {
 
         oldFluidityGraph = deepCopyFluidityGraph(filledFluidityGraph);
         newFluidityGraph = strategy.getReconfigGraph(filledFluidityGraph, dynamicWeightController.getBestWeightAssignment());
-        //TODO Check difference between graphs (deep copy)
+
+        // TODO Check difference between graphs (deep copy)
+        // compare nodes and check for differences (relevant for cloud connection)
+
+
         fluidityController.notifyNewFluidityGraph(newFluidityGraph);
     }
 
