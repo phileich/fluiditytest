@@ -8,6 +8,7 @@ import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.reconfiguration.ServerViewController;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class FluidityReconfigurator implements Runnable {
     private FluidityController fluidityController;
     private DynamicWeightController dynamicWeightController;
 
+    private FluidityGraph oldFluidityGraph;
     private FluidityGraph newFluidityGraph;
 
 
@@ -35,9 +37,35 @@ public class FluidityReconfigurator implements Runnable {
         LatencyStorage latencyStorage = fluidityController.getDwc().getLatStorage();
         FluidityGraph filledFluidityGraph = fillGraphWithLatency(latencyStorage.getServerLatencies());
 
+        oldFluidityGraph = deepCopyFluidityGraph(filledFluidityGraph);
         newFluidityGraph = strategy.getReconfigGraph(filledFluidityGraph, dynamicWeightController.getBestWeightAssignment());
         //TODO Check difference between graphs (deep copy)
         fluidityController.notifyNewFluidityGraph(newFluidityGraph);
+    }
+
+    private FluidityGraph deepCopyFluidityGraph(FluidityGraph fluidityGraph) {
+        FluidityGraph clonedGraph = null;
+
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(fluidityGraph);
+            oos.flush();
+            oos.close();
+            baos.close();
+            byte[] byteGraph = baos.toByteArray();
+
+            ByteArrayInputStream bais = new ByteArrayInputStream(byteGraph);
+            clonedGraph = (FluidityGraph) new ObjectInputStream(bais).readObject();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return clonedGraph;
     }
 
     public void setDistributionStrategy(DistributionStrategy strategy) {
