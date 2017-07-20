@@ -95,7 +95,17 @@ public class FluidityController implements Runnable {
             ArrayList<Integer> oldReplicaIds = oldFluidityGraph.getReplicasFromNode(oldNode);
             ArrayList<Integer> newReplicaIds = newFluidityGraph.getReplicasFromNode(newNode);
 
-            
+            for (int repId : newReplicaIds) {
+                if (!oldReplicaIds.contains(repId)) {
+                    // new replica created
+                }
+            }
+
+            for (int repId : oldReplicaIds) {
+                if (!newReplicaIds.contains(repId)) {
+                    // old replica deleted
+                }
+            }
         }
     }
 }
