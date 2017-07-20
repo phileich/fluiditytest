@@ -22,6 +22,10 @@ public class FluidityGraphNode implements Serializable{
         this.maximumNumberOfReplicas = maximumNumberOfReplicas;
     }
 
+    public int getNodeId() {
+        return dataCenterId;
+    }
+
     protected ArrayList<Integer> getReplicas() {
         return replicas;
     }

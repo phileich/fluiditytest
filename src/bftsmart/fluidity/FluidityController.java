@@ -43,8 +43,6 @@ public class FluidityController implements Runnable {
         this.dwc = dynamicWeightController;
         this.fluidityGraph = fluidityGraph;
         this.fluidityReconfigurator = new FluidityReconfigurator(svController, this);
-
-
     }
 
     @Override
@@ -82,26 +80,6 @@ public class FluidityController implements Runnable {
         }
     }
 
-    private void randomDistribution() {
-
-    }
-
-
-    private void dataCenterDistribution() {
-
-    }
-
-    private void staticPlacement() {
-
-    }
-
-    private void latencyDistribution() {
-
-    }
-
-
-
-
     public DynamicWeightController getDwc() {
         return dwc;
     }
@@ -109,5 +87,15 @@ public class FluidityController implements Runnable {
     public void notifyNewFluidityGraph(FluidityGraph newFluidityGraph, FluidityGraph oldFluidityGraph) {
         this.newFluidityGraph = newFluidityGraph;
         this.oldFluidityGraph = oldFluidityGraph;
+
+        // TODO Check difference between graphs (deep copy)
+        // compare nodes and check for differences (relevant for cloud connection)
+        for (FluidityGraphNode newNode : newFluidityGraph.getNodes()) {
+            FluidityGraphNode oldNode = oldFluidityGraph.getNodeById(newNode.getNodeId());
+            ArrayList<Integer> oldReplicaIds = oldFluidityGraph.getReplicasFromNode(oldNode);
+            ArrayList<Integer> newReplicaIds = newFluidityGraph.getReplicasFromNode(newNode);
+
+            
+        }
     }
 }

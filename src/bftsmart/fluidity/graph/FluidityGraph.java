@@ -140,6 +140,10 @@ public class FluidityGraph implements Serializable{
         return nodes.get(index);
     }
 
+    public ArrayList<Integer> getReplicasFromNode(FluidityGraphNode node) {
+        return node.getReplicas();
+    }
+
     private FluidityGraphEdge getEdgeByNodes(FluidityGraphNode nodeFrom, FluidityGraphNode nodeTo) {
         FluidityGraphEdge neededEdge = new FluidityGraphEdge(nodeFrom, nodeTo, -1);
 

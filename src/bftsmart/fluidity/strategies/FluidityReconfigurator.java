@@ -41,10 +41,6 @@ public class FluidityReconfigurator implements Runnable {
         oldFluidityGraph = deepCopyFluidityGraph(filledFluidityGraph);
         newFluidityGraph = strategy.getReconfigGraph(filledFluidityGraph, dynamicWeightController.getBestWeightAssignment());
 
-        // TODO Check difference between graphs (deep copy)
-        // compare nodes and check for differences (relevant for cloud connection)
-
-
         fluidityController.notifyNewFluidityGraph(newFluidityGraph, oldFluidityGraph);
     }
 
