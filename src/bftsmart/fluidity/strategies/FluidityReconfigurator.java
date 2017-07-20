@@ -45,7 +45,11 @@ public class FluidityReconfigurator implements Runnable {
         // compare nodes and check for differences (relevant for cloud connection)
 
 
-        fluidityController.notifyNewFluidityGraph(newFluidityGraph);
+        fluidityController.notifyNewFluidityGraph(newFluidityGraph, oldFluidityGraph);
+    }
+
+    public void setDistributionStrategy(DistributionStrategy strategy) {
+        this.strategy = strategy;
     }
 
     private FluidityGraph deepCopyFluidityGraph(FluidityGraph fluidityGraph) {
@@ -71,10 +75,6 @@ public class FluidityReconfigurator implements Runnable {
         }
 
         return clonedGraph;
-    }
-
-    public void setDistributionStrategy(DistributionStrategy strategy) {
-        this.strategy = strategy;
     }
 
     private FluidityGraph fillGraphWithLatency(List<Latency[]> serverLatencies) {

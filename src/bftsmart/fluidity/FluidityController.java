@@ -6,6 +6,9 @@ import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphBuilder;
 import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.fluidity.strategies.FluidityReconfigurator;
+import bftsmart.fluidity.strategies.StrategyConstant;
+import bftsmart.fluidity.strategies.StrategyLatency;
+import bftsmart.fluidity.strategies.StrategyRandom;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.util.Logger;
@@ -27,6 +30,7 @@ public class FluidityController implements Runnable {
     private ArrayList<FluidityGraphNode> nodeOfGraph;
 
     private FluidityGraph newFluidityGraph;
+    private FluidityGraph oldFluidityGraph;
     private FluidityReconfigurator fluidityReconfigurator;
 
 
@@ -52,19 +56,24 @@ public class FluidityController implements Runnable {
 
         switch (distributionStrategy) {
             case "Random Distribution":
-                randomDistribution();
+                fluidityReconfigurator.setDistributionStrategy(new StrategyRandom());
+                Thread randomStrategy = new Thread(fluidityReconfigurator, "RandomStrategyThread");
+                randomStrategy.setPriority(Thread.MIN_PRIORITY);
+                randomStrategy.start();
                 break;
 
             case "Latency Distribution":
-                latencyDistribution();
+                fluidityReconfigurator.setDistributionStrategy(new StrategyLatency());
+                Thread latencyStrategy = new Thread(fluidityReconfigurator, "LatencyStrategyThread");
+                latencyStrategy.setPriority(Thread.MIN_PRIORITY);
+                latencyStrategy.start();
                 break;
 
-            case "Static Placement":
-                staticPlacement();
-                break;
-
-            case "Data Center Distribution":
-                dataCenterDistribution();
+            case "Constant Distribution":
+                fluidityReconfigurator.setDistributionStrategy(new StrategyConstant());
+                Thread constantStrategy = new Thread(fluidityReconfigurator, "ConstantStrategyThread");
+                constantStrategy.setPriority(Thread.MIN_PRIORITY);
+                constantStrategy.start();
                 break;
 
             default:
@@ -97,7 +106,8 @@ public class FluidityController implements Runnable {
         return dwc;
     }
 
-    public void notifyNewFluidityGraph(FluidityGraph fluidityGraph) {
-        this.newFluidityGraph = fluidityGraph;
+    public void notifyNewFluidityGraph(FluidityGraph newFluidityGraph, FluidityGraph oldFluidityGraph) {
+        this.newFluidityGraph = newFluidityGraph;
+        this.oldFluidityGraph = oldFluidityGraph;
     }
 }
