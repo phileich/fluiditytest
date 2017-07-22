@@ -114,4 +114,8 @@ public class StrategyLatency implements DistributionStrategy {
 //        Random randomGenerator = new Random(1234);
 //        return randomGenerator.nextInt(range);
 //    }
+
+    private int getPossibleNodeForGraph() {
+        
+    }
 }
