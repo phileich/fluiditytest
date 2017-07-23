@@ -136,13 +136,30 @@ public class StrategyLatency implements DistributionStrategy {
         for (FluidityGraphNode node : nodesOfGraph) {
             ArrayList<Integer> nodeReplicas = node.getReplicas();
 
-            if (nodeReplicas.size() == 0) {
+            if (nodeReplicas.size() == 0) { //TODO Adopt to the possibility of having more than one replica in one node
                 nodeCategory[0].add(node);
             } else {
                 double[] weightsOfReplicas = fluidityGraph.getWeightsOfReplicas(nodeReplicas);
                 for (int i = 0; i < weightsOfReplicas.length; i++) {
                     if (weightsOfReplicas[i] == 0.0d) {
-                        nodeReplicas.get(i); //Davon die neuen gewichte abfragen und anschließend in kategorie einteilen
+                        int rep = nodeReplicas.get(i);
+                        double newWeight = bestWeightAssignment.get(rep);
+
+                        if (newWeight == 0.0d) {
+                            nodeCategory[3].add(node);
+                        } else {
+                            nodeCategory[2].add(node);
+                        }
+
+                    } else {
+                        int rep = nodeReplicas.get(i);
+                        double newWeight = bestWeightAssignment.get(rep);
+
+                        if (newWeight == 0.0d) {
+                            nodeCategory[4].add(node);
+                        } else {
+                            nodeCategory[1].add(node);
+                        }
                     }
                 }
             }
