@@ -24,9 +24,9 @@ public class FluidityGraphNode implements Serializable{
 
     public int getNodeId() {
         return dataCenterId;
-    }
+    } //Duplicate
 
-    protected ArrayList<Integer> getReplicas() {
+    public ArrayList<Integer> getReplicas() {
         return replicas;
     }
 
@@ -42,7 +42,7 @@ public class FluidityGraphNode implements Serializable{
         this.replicas.remove(replicaId);
     }
 
-    protected int getMaximumNumberOfReplicas() {
+    public int getMaximumNumberOfReplicas() {
         return maximumNumberOfReplicas;
     }
 

@@ -6,7 +6,6 @@ import bftsmart.fluidity.graph.FluidityGraphNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * Created by philipp on 06.07.17.
@@ -14,6 +13,15 @@ import java.util.Random;
 public class StrategyLatency implements DistributionStrategy {
     private FluidityGraph fluidityGraph;
     private Map<Integer, Double> bestWeightAssignment;
+
+    /*
+    0 = nodes that contain no replicas
+    1 = nodes containing unmuted replicas, which were also unmuted before the bestweightcalculation
+    2 = nodes containing unmuted replicas, which were muted before the bestweightcalculation
+    3 = nodes containing muted replicas, which were also muted before the bestweightcalculation
+    4 = nodes containing muted replicas, which were unmuted before the bestweightcalculation
+     */
+    private ArrayList<FluidityGraphNode>[] nodeCategory = new ArrayList[5];
 
     @Override
     public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment) {
@@ -95,7 +103,7 @@ public class StrategyLatency implements DistributionStrategy {
         for (int i = 0; i < numOfReplicas; i++) {
             boolean foundNode = false;
             while (!foundNode) {
-                int nodeNr = getRandomNumberForNode(nodesOfGraph.size());
+                int nodeNr = getPossibleNodeForGraph(nodesOfGraph.size());
                 FluidityGraphNode tempNode = nodesOfGraph.get(nodeNr);
                 if (fluidityGraph.checkForCapacity(tempNode)) {
                     if (!fluidityGraph.hasAlreadyUnmutedReplica(tempNode)) {
@@ -117,5 +125,30 @@ public class StrategyLatency implements DistributionStrategy {
 
     private int getPossibleNodeForGraph() {
         
+    }
+
+    private void categorizeNodes() {
+        ArrayList<FluidityGraphNode> nodesOfGraph = fluidityGraph.getNodes();
+        for (ArrayList<FluidityGraphNode> nodeList : nodeCategory) {
+            nodeList = new ArrayList<>();
+        }
+
+        for (FluidityGraphNode node : nodesOfGraph) {
+            ArrayList<Integer> nodeReplicas = node.getReplicas();
+
+            if (nodeReplicas.size() == 0) {
+                nodeCategory[0].add(node);
+            } else {
+                double[] weightsOfReplicas = fluidityGraph.getWeightsOfReplicas(nodeReplicas);
+                for (int i = 0; i < weightsOfReplicas.length; i++) {
+                    if (weightsOfReplicas[i] == 0.0d) {
+                        nodeReplicas.get(i); //Davon die neuen gewichte abfragen und anschließend in kategorie einteilen
+                    }
+                }
+            }
+        }
+
+
+
     }
 }

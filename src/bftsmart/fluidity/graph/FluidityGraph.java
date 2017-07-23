@@ -168,4 +168,16 @@ public class FluidityGraph implements Serializable{
 
         return true;
     }
+
+    public double[] getWeightsOfReplicas(ArrayList<Integer> replicaIds) {
+        double[] weightsOfReplicas = new double[replicaIds.size()];
+        int i = 0;
+
+        for (int rep : replicaIds) {
+            weightsOfReplicas[i] = view.getWeight(rep);
+            i++;
+        }
+
+        return weightsOfReplicas;
+    }
 }
