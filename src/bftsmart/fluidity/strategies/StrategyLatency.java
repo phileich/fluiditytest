@@ -3,9 +3,7 @@ package bftsmart.fluidity.strategies;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphNode;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by philipp on 06.07.17.
@@ -124,7 +122,7 @@ public class StrategyLatency implements DistributionStrategy {
 //    }
 
     private int getPossibleNodeForGraph() {
-        
+        return 0;
     }
 
     private void categorizeNodes() {
@@ -147,8 +145,10 @@ public class StrategyLatency implements DistributionStrategy {
 
                         if (newWeight == 0.0d) {
                             nodeCategory[3].add(node);
+                            //i = weightsOfReplicas.length; //optimization
                         } else {
                             nodeCategory[2].add(node);
+                            //i = weightsOfReplicas.length; //optimization
                         }
 
                     } else {
@@ -164,8 +164,13 @@ public class StrategyLatency implements DistributionStrategy {
                 }
             }
         }
+    }
 
+    private double assignWeightToNode(FluidityGraphNode node) {
+        double weightOfNode = 0.0d;
 
+        //Optimization
 
+        return weightOfNode;
     }
 }
