@@ -4,6 +4,7 @@ import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphNode;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by philipp on 06.07.17.
@@ -44,6 +45,8 @@ public class StrategyLatency implements DistributionStrategy {
 
         // Small optimization to let old and new replicas running
         newNodes = getNodesForNewReplica(newlyMutedReplicas.size());
+
+        // not needed any more
         for (int replicaId : newlyMutedReplicas) {
             int nodeId = fluidityGraph.getNodeIdFromReplicaId(replicaId);
             FluidityGraphNode node = fluidityGraph.getNodeById(nodeId);
@@ -57,8 +60,6 @@ public class StrategyLatency implements DistributionStrategy {
         for (int repId : newlyMutedReplicas) {
             fluidityGraph.removeReplicaFromNode(repId);
         }
-
-        // Distribute new Replicas
 
         newReplicas = generateNewReplicas(newlyMutedReplicas.size());
 
@@ -98,19 +99,9 @@ public class StrategyLatency implements DistributionStrategy {
         ArrayList<FluidityGraphNode> nodesOfGraph = fluidityGraph.getNodes();
         ArrayList<FluidityGraphNode> returnNodes = new ArrayList<>();
 
-        for (int i = 0; i < numOfReplicas; i++) {
-            boolean foundNode = false;
-            while (!foundNode) {
-                int nodeNr = getPossibleNodeForGraph(nodesOfGraph.size());
-                FluidityGraphNode tempNode = nodesOfGraph.get(nodeNr);
-                if (fluidityGraph.checkForCapacity(tempNode)) {
-                    if (!fluidityGraph.hasAlreadyUnmutedReplica(tempNode)) {
-                        returnNodes.add(tempNode);
-                        foundNode = true;
-                    }
-                }
-            }
-        }
+        int[] nodeNr = getPossibleNodeForGraph(numOfReplicas);
+
+        //TODO call DWgraph for validation
 
         return returnNodes;
     }
@@ -121,8 +112,36 @@ public class StrategyLatency implements DistributionStrategy {
 //        return randomGenerator.nextInt(range);
 //    }
 
-    private int getPossibleNodeForGraph() {
-        return 0;
+    private int[] getPossibleNodeForGraph(int numOfRequiredNodes) {
+        ArrayList<FluidityGraphNode> possibleNodes = new ArrayList<>();
+        int[] newNodes = new int[numOfRequiredNodes];
+        ArrayList<NodeWeights> nodeWeights = new ArrayList<>();
+
+        categorizeNodes();
+        possibleNodes = nodeCategory[0];
+
+        if (possibleNodes.size() >= numOfRequiredNodes) {
+            for (FluidityGraphNode node : possibleNodes) {
+                double weight = assignWeightToNode(node);
+                nodeWeights.add(new NodeWeights(node.getNodeId(), weight));
+            }
+        } else {
+            return null;
+        }
+
+        Collections.sort(nodeWeights, new Comparator<NodeWeights>() { //TODO Check if correct
+            @Override
+            public int compare(NodeWeights lhs, NodeWeights rhs) {
+                // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+                return lhs.getWeight() > rhs.getWeight() ? -1 : (lhs.getWeight() < rhs.getWeight() ) ? 1 : 0;
+            }
+        });
+
+        for (int i = 0; i < numOfRequiredNodes; i++) {
+            newNodes[i] = nodeWeights.get(i).getNodeId();
+        }
+
+        return newNodes;
     }
 
     private void categorizeNodes() {
@@ -134,7 +153,7 @@ public class StrategyLatency implements DistributionStrategy {
         for (FluidityGraphNode node : nodesOfGraph) {
             ArrayList<Integer> nodeReplicas = node.getReplicas();
 
-            if (nodeReplicas.size() == 0) { //TODO Adopt to the possibility of having more than one replica in one node
+            if (nodeReplicas.size() == 0) {
                 nodeCategory[0].add(node);
             } else {
                 double[] weightsOfReplicas = fluidityGraph.getWeightsOfReplicas(nodeReplicas);
@@ -168,9 +187,54 @@ public class StrategyLatency implements DistributionStrategy {
 
     private double assignWeightToNode(FluidityGraphNode node) {
         double weightOfNode = 0.0d;
+        ArrayList<FluidityGraphNode> unmutedNodes = nodeCategory[1];
+        unmutedNodes.addAll(nodeCategory[2]);
+        Set<FluidityGraphNode> uniqueNodes = new HashSet<>(unmutedNodes);
 
-        //Optimization
+        //TODO Check
+        for (FluidityGraphNode unmutedNode : uniqueNodes) {
+            double tempLatency1 = fluidityGraph.getEdgeByNodes(node, unmutedNode).getLatencyValue();
+            double tempLatency2 = fluidityGraph.getEdgeByNodes(unmutedNode, node).getLatencyValue();
+            double tempLatency = (tempLatency1 + tempLatency2) / 2; //TODO what if one latency is unknown (-1)
+
+            if (tempLatency >= 0) {
+                tempLatency = tempLatency / getHighestWeightOfReplicas(unmutedNode.getReplicas());
+                weightOfNode += tempLatency;
+            }
+        }
+
 
         return weightOfNode;
+    }
+
+    private double getHighestWeightOfReplicas(ArrayList<Integer> replicas) {
+        double[] weights = fluidityGraph.getWeightsOfReplicas(replicas);
+
+        double maxWeight = 0;
+        for (double val : weights) {
+            if (val > maxWeight) {
+                maxWeight = val;
+            }
+        }
+
+        return maxWeight;
+    }
+
+    private class NodeWeights{
+        private int nodeId;
+        private double weight;
+
+        public NodeWeights(int nodeId, double weight) {
+            this.nodeId = nodeId;
+            this.weight = weight;
+        }
+
+        public int getNodeId() {
+            return nodeId;
+        }
+
+        public double getWeight() {
+            return weight;
+        }
     }
 }

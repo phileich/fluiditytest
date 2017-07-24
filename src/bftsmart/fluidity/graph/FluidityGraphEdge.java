@@ -27,7 +27,7 @@ public class FluidityGraphEdge implements Serializable{
         return nodeTo;
     }
 
-    protected double getLatencyValue() {
+    public double getLatencyValue() {
         return latencyValue;
     }
 
