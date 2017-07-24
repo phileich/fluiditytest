@@ -1,28 +1,27 @@
 package bftsmart.fluidity.strategies.WeightGraph;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import bftsmart.dynamicWeights.*;
-import bftsmart.reconfiguration.ServerViewController;
+import bftsmart.fluidity.strategies.StrategyLatency;
 import bftsmart.tom.util.Logger;
 
 public class WeightGraphReconfigurator implements Runnable {
     private LatencyStorage latStorage;
-    private ServerViewController svController;
-    private DynamicWeightController dwController;
+    private StrategyLatency strategyLatency;
+    private int currentN;
 
-    public WeightGraphReconfigurator(LatencyStorage latStorage, ServerViewController svController,
-                          DynamicWeightController dwController) {
+    public WeightGraphReconfigurator(LatencyStorage latStorage, StrategyLatency strategyLatency, int currentN) {
         this.latStorage = latStorage;
-        this.svController = svController;
-        this.dwController = dwController;
+        this.strategyLatency = strategyLatency;
+        this.currentN = currentN;
     }
 
     @Override
     public void run() {
         Logger.println("Start Reconfiguration calculation");
-        int currentN = svController.getCurrentViewN();
 
         // get last 'windowSize' entries
         List<Latency[]> clientLatencies = latStorage.getClientLatencies();
@@ -126,7 +125,11 @@ public class WeightGraphReconfigurator implements Runnable {
             System.out.println("reducedServerPropose: " + Arrays.deepToString(reducedServerProposeValues));
         }
 
-        DecisionLogic dl = new DecisionLogic(svController, reducedClientValues, reducedServerProposeValues,
+        //TODO Delete the muted replicas and add latencies for new ones
+        ArrayList<Integer> mutedReplicaIds = strategyLatency.getMutedReplicaIDs();
+        
+
+        DecisionLogic dl = new WeightGraphDecisionLogic(svController, reducedClientValues, reducedServerProposeValues,
                 reducedServerValues);
 
         dl.calculateBestGraph();
@@ -134,7 +137,7 @@ public class WeightGraphReconfigurator implements Runnable {
         dl.getBestWeightAssignment();
         dl.getBestLeader();
 
-        dwController.notifyReconfigFinished(dl.getBestLeader(), dl.getBestWeightAssignment());
+        strategyLatency.notifyReconfiguration(dl.getBestLeader(), dl.getBestWeightAssignment());
 
     }
 

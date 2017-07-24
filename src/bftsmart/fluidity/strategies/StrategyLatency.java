@@ -1,7 +1,10 @@
 package bftsmart.fluidity.strategies;
 
+import bftsmart.demo.microbenchmarks.LatencyServer;
+import bftsmart.dynamicWeights.LatencyStorage;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphNode;
+import bftsmart.fluidity.strategies.WeightGraph.WeightGraphReconfigurator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -12,6 +15,7 @@ import java.util.stream.Collectors;
 public class StrategyLatency implements DistributionStrategy {
     private FluidityGraph fluidityGraph;
     private Map<Integer, Double> bestWeightAssignment;
+    private LatencyStorage latencyStorage;
 
     /*
     0 = nodes that contain no replicas
@@ -23,13 +27,30 @@ public class StrategyLatency implements DistributionStrategy {
     private ArrayList<FluidityGraphNode>[] nodeCategory = new ArrayList[5];
 
     @Override
-    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment) {
+    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment, LatencyStorage latencyStorage) {
         this.fluidityGraph = fluidityGraph;
         this.bestWeightAssignment = bestWeightAssignment;
+        this.latencyStorage = latencyStorage;
 
         latencyDistribution();
 
         return this.fluidityGraph;
+    }
+
+    public void notifyReconfiguration(Map<Integer, Double> results) {
+
+    }
+
+    public ArrayList<Integer> getMutedReplicaIDs() {
+        ArrayList<Integer> mutedReplicas = new ArrayList<>();
+
+        for (int processId : bestWeightAssignment.keySet()) {
+            if (bestWeightAssignment.get(processId) == 0) {
+                mutedReplicas.add(processId);
+            }
+        }
+
+        return mutedReplicas;
     }
 
     private void latencyDistribution() {
@@ -102,6 +123,7 @@ public class StrategyLatency implements DistributionStrategy {
         int[] nodeNr = getPossibleNodeForGraph(numOfReplicas);
 
         //TODO call DWgraph for validation
+        WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(latencyStorage, this);
 
         return returnNodes;
     }
@@ -191,7 +213,7 @@ public class StrategyLatency implements DistributionStrategy {
         unmutedNodes.addAll(nodeCategory[2]);
         Set<FluidityGraphNode> uniqueNodes = new HashSet<>(unmutedNodes);
 
-        //TODO Check
+        //TODO Check if other weight with newly unmuted replicas
         for (FluidityGraphNode unmutedNode : uniqueNodes) {
             double tempLatency1 = fluidityGraph.getEdgeByNodes(node, unmutedNode).getLatencyValue();
             double tempLatency2 = fluidityGraph.getEdgeByNodes(unmutedNode, node).getLatencyValue();

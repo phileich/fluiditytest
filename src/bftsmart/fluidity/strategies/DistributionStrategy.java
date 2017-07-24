@@ -1,5 +1,6 @@
 package bftsmart.fluidity.strategies;
 
+import bftsmart.dynamicWeights.LatencyStorage;
 import bftsmart.fluidity.graph.FluidityGraph;
 
 import java.util.Map;
@@ -9,5 +10,6 @@ import java.util.Map;
  */
 public interface DistributionStrategy {
 
-    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment);
+    FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
+                                          LatencyStorage latencyStorage);
 }
