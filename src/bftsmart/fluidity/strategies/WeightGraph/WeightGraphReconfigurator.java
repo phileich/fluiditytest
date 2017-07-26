@@ -1,8 +1,6 @@
 package bftsmart.fluidity.strategies.WeightGraph;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import bftsmart.dynamicWeights.*;
 import bftsmart.fluidity.graph.FluidityGraphNode;
@@ -128,10 +126,22 @@ public class WeightGraphReconfigurator implements Runnable {
 
         //TODO Delete the muted replicas and add latencies for new ones
         ArrayList<Integer> mutedReplicaIds = strategyLatency.getReplicaIDsToMove();
+        Map<Integer, Double> latenciesOfMutedReplicas = strategyLatency.getLantenciesOfMutedReplicas();
 
-        //Delete the latencies of the muted replicas
+        //Replace the reduced server latencies of the muted replicas
         for (int replicaId : mutedReplicaIds) {
+            for (int j = 0; j < currentN; j++) {
+                reducedServerValues[replicaId][j] = -1;
+                reducedServerValues[j][replicaId] = -1;
+            }
+        }
 
+        //Replace the reduced server propose latencies of the muted replicas
+        for (int replicaId : mutedReplicaIds) {
+            for (int j = 0; j < currentN; j++) {
+                reducedServerProposeValues[replicaId][j] = -1;
+                reducedServerProposeValues[j][replicaId] = -1;
+            }
         }
 
 

@@ -4,6 +4,7 @@ import bftsmart.reconfiguration.views.View;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created by philipp on 19.06.17.
@@ -179,5 +180,14 @@ public class FluidityGraph implements Serializable{
         }
 
         return weightsOfReplicas;
+    }
+
+    public double getLatencyBetweenReplicas(int replicaFrom, int replicaTo) {
+        FluidityGraphNode nodeFrom = getNodeById(getNodeIdFromReplicaId(replicaFrom));
+        FluidityGraphNode nodeTo = getNodeById(getNodeIdFromReplicaId(replicaTo));
+
+        FluidityGraphEdge edge = getEdgeByNodes(nodeFrom, nodeTo);
+
+        return edge.getLatencyValue();
     }
 }

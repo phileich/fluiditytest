@@ -267,6 +267,13 @@ public class StrategyLatency implements DistributionStrategy {
         return maxWeight;
     }
 
+    public Map<Integer, Double> getLantenciesOfMutedReplica(int replicas) {
+        HashMap<Integer, Double> latenciesOfMutedReplica = new HashMap<>();
+
+        fluidityGraph.getLatencyBetweenReplicas()
+
+    }
+
     private class NodeWeights{
         private int nodeId;
         private double weight;
