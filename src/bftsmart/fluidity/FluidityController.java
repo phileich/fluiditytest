@@ -84,6 +84,10 @@ public class FluidityController implements Runnable {
         return dwc;
     }
 
+    public int getNumberOfReplicasToMove() {
+        return svController.getStaticConf().getNumberOfReplicasMoved();
+    }
+
     public void notifyNewFluidityGraph(FluidityGraph newFluidityGraph, FluidityGraph oldFluidityGraph) {
         this.newFluidityGraph = newFluidityGraph;
         this.oldFluidityGraph = oldFluidityGraph;

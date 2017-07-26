@@ -20,7 +20,8 @@ public class StrategyRandom implements DistributionStrategy {
     }
 
     @Override
-    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment, LatencyStorage latencyStorage) {
+    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
+                                          LatencyStorage latencyStorage, int numberOfReplicasToMove) {
         this.fluidityGraph = fluidityGraph;
         this.bestWeightAssignment = bestWeightAssignment;
 

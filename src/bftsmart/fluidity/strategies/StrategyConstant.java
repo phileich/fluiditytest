@@ -13,7 +13,7 @@ public class StrategyConstant implements DistributionStrategy {
 
     @Override
     public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
-                                          LatencyStorage latencyStorage) {
+                                          LatencyStorage latencyStorage, int numberOfReplicasToMove) {
         return fluidityGraph;
     }
 }

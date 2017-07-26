@@ -16,6 +16,7 @@ public class StrategyLatency implements DistributionStrategy {
     private FluidityGraph fluidityGraph;
     private Map<Integer, Double> bestWeightAssignment;
     private LatencyStorage latencyStorage;
+    private int numberOfReplicasToMove;
 
     /*
     0 = nodes that contain no replicas
@@ -27,10 +28,11 @@ public class StrategyLatency implements DistributionStrategy {
     private ArrayList<FluidityGraphNode>[] nodeCategory = new ArrayList[5];
 
     @Override
-    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment, LatencyStorage latencyStorage) {
+    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment, LatencyStorage latencyStorage, int numberOfReplicasToMove) {
         this.fluidityGraph = fluidityGraph;
         this.bestWeightAssignment = bestWeightAssignment;
         this.latencyStorage = latencyStorage;
+        this.numberOfReplicasToMove = numberOfReplicasToMove;
 
         latencyDistribution();
 
@@ -41,7 +43,7 @@ public class StrategyLatency implements DistributionStrategy {
 
     }
 
-    public ArrayList<Integer> getMutedReplicaIDs() {
+    public ArrayList<Integer> getReplicaIDsToMove() {
         ArrayList<Integer> mutedReplicas = new ArrayList<>();
 
         for (int processId : bestWeightAssignment.keySet()) {
@@ -50,7 +52,12 @@ public class StrategyLatency implements DistributionStrategy {
             }
         }
 
-        return mutedReplicas;
+        return selectReplicasToMove(mutedReplicas);
+    }
+
+    private ArrayList<Integer> selectReplicasToMove(ArrayList<Integer> mutedReplicas) {
+
+        
     }
 
     private void latencyDistribution() {
