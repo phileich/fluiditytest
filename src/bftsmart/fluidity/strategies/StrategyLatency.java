@@ -56,8 +56,26 @@ public class StrategyLatency implements DistributionStrategy {
     }
 
     private ArrayList<Integer> selectReplicasToMove(ArrayList<Integer> mutedReplicas) {
+        ArrayList<Integer> selectedReplicas = new ArrayList<>();
 
-        
+        for (int i = 0; i < numberOfReplicasToMove; i++) {
+            boolean foundReplica = false;
+            while (!foundReplica) {
+                int repId = getRandomNumberForReplica(bestWeightAssignment.size());
+                if (mutedReplicas.contains(repId)) {
+                    selectedReplicas.add(repId);
+                    foundReplica = true;
+                }
+            }
+        }
+
+        return selectedReplicas;
+    }
+
+    private int getRandomNumberForReplica(int range) {
+        //TODO Check if outcome is always the same for all replicas
+        Random randomGenerator = new Random(1234);
+        return randomGenerator.nextInt(range);
     }
 
     private void latencyDistribution() {
