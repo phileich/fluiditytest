@@ -131,7 +131,7 @@ public class WeightGraphReconfigurator implements Runnable {
         //Replace the reduced server latencies of the muted replicas
         for (int replicaId : mutedReplicaIds) {
             for (int j = 0; j < currentN; j++) {
-                reducedServerValues[replicaId][j] = -1;
+                reducedServerValues[replicaId][j] = -1; //TODO Replace and store information about which replica is what
                 reducedServerValues[j][replicaId] = -1;
             }
         }

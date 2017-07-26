@@ -25,7 +25,7 @@ public class WeightGraphDecisionLogic {
     private Map<Integer, Double> bestWeightAssignment;
     private int bestLeader;
 
-    public WeightGraphDecisionLogic(ServerViewController svController, double[] clientLatencies, double[][] proposeLatencies,
+    public    WeightGraphDecisionLogic(ServerViewController svController, double[] clientLatencies, double[][] proposeLatencies,
                          double[][] serverLatencies) {
         this(svController, svController.getCurrentLeader(), clientLatencies, proposeLatencies, serverLatencies);
     }

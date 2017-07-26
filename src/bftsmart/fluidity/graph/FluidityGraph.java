@@ -190,4 +190,8 @@ public class FluidityGraph implements Serializable{
 
         return edge.getLatencyValue();
     }
+
+    public int[] getReplicasOfSystem() {
+        return view.getProcesses();
+    }
 }

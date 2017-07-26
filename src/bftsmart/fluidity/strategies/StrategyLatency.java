@@ -17,6 +17,7 @@ public class StrategyLatency implements DistributionStrategy {
     private Map<Integer, Double> bestWeightAssignment;
     private LatencyStorage latencyStorage;
     private int numberOfReplicasToMove;
+    private int[] replicaIds;
 
     /*
     0 = nodes that contain no replicas
@@ -33,6 +34,8 @@ public class StrategyLatency implements DistributionStrategy {
         this.bestWeightAssignment = bestWeightAssignment;
         this.latencyStorage = latencyStorage;
         this.numberOfReplicasToMove = numberOfReplicasToMove;
+
+        replicaIds = this.fluidityGraph.getReplicasOfSystem();
 
         latencyDistribution();
 
@@ -148,7 +151,7 @@ public class StrategyLatency implements DistributionStrategy {
         int[] nodeNr = getPossibleNodeForGraph(numOfReplicas);
 
         //TODO call DWgraph for validation
-        WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(latencyStorage, this);
+        WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(latencyStorage, this, replicaIds.length);
 
         return returnNodes;
     }
@@ -267,11 +270,8 @@ public class StrategyLatency implements DistributionStrategy {
         return maxWeight;
     }
 
-    public Map<Integer, Double> getLantenciesOfMutedReplica(int replicas) {
-        HashMap<Integer, Double> latenciesOfMutedReplica = new HashMap<>();
-
-        fluidityGraph.getLatencyBetweenReplicas()
-
+    public double getLantencyOfMutedReplica(int replicaFrom, int replicaTo) {
+        return fluidityGraph.getLatencyBetweenReplicas(replicaFrom,replicaTo);
     }
 
     private class NodeWeights{
