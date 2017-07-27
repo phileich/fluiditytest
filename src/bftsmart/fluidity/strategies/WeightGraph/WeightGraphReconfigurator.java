@@ -5,17 +5,20 @@ import java.util.*;
 import bftsmart.dynamicWeights.*;
 import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.fluidity.strategies.StrategyLatency;
+import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.util.Logger;
 
 public class WeightGraphReconfigurator implements Runnable {
     private LatencyStorage latStorage;
     private StrategyLatency strategyLatency;
     private int currentN;
+    private ServerViewController svController;
 
-    public WeightGraphReconfigurator(LatencyStorage latStorage, StrategyLatency strategyLatency, int currentN) {
+    public WeightGraphReconfigurator(ServerViewController svController, LatencyStorage latStorage, StrategyLatency strategyLatency, int currentN) {
         this.latStorage = latStorage;
         this.strategyLatency = strategyLatency;
         this.currentN = currentN;
+        this.svController = svController;
     }
 
     @Override
@@ -126,7 +129,6 @@ public class WeightGraphReconfigurator implements Runnable {
 
         //TODO Delete the muted replicas and add latencies for new ones
         ArrayList<Integer> mutedReplicaIds = strategyLatency.getReplicaIDsToMove();
-        Map<Integer, Double> latenciesOfMutedReplicas = strategyLatency.getLantencyOfMutedReplica();
 
         //Replace the reduced server latencies of the muted replicas
         for (int replicaId : mutedReplicaIds) {
@@ -140,13 +142,14 @@ public class WeightGraphReconfigurator implements Runnable {
         //Replace the reduced server propose latencies of the muted replicas
         for (int replicaId : mutedReplicaIds) {
             for (int j = 0; j < currentN; j++) {
-                reducedServerProposeValues[replicaId][j] = -1;//TODO Replace and store information about which replica is what
-                reducedServerProposeValues[j][replicaId] = -1;
+                double[] newLatencies = strategyLatency.getLantencyOfMutedReplica(replicaId, j);
+                reducedServerProposeValues[replicaId][j] = newLatencies[0];//TODO Check for propose Values
+                reducedServerProposeValues[j][replicaId] = newLatencies[1];
             }
         }
 
 
-        DecisionLogic dl = new WeightGraphDecisionLogic(svController, reducedClientValues, reducedServerProposeValues,
+        WeightGraphDecisionLogic dl = new WeightGraphDecisionLogic(svController, reducedClientValues, reducedServerProposeValues,
                 reducedServerValues);
 
         dl.calculateBestGraph();
@@ -154,7 +157,7 @@ public class WeightGraphReconfigurator implements Runnable {
         dl.getBestWeightAssignment();
         dl.getBestLeader();
 
-        strategyLatency.notifyReconfiguration(dl.getBestLeader(), dl.getBestWeightAssignment());
+        strategyLatency.notifyReconfiguration(dl.getBestWeightAssignment());
 
     }
 

@@ -3,6 +3,7 @@ package bftsmart.fluidity.strategies;
 import bftsmart.dynamicWeights.LatencyStorage;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphNode;
+import bftsmart.reconfiguration.ServerViewController;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,7 +22,7 @@ public class StrategyRandom implements DistributionStrategy {
 
     @Override
     public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
-                                          LatencyStorage latencyStorage, int numberOfReplicasToMove) {
+                                          LatencyStorage latencyStorage, int numberOfReplicasToMove, ServerViewController serverViewController) {
         this.fluidityGraph = fluidityGraph;
         this.bestWeightAssignment = bestWeightAssignment;
 

@@ -6,6 +6,7 @@ import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphEdge;
 import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.fluidity.strategies.WeightGraph.WeightGraphReconfigurator;
+import bftsmart.reconfiguration.ServerViewController;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ public class StrategyLatency implements DistributionStrategy {
     private LatencyStorage latencyStorage;
     private int numberOfReplicasToMove;
     private int[] replicaIds;
+    private ServerViewController svController;
     private Map<Integer, FluidityGraphNode> replicaIdsToReplace;
     private ArrayList<FluidityGraphNode> newNodes;
 
@@ -32,11 +34,13 @@ public class StrategyLatency implements DistributionStrategy {
     private ArrayList<FluidityGraphNode>[] nodeCategory = new ArrayList[5];
 
     @Override
-    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment, LatencyStorage latencyStorage, int numberOfReplicasToMove) {
+    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
+                                          LatencyStorage latencyStorage, int numberOfReplicasToMove, ServerViewController serverViewController) {
         this.fluidityGraph = fluidityGraph;
         this.bestWeightAssignment = bestWeightAssignment;
         this.latencyStorage = latencyStorage;
         this.numberOfReplicasToMove = numberOfReplicasToMove;
+        this.svController = serverViewController;
 
         replicaIds = this.fluidityGraph.getReplicasOfSystem();
         replicaIdsToReplace = new HashMap<>();
@@ -154,7 +158,7 @@ public class StrategyLatency implements DistributionStrategy {
         int[] nodeNr = getPossibleNodeForGraph(numOfReplicas);
 
         //TODO call DWgraph for validation
-        WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(latencyStorage, this, replicaIds.length);
+        WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController, latencyStorage, this, replicaIds.length);
 
         return returnNodes;
     }
