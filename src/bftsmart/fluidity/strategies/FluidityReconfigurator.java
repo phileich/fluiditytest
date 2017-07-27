@@ -41,7 +41,7 @@ public class FluidityReconfigurator implements Runnable {
 
         oldFluidityGraph = deepCopyFluidityGraph(filledFluidityGraph);
         newFluidityGraph = strategy.getReconfigGraph(filledFluidityGraph, dynamicWeightController.getBestWeightAssignment(),
-                latencyStorage, numOfReplicasToMove);
+                latencyStorage, numOfReplicasToMove, serverViewController);
 
         fluidityController.notifyNewFluidityGraph(newFluidityGraph, oldFluidityGraph);
     }

@@ -51,6 +51,7 @@ public class StrategyLatency implements DistributionStrategy {
     }
 
     public void notifyReconfiguration(Map<Integer, Double> results) {
+        //TODO evaluate the result and return the fluiditygraph
 
     }
 
