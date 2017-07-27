@@ -394,7 +394,7 @@ public class TOMConfiguration extends Configuration {
 
 			if (useFluidity) {
 				s = (String) configs.remove("system.fluidityNumberOfReplicasMoved");
-				numberOfReplicasMoved = (s != null) ? Integer.parseInt(s) : -1;
+				numberOfReplicasMoved = (s != null) ? Integer.parseInt(s) : 0;
 			}
 
 			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);

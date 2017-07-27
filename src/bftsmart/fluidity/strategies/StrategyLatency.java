@@ -3,6 +3,7 @@ package bftsmart.fluidity.strategies;
 import bftsmart.demo.microbenchmarks.LatencyServer;
 import bftsmart.dynamicWeights.LatencyStorage;
 import bftsmart.fluidity.graph.FluidityGraph;
+import bftsmart.fluidity.graph.FluidityGraphEdge;
 import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.fluidity.strategies.WeightGraph.WeightGraphReconfigurator;
 
@@ -18,6 +19,8 @@ public class StrategyLatency implements DistributionStrategy {
     private LatencyStorage latencyStorage;
     private int numberOfReplicasToMove;
     private int[] replicaIds;
+    private Map<Integer, FluidityGraphNode> replicaIdsToReplace;
+    private ArrayList<FluidityGraphNode> newNodes;
 
     /*
     0 = nodes that contain no replicas
@@ -36,6 +39,7 @@ public class StrategyLatency implements DistributionStrategy {
         this.numberOfReplicasToMove = numberOfReplicasToMove;
 
         replicaIds = this.fluidityGraph.getReplicasOfSystem();
+        replicaIdsToReplace = new HashMap<>();
 
         latencyDistribution();
 
@@ -83,7 +87,6 @@ public class StrategyLatency implements DistributionStrategy {
 
     private void latencyDistribution() {
         ArrayList<Integer> newlyMutedReplicas = new ArrayList<>();
-        ArrayList<FluidityGraphNode> newNodes;
         ArrayList<Integer> newReplicas;
 
         for (int processId : bestWeightAssignment.keySet()) {
@@ -270,7 +273,29 @@ public class StrategyLatency implements DistributionStrategy {
         return maxWeight;
     }
 
-    public double getLantencyOfMutedReplica(int replicaFrom, int replicaTo) {
+    public double[] getLantencyOfMutedReplica(int replicaToReplace, int replicaStandard) {
+        //Conversion of replicaToConversion to actual replica
+        replicaIdsToReplace.put(replicaToReplace, getOneOfNewNodes());
+        FluidityGraphNode nodeStandard = fluidityGraph.getNodeById(fluidityGraph.getNodeIdFromReplicaId(replicaStandard));
+        FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(replicaToReplace);
+        FluidityGraphEdge toEdge = fluidityGraph.getEdgeByNodes(nodeStandard, nodeToReplace);
+        FluidityGraphEdge fromEdge = fluidityGraph.getEdgeByNodes(nodeToReplace, nodeStandard);
+
+        return new double[]{fromEdge.getLatencyValue(), toEdge.getLatencyValue()};
+    }
+
+    private FluidityGraphNode getOneOfNewNodes() {
+        for (int i = 0; i < newNodes.size(); i++) {
+            FluidityGraphNode tempNode = newNodes.get(i);
+            if (!replicaIdsToReplace.containsValue(tempNode)) {
+                return tempNode;
+            }
+        }
+
+        return null;
+    }
+
+    public double getLantencyBetweenOthersAndMutedReplica(int replicaFrom, int replicaTo) {
         return fluidityGraph.getLatencyBetweenReplicas(replicaFrom,replicaTo);
     }
 

@@ -126,20 +126,21 @@ public class WeightGraphReconfigurator implements Runnable {
 
         //TODO Delete the muted replicas and add latencies for new ones
         ArrayList<Integer> mutedReplicaIds = strategyLatency.getReplicaIDsToMove();
-        Map<Integer, Double> latenciesOfMutedReplicas = strategyLatency.getLantenciesOfMutedReplicas();
+        Map<Integer, Double> latenciesOfMutedReplicas = strategyLatency.getLantencyOfMutedReplica();
 
         //Replace the reduced server latencies of the muted replicas
         for (int replicaId : mutedReplicaIds) {
             for (int j = 0; j < currentN; j++) {
-                reducedServerValues[replicaId][j] = -1; //TODO Replace and store information about which replica is what
-                reducedServerValues[j][replicaId] = -1;
+                double[] newLatencies = strategyLatency.getLantencyOfMutedReplica(replicaId, j);
+                reducedServerValues[replicaId][j] = newLatencies[0];
+                reducedServerValues[j][replicaId] = newLatencies[1];
             }
         }
 
         //Replace the reduced server propose latencies of the muted replicas
         for (int replicaId : mutedReplicaIds) {
             for (int j = 0; j < currentN; j++) {
-                reducedServerProposeValues[replicaId][j] = -1;
+                reducedServerProposeValues[replicaId][j] = -1;//TODO Replace and store information about which replica is what
                 reducedServerProposeValues[j][replicaId] = -1;
             }
         }
