@@ -164,12 +164,6 @@ public class StrategyLatency implements DistributionStrategy {
         return returnNodes;
     }
 
-//    private int getRandomNumberForNode(int range) {
-//        //TODO Check if outcome is always the same for all replicas
-//        Random randomGenerator = new Random(1234);
-//        return randomGenerator.nextInt(range);
-//    }
-
     private int[] getPossibleNodeForGraph(int numOfRequiredNodes) {
         ArrayList<FluidityGraphNode> possibleNodes = new ArrayList<>();
         int[] newNodes = new int[numOfRequiredNodes];
