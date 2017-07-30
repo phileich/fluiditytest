@@ -8,7 +8,7 @@ import bftsmart.fluidity.strategies.StrategyLatency;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.util.Logger;
 
-public class WeightGraphReconfigurator implements Runnable {
+public class WeightGraphReconfigurator{
     private LatencyStorage latStorage;
     private StrategyLatency strategyLatency;
     private int currentN;
@@ -21,8 +21,7 @@ public class WeightGraphReconfigurator implements Runnable {
         this.svController = svController;
     }
 
-    @Override
-    public void run() {
+    public Map<Integer, Double> runGraph(ArrayList<Integer> mutedReplicaIds) {
         Logger.println("Start Reconfiguration calculation");
 
         // get last 'windowSize' entries
@@ -128,7 +127,6 @@ public class WeightGraphReconfigurator implements Runnable {
         }
 
         //TODO Delete the muted replicas and add latencies for new ones
-        ArrayList<Integer> mutedReplicaIds = strategyLatency.getReplicaIDsToMove();
 
         //Replace the reduced server latencies of the muted replicas
         for (int replicaId : mutedReplicaIds) {
@@ -157,7 +155,9 @@ public class WeightGraphReconfigurator implements Runnable {
         dl.getBestWeightAssignment();
         dl.getBestLeader();
 
-        strategyLatency.notifyReconfiguration(dl.getBestWeightAssignment());
+        //strategyLatency.notifyReconfiguration(dl.getBestWeightAssignment());
+
+        return dl.getBestWeightAssignment();
 
     }
 
