@@ -182,6 +182,7 @@ public class StrategyLatency implements DistributionStrategy {
         }
 
         oldReplicasToRemove = getReplicaIDsToMove();
+        //TODO Give Graph variant here so it does not get itself later in the process
         //TODO change 3 in for loop
         Map<Integer, Double>[] bestAssignment = new Map[3];
         for (int i = 0; i < 3; i++) {
