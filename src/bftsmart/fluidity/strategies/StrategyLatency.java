@@ -1,6 +1,5 @@
 package bftsmart.fluidity.strategies;
 
-import bftsmart.demo.microbenchmarks.LatencyServer;
 import bftsmart.dynamicWeights.LatencyStorage;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphEdge;
@@ -9,7 +8,6 @@ import bftsmart.fluidity.strategies.WeightGraph.WeightGraphReconfigurator;
 import bftsmart.reconfiguration.ServerViewController;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by philipp on 06.07.17.
@@ -23,7 +21,9 @@ public class StrategyLatency implements DistributionStrategy {
     private ServerViewController svController;
     private Map<Integer, FluidityGraphNode> replicaIdsToReplace;
     private ArrayList<FluidityGraphNode> newNodes;
+    private ArrayList<FluidityGraphNode>[] variantsOfNewNodes;
     private ArrayList<Integer> oldReplicasToRemove;
+    private int numOfVariants;
 
     /*
     0 = nodes that contain no replicas
@@ -43,9 +43,11 @@ public class StrategyLatency implements DistributionStrategy {
         this.numberOfReplicasToMove = numberOfReplicasToMove;
         this.svController = serverViewController;
 
+        numOfVariants = 3;
         replicaIds = this.fluidityGraph.getReplicasOfSystem();
         replicaIdsToReplace = new HashMap<>();
         oldReplicasToRemove = new ArrayList<>();
+        variantsOfNewNodes = new ArrayList[numOfVariants];
 
 
         latencyDistribution();
@@ -167,6 +169,18 @@ public class StrategyLatency implements DistributionStrategy {
 
         int[] nodeNr = getPossibleNodeForGraph(numOfReplicas); //TODO Check for null
 
+        //TODO Create Variants here
+        int offset = 0;
+        for (int i = 0; i < numOfVariants; i++) {
+            variantsOfNewNodes[i] = new ArrayList<>();
+            for (int j = 0; j < numberOfReplicasToMove; j++) {
+                if (j+offset < nodeNr.length) {
+                    FluidityGraphNode node = fluidityGraph.getNodeById(nodeNr[j + offset]);
+                    variantsOfNewNodes[i].add(node);
+                } //TODO What happens when there are not enough new possible nodes?
+            }
+        }
+
         oldReplicasToRemove = getReplicaIDsToMove();
         //TODO change 3 in for loop
         Map<Integer, Double>[] bestAssignment = new Map[3];
@@ -225,10 +239,11 @@ public class StrategyLatency implements DistributionStrategy {
             }
         });
 
-        for (int i = 0; i < numOfRequiredNodes; i++) {
+        for (int i = 0; i < nodeWeights.size(); i++) {
             newNodes[i] = nodeWeights.get(i).getNodeId();
         }
 
+        //variantsOfNewNodes = newNodes;
         return newNodes;
     }
 
@@ -315,13 +330,16 @@ public class StrategyLatency implements DistributionStrategy {
         FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(replicaToReplace);
         FluidityGraphEdge toEdge = fluidityGraph.getEdgeByNodes(nodeStandard, nodeToReplace);
         FluidityGraphEdge fromEdge = fluidityGraph.getEdgeByNodes(nodeToReplace, nodeStandard);
-            //TODO add variant to global view
+
         return new double[]{fromEdge.getLatencyValue(), toEdge.getLatencyValue()};
     }
 
     private FluidityGraphNode getOneOfNewNodes() {
-        for (int i = 0; i < newNodes.size(); i++) {
-            FluidityGraphNode tempNode = newNodes.get(i);
+        //TODO Generate the Variants here
+        //TODO Problem with newNodes since they are not complete up until there
+        // Global view of variants needed here
+        for (int i = 0; i < variantsOfNewNodes.length; i++) {
+            FluidityGraphNode tempNode = fluidityGraph.getNodeById(variantsOfNewNodes[i]);
             if (!replicaIdsToReplace.containsValue(tempNode)) {
                 return tempNode;
             }
