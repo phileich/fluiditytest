@@ -28,7 +28,7 @@ public class RandomTest {
             @Override
             public int compare(NodeWeights lhs, NodeWeights rhs) {
                 // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
-                return lhs.getWeight() > rhs.getWeight() ? -1 : (lhs.getWeight() < rhs.getWeight() ) ? 1 : 0;
+                return lhs.getWeight() > rhs.getWeight() ? 1 : (lhs.getWeight() < rhs.getWeight() ) ? -1 : 0;
             }
         });
 

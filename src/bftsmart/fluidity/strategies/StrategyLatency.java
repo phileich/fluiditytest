@@ -222,7 +222,7 @@ public class StrategyLatency implements DistributionStrategy {
             @Override
             public int compare(NodeWeights lhs, NodeWeights rhs) {
                 // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
-                return lhs.getWeight() > rhs.getWeight() ? -1 : (lhs.getWeight() < rhs.getWeight() ) ? 1 : 0;
+                return lhs.getWeight() > rhs.getWeight() ? 1 : (lhs.getWeight() < rhs.getWeight() ) ? -1 : 0;
             }
         });
 
@@ -276,18 +276,25 @@ public class StrategyLatency implements DistributionStrategy {
     }
 
     private double assignWeightToNode(FluidityGraphNode node) {
-        double weightOfNode = 0.0d;
+        double weightOfNode = Double.MAX_VALUE;
         ArrayList<FluidityGraphNode> unmutedNodes = nodeCategory[1];
         unmutedNodes.addAll(nodeCategory[2]);
         Set<FluidityGraphNode> uniqueNodes = new HashSet<>(unmutedNodes);
 
         //TODO Check if other weight with newly unmuted replicas
         for (FluidityGraphNode unmutedNode : uniqueNodes) {
+            double tempLatency;
             double tempLatency1 = fluidityGraph.getEdgeByNodes(node, unmutedNode).getLatencyValue();
             double tempLatency2 = fluidityGraph.getEdgeByNodes(unmutedNode, node).getLatencyValue();
-            double tempLatency = (tempLatency1 + tempLatency2) / 2; //TODO what if one latency is unknown (-1)
+            if (tempLatency1 != -1 && tempLatency2 != -1) {
+                tempLatency = (tempLatency1 + tempLatency2) / 2;
+            } else if (tempLatency1 != -1 || tempLatency2 != -1) {
+                tempLatency = (tempLatency1 != -1 ? tempLatency1 : tempLatency2);
+            } else {
+                tempLatency = -1;
+            }
 
-            if (tempLatency >= 0) {
+            if (tempLatency >= 0) { //TODO what if one latency is unknown (-1)
                 tempLatency = tempLatency / getHighestWeightOfReplicas(unmutedNode.getReplicas());
                 weightOfNode += tempLatency;
             }
