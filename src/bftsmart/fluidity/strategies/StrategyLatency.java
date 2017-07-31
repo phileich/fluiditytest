@@ -162,6 +162,7 @@ public class StrategyLatency implements DistributionStrategy {
                     variantsOfNewNodes[i].add(node);
                 } //TODO What happens when there are not enough new possible nodes?
             }
+            offset++;
         }
 
         //TODO Decide whether to use the graph or not (due to missing latency data)
@@ -218,7 +219,7 @@ public class StrategyLatency implements DistributionStrategy {
             return null;
         }
 
-        Collections.sort(nodeWeights, new Comparator<NodeWeights>() { //TODO Check if correct
+        Collections.sort(nodeWeights, new Comparator<NodeWeights>() {
             @Override
             public int compare(NodeWeights lhs, NodeWeights rhs) {
                 // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
@@ -276,12 +277,12 @@ public class StrategyLatency implements DistributionStrategy {
     }
 
     private double assignWeightToNode(FluidityGraphNode node) {
-        double weightOfNode = Double.MAX_VALUE;
+        double weightOfNode = 0.0d;
         ArrayList<FluidityGraphNode> unmutedNodes = nodeCategory[1];
         unmutedNodes.addAll(nodeCategory[2]);
         Set<FluidityGraphNode> uniqueNodes = new HashSet<>(unmutedNodes);
 
-        //TODO Check if other weight with newly unmuted replicas
+        //TODO Check for other weight with newly unmuted replicas
         for (FluidityGraphNode unmutedNode : uniqueNodes) {
             double tempLatency;
             double tempLatency1 = fluidityGraph.getEdgeByNodes(node, unmutedNode).getLatencyValue();
@@ -294,9 +295,11 @@ public class StrategyLatency implements DistributionStrategy {
                 tempLatency = -1;
             }
 
-            if (tempLatency >= 0) { //TODO what if one latency is unknown (-1)
+            if (tempLatency >= 0) {
                 tempLatency = tempLatency / getHighestWeightOfReplicas(unmutedNode.getReplicas());
                 weightOfNode += tempLatency;
+            } else {
+                //TODO what if latency is unknown (-1)
             }
         }
 
