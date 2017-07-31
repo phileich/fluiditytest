@@ -146,11 +146,15 @@ public class FluidityGraph implements Serializable{
     }
 
     public FluidityGraphEdge getEdgeByNodes(FluidityGraphNode nodeFrom, FluidityGraphNode nodeTo) {
-        FluidityGraphEdge neededEdge = new FluidityGraphEdge(nodeFrom, nodeTo, -1);
+        if (!nodeFrom.equals(nodeTo)) {
+            FluidityGraphEdge neededEdge = new FluidityGraphEdge(nodeFrom, nodeTo, -1);
 
-        int index = edges.indexOf(neededEdge);
+            int index = edges.indexOf(neededEdge);
 
-        return edges.get(index);
+            return edges.get(index);
+        } else {
+            return new FluidityGraphEdge(nodeFrom, nodeTo, 0.0d);
+        }
     }
 
     public boolean checkForConsistencyWithRules() {

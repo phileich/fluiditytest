@@ -21,7 +21,7 @@ public class WeightGraphReconfigurator{
         this.svController = svController;
     }
 
-    public Map<Integer, Double> runGraph(ArrayList<Integer> mutedReplicaIds) {
+    public Map<Integer, Double> runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies) {
         Logger.println("Start Reconfiguration calculation");
 
         // get last 'windowSize' entries
@@ -131,18 +131,18 @@ public class WeightGraphReconfigurator{
         //Replace the reduced server latencies of the muted replicas
         for (int replicaId : mutedReplicaIds) {
             for (int j = 0; j < currentN; j++) {
-                double[] newLatencies = strategyLatency.getLantencyOfMutedReplica(replicaId, j);
-                reducedServerValues[replicaId][j] = newLatencies[0];
-                reducedServerValues[j][replicaId] = newLatencies[1];
+                //double[] newLatencies = strategyLatency.getLantencyOfMutedReplica(replicaId, j);
+                reducedServerValues[replicaId][j] = replaceLatencies[replicaId][j];
+                reducedServerValues[j][replicaId] = replaceLatencies[j][replicaId];
             }
         }
 
         //Replace the reduced server propose latencies of the muted replicas
         for (int replicaId : mutedReplicaIds) {
             for (int j = 0; j < currentN; j++) {
-                double[] newLatencies = strategyLatency.getLantencyOfMutedReplica(replicaId, j);
-                reducedServerProposeValues[replicaId][j] = newLatencies[0];//TODO Check for propose Values
-                reducedServerProposeValues[j][replicaId] = newLatencies[1];
+                //double[] newLatencies = strategyLatency.getLantencyOfMutedReplica(replicaId, j);
+                reducedServerProposeValues[replicaId][j] = replaceLatencies[replicaId][j];//TODO Check for propose Values
+                reducedServerProposeValues[j][replicaId] = replaceLatencies[j][replicaId];
             }
         }
 

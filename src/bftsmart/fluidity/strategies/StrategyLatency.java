@@ -169,7 +169,6 @@ public class StrategyLatency implements DistributionStrategy {
 
         int[] nodeNr = getPossibleNodeForGraph(numOfReplicas); //TODO Check for null
 
-        //TODO Create Variants here
         int offset = 0;
         for (int i = 0; i < numOfVariants; i++) {
             variantsOfNewNodes[i] = new ArrayList<>();
@@ -182,13 +181,22 @@ public class StrategyLatency implements DistributionStrategy {
         }
 
         oldReplicasToRemove = getReplicaIDsToMove();
-        //TODO Give Graph variant here so it does not get itself later in the process
+        double[][] replaceLatencies = new double[replicaIds.length][replicaIds.length];
+        for (int oldReplicas : oldReplicasToRemove) {
+            for (int i = 0; i < replicaIds.length; i++) {
+                double[] latency = getLantencyOfMutedReplica(oldReplicas, i);
+                replaceLatencies[oldReplicas][i] = latency[0];
+                replaceLatencies[i][oldReplicas] = latency[1];
+            }
+
+        }
+
         //TODO change 3 in for loop
         Map<Integer, Double>[] bestAssignment = new Map[3];
         for (int i = 0; i < 3; i++) {
             WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController,
                     latencyStorage, this, replicaIds.length);
-            bestAssignment[i] = weightGraphReconfigurator.runGraph(oldReplicasToRemove);
+            bestAssignment[i] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies);
         }
 
         return getBestNodes(bestAssignment);
