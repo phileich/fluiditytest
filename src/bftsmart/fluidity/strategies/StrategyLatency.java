@@ -24,6 +24,7 @@ public class StrategyLatency implements DistributionStrategy {
     private ArrayList<FluidityGraphNode>[] variantsOfNewNodes;
     private ArrayList<Integer> oldReplicasToRemove;
     private int numOfVariants;
+    private Random randomGenerator = new Random(1234);
 
     /*
     0 = nodes that contain no replicas
@@ -53,11 +54,6 @@ public class StrategyLatency implements DistributionStrategy {
         latencyDistribution();
 
         return this.fluidityGraph;
-    }
-
-    public void notifyReconfiguration(Map<Integer, Double> results) {
-        //TODO evaluate the result and return the fluiditygraph
-
     }
 
     /**
@@ -96,8 +92,6 @@ public class StrategyLatency implements DistributionStrategy {
     }
 
     private int getRandomNumberForReplica(int range) {
-        //TODO Check if outcome is always the same for all replicas
-        Random randomGenerator = new Random(1234);
         return randomGenerator.nextInt(range);
     }
 
@@ -123,7 +117,7 @@ public class StrategyLatency implements DistributionStrategy {
 
         // Add new replicas to the graph
         for (int proId : newReplicas) {
-            FluidityGraphNode graphNode = newNodes.get(0); //TODO Check if remove really shifts
+            FluidityGraphNode graphNode = newNodes.get(0);
             fluidityGraph.addReplicaToNode(graphNode, proId);
             newNodes.remove(0);
         }
@@ -170,7 +164,7 @@ public class StrategyLatency implements DistributionStrategy {
             }
         }
 
-        //TODO change 3 in for loop
+        //TODO Decide whether to use the graph or not (due to missing latency data)
         Map<Integer, Double>[] bestAssignment = new Map[numOfVariants];
         oldReplicasToRemove = getReplicaIDsToMove();
         double[][] replaceLatencies;

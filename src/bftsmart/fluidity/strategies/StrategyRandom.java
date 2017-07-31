@@ -16,6 +16,7 @@ import java.util.Random;
 public class StrategyRandom implements DistributionStrategy {
     private FluidityGraph fluidityGraph;
     private Map<Integer, Double> bestWeightAssignment;
+    Random randomGenerator = new Random(1234);
 
     public StrategyRandom() {
     }
@@ -65,7 +66,7 @@ public class StrategyRandom implements DistributionStrategy {
 
         // Add new replicas to the graph
         for (int proId : newReplicas) {
-            FluidityGraphNode graphNode = newNodes.get(0); //TODO Check if remove really shifts
+            FluidityGraphNode graphNode = newNodes.get(0);
             fluidityGraph.addReplicaToNode(graphNode, proId);
             newNodes.remove(0);
         }
@@ -117,8 +118,6 @@ public class StrategyRandom implements DistributionStrategy {
     }
 
     private int getRandomNumberForNode(int range) {
-        //TODO Check if outcome is always the same for all replicas
-        Random randomGenerator = new Random(1234);
         return randomGenerator.nextInt(range);
     }
 }
