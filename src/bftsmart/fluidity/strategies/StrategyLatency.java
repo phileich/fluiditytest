@@ -180,24 +180,22 @@ public class StrategyLatency implements DistributionStrategy {
             }
         }
 
-        oldReplicasToRemove = getReplicaIDsToMove();
-        double[][] replaceLatencies = new double[replicaIds.length][replicaIds.length];
-        for (int oldReplicas : oldReplicasToRemove) {
-            for (int i = 0; i < replicaIds.length; i++) {
-                double[] latency = getLantencyOfMutedReplica(oldReplicas, i);
-                replaceLatencies[oldReplicas][i] = latency[0];
-                replaceLatencies[i][oldReplicas] = latency[1];
-            }
-
-        }
-
         //TODO change 3 in for loop
         Map<Integer, Double>[] bestAssignment = new Map[3];
-        for (int i = 0; i < 3; i++) {
-            WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController,
-                    latencyStorage, this, replicaIds.length);
-            bestAssignment[i] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies);
+        oldReplicasToRemove = getReplicaIDsToMove();
+        double[][] replaceLatencies;
+
+        for (int i = 0; i < variantsOfNewNodes.length; i++) {
+            replaceLatencies = getLantencyOfMutedReplica(oldReplicasToRemove, i);
+
+            for (int j = 0; j < 3; j++) {
+                WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController,
+                        latencyStorage, this, replicaIds.length);
+                bestAssignment[j] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies);
+            }
         }
+
+
 
         return getBestNodes(bestAssignment);
     }
@@ -332,27 +330,33 @@ public class StrategyLatency implements DistributionStrategy {
         return maxWeight;
     }
 
-    public double[] getLantencyOfMutedReplica(int replicaToReplace, int replicaStandard) {
+    public double[][] getLantencyOfMutedReplica(ArrayList<Integer> replicasToReplace, int variant) {
         //Conversion of replicaToConversion to actual replica
-        replicaIdsToReplace.put(replicaToReplace, getOneOfNewNodes());
-        FluidityGraphNode nodeStandard = fluidityGraph.getNodeById(fluidityGraph.getNodeIdFromReplicaId(replicaStandard));
-        FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(replicaToReplace);
-        FluidityGraphEdge toEdge = fluidityGraph.getEdgeByNodes(nodeStandard, nodeToReplace);
-        FluidityGraphEdge fromEdge = fluidityGraph.getEdgeByNodes(nodeToReplace, nodeStandard);
+        double[][] latencies = new double[replicaIds.length][replicaIds.length];
 
-        return new double[]{fromEdge.getLatencyValue(), toEdge.getLatencyValue()};
+        for (int oldReplica : replicasToReplace) {
+            for (int i = 0; i < variantsOfNewNodes[0].size(); i++) {
+                for (int otherReplica : replicaIds) {
+                    replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
+                    FluidityGraphNode nodeStandard = fluidityGraph.getNodeById(fluidityGraph.getNodeIdFromReplicaId(j));
+                    FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica);
+                    FluidityGraphEdge fromEdge = fluidityGraph.getEdgeByNodes(nodeToReplace, nodeStandard);
+                    FluidityGraphEdge toEdge = fluidityGraph.getEdgeByNodes(nodeStandard, nodeToReplace);
+
+                    latencies[oldReplica][otherReplica] = fromEdge.getLatencyValue();
+                    latencies[otherReplica][oldReplica] = toEdge.getLatencyValue();
+                }
+            }
+        }
+        return latencies;
     }
 
-    private FluidityGraphNode getOneOfNewNodes() {
-        //TODO Generate the Variants here
-        //TODO Problem with newNodes since they are not complete up until there
-        // Global view of variants needed here
-        for (int i = 0; i < variantsOfNewNodes.length; i++) {
-            FluidityGraphNode tempNode = fluidityGraph.getNodeById(variantsOfNewNodes[i]);
+    private FluidityGraphNode getOneOfNewNodes(int variant, int nodeNr) {
+            FluidityGraphNode tempNode = variantsOfNewNodes[variant].get(nodeNr);
             if (!replicaIdsToReplace.containsValue(tempNode)) {
                 return tempNode;
             }
-        }
+
 
         return null;
     }
