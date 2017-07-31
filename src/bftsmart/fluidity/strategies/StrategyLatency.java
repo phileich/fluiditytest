@@ -114,16 +114,6 @@ public class StrategyLatency implements DistributionStrategy {
         // Small optimization to let old and new replicas running
         newNodes = getNodesForNewReplica(numberOfReplicasToMove);
 
-        // not needed any more
-//        for (int replicaId : newlyMutedReplicas) {
-//            int nodeId = fluidityGraph.getNodeIdFromReplicaId(replicaId);
-//            FluidityGraphNode node = fluidityGraph.getNodeById(nodeId);
-//            if (newNodes.contains(node)) {
-//                newNodes.remove(node);
-//                newlyMutedReplicas.remove(replicaId);
-//            }
-//        }
-
         // Delete the old replicas from the graph
         for (int repId : replicaIdsToReplace.keySet()) {
             fluidityGraph.removeReplicaFromNode(repId);
@@ -181,7 +171,7 @@ public class StrategyLatency implements DistributionStrategy {
         }
 
         //TODO change 3 in for loop
-        Map<Integer, Double>[] bestAssignment = new Map[3];
+        Map<Integer, Double>[] bestAssignment = new Map[numOfVariants];
         oldReplicasToRemove = getReplicaIDsToMove();
         double[][] replaceLatencies;
 
@@ -214,11 +204,7 @@ public class StrategyLatency implements DistributionStrategy {
             }
         }
 
-        return getNodesForVariant(bestVariant);
-    }
-
-    private ArrayList<FluidityGraphNode> getNodesForVariant(int bestVariant) {
-        //TODO return nodes for given variant number
+        return variantsOfNewNodes[bestVariant];
     }
 
     private int[] getPossibleNodeForGraph(int numOfRequiredNodes) {
@@ -338,7 +324,7 @@ public class StrategyLatency implements DistributionStrategy {
             for (int i = 0; i < variantsOfNewNodes[0].size(); i++) {
                 for (int otherReplica : replicaIds) {
                     replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
-                    FluidityGraphNode nodeStandard = fluidityGraph.getNodeById(fluidityGraph.getNodeIdFromReplicaId(j));
+                    FluidityGraphNode nodeStandard = fluidityGraph.getNodeById(fluidityGraph.getNodeIdFromReplicaId(otherReplica));
                     FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica);
                     FluidityGraphEdge fromEdge = fluidityGraph.getEdgeByNodes(nodeToReplace, nodeStandard);
                     FluidityGraphEdge toEdge = fluidityGraph.getEdgeByNodes(nodeStandard, nodeToReplace);
