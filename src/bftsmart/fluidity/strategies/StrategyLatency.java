@@ -23,7 +23,7 @@ public class StrategyLatency implements DistributionStrategy {
     private ArrayList<FluidityGraphNode> newNodes;
     private ArrayList<FluidityGraphNode>[] variantsOfNewNodes;
     private ArrayList<Integer> oldReplicasToRemove;
-    private int numOfVariants; //TODO Static?
+    private int numOfVariants;
     private Random randomGenerator = new Random(1234);
 
     /*
@@ -44,7 +44,7 @@ public class StrategyLatency implements DistributionStrategy {
         this.numberOfReplicasToMove = numberOfReplicasToMove;
         this.svController = serverViewController;
 
-        numOfVariants = 3;
+        numOfVariants = 3; //TODO Through config file?
         replicaIds = this.fluidityGraph.getReplicasOfSystem();
         replicaIdsToReplace = new HashMap<>();
         oldReplicasToRemove = new ArrayList<>();
@@ -105,15 +105,31 @@ public class StrategyLatency implements DistributionStrategy {
             }
         }
 
-        // Small optimization to let old and new replicas running
-        newNodes = getNodesForNewReplica(numberOfReplicasToMove);
+        // Get the new nodes for the system to place the new muted replicas
+        newNodes = getNodesForNewReplica();
+        int actualNumberOfReplicasToMove = newNodes.size();
 
         // Delete the old replicas from the graph
-        for (int repId : replicaIdsToReplace.keySet()) {
-            fluidityGraph.removeReplicaFromNode(repId);
+        if (actualNumberOfReplicasToMove != numberOfReplicasToMove) {
+            int[] actualReplicasToReplace = new int[actualNumberOfReplicasToMove];
+            Iterator<Integer> keyIterator = replicaIdsToReplace.keySet().iterator();
+            for (int i = 0; i < actualReplicasToReplace.length; i++) {
+                actualReplicasToReplace[i] = keyIterator.next();
+            }
+
+            for (int repId : actualReplicasToReplace) {
+                fluidityGraph.removeReplicaFromNode(repId);
+            }
+        } else {
+            for (int repId : replicaIdsToReplace.keySet()) {
+                fluidityGraph.removeReplicaFromNode(repId);
+            }
         }
 
-        newReplicas = generateNewReplicas(numberOfReplicasToMove);
+
+        // Generate new muted replicas
+        newReplicas = generateNewReplicas(actualNumberOfReplicasToMove);
+
 
         // Add new replicas to the graph
         for (int proId : newReplicas) {
@@ -147,7 +163,7 @@ public class StrategyLatency implements DistributionStrategy {
         return newReplicas;
     }
 
-    private ArrayList<FluidityGraphNode> getNodesForNewReplica(int numOfReplicas) {
+    private ArrayList<FluidityGraphNode> getNodesForNewReplica() {
         int[] nodeNr = getPossibleNodeForGraph();
         int offset = 0;
 
@@ -162,30 +178,32 @@ public class StrategyLatency implements DistributionStrategy {
             }
             if (variantsOfNewNodes[i].size() != numberOfReplicasToMove) {
                 variantsOfNewNodes[i] = new ArrayList<>();
-                i = numOfVariants;
-                //numOfVariants = i
+                //i = numOfVariants;
+                numOfVariants = i;
             }
             offset++;
         }
 
-        //TODO Decide whether to use the graph or not (due to missing latency data)
-        Map<Integer, Double>[] bestAssignment = new Map[numOfVariants];
-        oldReplicasToRemove = getReplicaIDsToMove();
-        double[][] replaceLatencies;
+        // Give graph variants
+        if (numOfVariants > 0) {
+            Map<Integer, Double>[] bestAssignment = new Map[numOfVariants];
+            oldReplicasToRemove = getReplicaIDsToMove();
+            double[][] replaceLatencies;
 
-        for (int i = 0; i < variantsOfNewNodes.length; i++) {
-            replaceLatencies = getLantencyOfMutedReplica(oldReplicasToRemove, i);
+            for (int i = 0; i < variantsOfNewNodes.length; i++) { //TODO numOfVariants?
+                replaceLatencies = getLantencyOfMutedReplica(oldReplicasToRemove, i);
 
-            for (int j = 0; j < 3; j++) {
-                WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController,
-                        latencyStorage, this, replicaIds.length);
-                bestAssignment[j] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies);
+                for (int j = 0; j < numOfVariants; j++) {
+                    WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController,
+                            latencyStorage, this, replicaIds.length);
+                    bestAssignment[j] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies);
+                }
             }
+
+            return getBestNodes(bestAssignment);
+        } else {
+            return getRandomNodes();
         }
-
-
-
-        return getBestNodes(bestAssignment);
     }
 
     private ArrayList<FluidityGraphNode> getBestNodes(Map<Integer, Double>[] bestAssignments) {
@@ -206,7 +224,7 @@ public class StrategyLatency implements DistributionStrategy {
     }
 
     private int[] getPossibleNodeForGraph() {
-        int[] newNodes = new int[nodeCategory[0].size()];
+        int[] newNodes = new int[nodeCategory[0].size()]; //TODO Problem not initialized at that point
         ArrayList<NodeWeights> nodeWeights = new ArrayList<>();
 
         categorizeNodes();
@@ -351,6 +369,26 @@ public class StrategyLatency implements DistributionStrategy {
 
     public double getLantencyBetweenOthersAndMutedReplica(int replicaFrom, int replicaTo) {
         return fluidityGraph.getLatencyBetweenReplicas(replicaFrom,replicaTo);
+    }
+
+    public ArrayList<FluidityGraphNode> getRandomNodes() {
+        ArrayList<FluidityGraphNode> possibleNodes = nodeCategory[0];
+        ArrayList<FluidityGraphNode> selectedNodes = new ArrayList<>();
+
+        int runUntil = Math.min(numberOfReplicasToMove, possibleNodes.size());
+        for (int i = 0; i < runUntil; i++) {
+            boolean notFound = true;
+            while (notFound) {
+                int randomNumber = getRandomNumberForReplica(possibleNodes.size());
+                FluidityGraphNode tempNode = possibleNodes.get(randomNumber);
+                if (!selectedNodes.contains(tempNode)) {
+                    selectedNodes.add(possibleNodes.get(randomNumber));
+                    notFound = false;
+                }
+            }
+        }
+
+        return selectedNodes;
     }
 
     private class NodeWeights{
