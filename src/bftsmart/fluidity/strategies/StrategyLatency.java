@@ -23,7 +23,7 @@ public class StrategyLatency implements DistributionStrategy {
     private ArrayList<FluidityGraphNode> newNodes;
     private ArrayList<FluidityGraphNode>[] variantsOfNewNodes;
     private ArrayList<Integer> oldReplicasToRemove;
-    private int numOfVariants;
+    private int numOfVariants; //TODO Static?
     private Random randomGenerator = new Random(1234);
 
     /*
@@ -148,19 +148,22 @@ public class StrategyLatency implements DistributionStrategy {
     }
 
     private ArrayList<FluidityGraphNode> getNodesForNewReplica(int numOfReplicas) {
-        ArrayList<FluidityGraphNode> nodesOfGraph = fluidityGraph.getNodes();
-        ArrayList<FluidityGraphNode> returnNodes = new ArrayList<>();
-
-        int[] nodeNr = getPossibleNodeForGraph(numOfReplicas); //TODO Check for null
-
+        int[] nodeNr = getPossibleNodeForGraph();
         int offset = 0;
+
+        // Create variants here
         for (int i = 0; i < numOfVariants; i++) {
             variantsOfNewNodes[i] = new ArrayList<>();
             for (int j = 0; j < numberOfReplicasToMove; j++) {
                 if (j+offset < nodeNr.length) {
                     FluidityGraphNode node = fluidityGraph.getNodeById(nodeNr[j + offset]);
                     variantsOfNewNodes[i].add(node);
-                } //TODO What happens when there are not enough new possible nodes?
+                }
+            }
+            if (variantsOfNewNodes[i].size() != numberOfReplicasToMove) {
+                variantsOfNewNodes[i] = new ArrayList<>();
+                i = numOfVariants;
+                //numOfVariants = i
             }
             offset++;
         }
@@ -202,21 +205,16 @@ public class StrategyLatency implements DistributionStrategy {
         return variantsOfNewNodes[bestVariant];
     }
 
-    private int[] getPossibleNodeForGraph(int numOfRequiredNodes) {
-        ArrayList<FluidityGraphNode> possibleNodes = new ArrayList<>();
-        int[] newNodes = new int[numOfRequiredNodes];
+    private int[] getPossibleNodeForGraph() {
+        int[] newNodes = new int[nodeCategory[0].size()];
         ArrayList<NodeWeights> nodeWeights = new ArrayList<>();
 
         categorizeNodes();
-        possibleNodes = nodeCategory[0];
+        ArrayList<FluidityGraphNode> possibleNodes = nodeCategory[0];
 
-        if (possibleNodes.size() >= numOfRequiredNodes) {
-            for (FluidityGraphNode node : possibleNodes) {
-                double weight = assignWeightToNode(node);
-                nodeWeights.add(new NodeWeights(node.getNodeId(), weight));
-            }
-        } else {
-            return null;
+        for (FluidityGraphNode node : possibleNodes) {
+            double weight = assignWeightToNode(node);
+            nodeWeights.add(new NodeWeights(node.getNodeId(), weight));
         }
 
         Collections.sort(nodeWeights, new Comparator<NodeWeights>() {
