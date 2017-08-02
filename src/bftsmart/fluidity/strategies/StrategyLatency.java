@@ -25,6 +25,7 @@ public class StrategyLatency implements DistributionStrategy {
     private ArrayList<Integer> oldReplicasToRemove;
     private int numOfVariants;
     private Random randomGenerator = new Random(1234);
+    private boolean useGraph;
 
     /*
     0 = nodes that contain no replicas
@@ -45,6 +46,7 @@ public class StrategyLatency implements DistributionStrategy {
         this.svController = serverViewController;
 
         numOfVariants = 3; //TODO Through config file?
+        useGraph = true;
         replicaIds = this.fluidityGraph.getReplicasOfSystem();
         replicaIdsToReplace = new HashMap<>();
         oldReplicasToRemove = new ArrayList<>();
@@ -167,25 +169,25 @@ public class StrategyLatency implements DistributionStrategy {
         int[] nodeNr = getPossibleNodeForGraph();
         int offset = 0;
 
-        // Create variants here
-        for (int i = 0; i < numOfVariants; i++) {
-            variantsOfNewNodes[i] = new ArrayList<>();
-            for (int j = 0; j < numberOfReplicasToMove; j++) {
-                if (j+offset < nodeNr.length) {
-                    FluidityGraphNode node = fluidityGraph.getNodeById(nodeNr[j + offset]);
-                    variantsOfNewNodes[i].add(node);
-                }
-            }
-            if (variantsOfNewNodes[i].size() != numberOfReplicasToMove) {
+        if (useGraph) {
+            // Create variants here
+            for (int i = 0; i < numOfVariants; i++) {
                 variantsOfNewNodes[i] = new ArrayList<>();
-                //i = numOfVariants;
-                numOfVariants = i;
+                for (int j = 0; j < numberOfReplicasToMove; j++) {
+                    if (j+offset < nodeNr.length) {
+                        FluidityGraphNode node = fluidityGraph.getNodeById(nodeNr[j + offset]);
+                        variantsOfNewNodes[i].add(node);
+                    }
+                }
+                if (variantsOfNewNodes[i].size() != numberOfReplicasToMove) {
+                    variantsOfNewNodes[i] = new ArrayList<>();
+                    //i = numOfVariants;
+                    numOfVariants = i;
+                }
+                offset++;
             }
-            offset++;
-        }
 
-        // Give graph variants
-        if (numOfVariants > 0) {
+            // Give graph variants
             Map<Integer, Double>[] bestAssignment = new Map[numOfVariants];
             oldReplicasToRemove = getReplicaIDsToMove();
             double[][] replaceLatencies;
@@ -224,10 +226,10 @@ public class StrategyLatency implements DistributionStrategy {
     }
 
     private int[] getPossibleNodeForGraph() {
-        int[] newNodes = new int[nodeCategory[0].size()]; //TODO Problem not initialized at that point
         ArrayList<NodeWeights> nodeWeights = new ArrayList<>();
 
         categorizeNodes();
+        int[] newNodes = new int[nodeCategory[0].size()];
         ArrayList<FluidityGraphNode> possibleNodes = nodeCategory[0];
 
         for (FluidityGraphNode node : possibleNodes) {
@@ -235,16 +237,51 @@ public class StrategyLatency implements DistributionStrategy {
             nodeWeights.add(new NodeWeights(node.getNodeId(), weight));
         }
 
-        Collections.sort(nodeWeights, new Comparator<NodeWeights>() {
-            @Override
-            public int compare(NodeWeights lhs, NodeWeights rhs) {
-                // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
-                return lhs.getWeight() > rhs.getWeight() ? 1 : (lhs.getWeight() < rhs.getWeight() ) ? -1 : 0;
+        int counter = 0;
+        for (NodeWeights weight : nodeWeights) {
+            if (weight.getWeight() != -1.0d) {
+                counter++;
             }
-        });
+        }
 
-        for (int i = 0; i < nodeWeights.size(); i++) {
-            newNodes[i] = nodeWeights.get(i).getNodeId();
+        if (counter < numberOfReplicasToMove) {
+            useGraph = false;
+        }
+
+        if (useGraph) {
+            Collections.sort(nodeWeights, new Comparator<NodeWeights>() {
+                @Override
+                public int compare(NodeWeights lhs, NodeWeights rhs) {
+                    // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+                    return lhs.getWeight() > rhs.getWeight() ? 1 : (lhs.getWeight() < rhs.getWeight() ) ? -1 : 0;
+                }
+            });
+
+            //Shift the -1 weights to the end
+            boolean stop = false;
+            int position = 0;
+            while (!stop) {
+                if (position < nodeWeights.size()) {
+                    if (nodeWeights.get(position).getWeight() == -1.0d) {
+                        NodeWeights tempWeights = nodeWeights.get(position);
+                        nodeWeights.remove(position);
+                        nodeWeights.add(tempWeights);
+                        position++;
+                    } else {
+                        stop = true;
+                    }
+                } else {
+                    stop = true;
+                }
+            }
+
+            for (int i = 0; i < nodeWeights.size(); i++) {
+                newNodes[i] = nodeWeights.get(i).getNodeId();
+            }
+        } else {
+            for (int i = 0; i < nodeWeights.size(); i++) {
+                newNodes[i] = nodeWeights.get(i).getNodeId();
+            }
         }
 
         //variantsOfNewNodes = newNodes;
@@ -315,7 +352,7 @@ public class StrategyLatency implements DistributionStrategy {
                 tempLatency = tempLatency / getHighestWeightOfReplicas(unmutedNode.getReplicas());
                 weightOfNode += tempLatency;
             } else {
-                //TODO what if latency is unknown (-1)
+                weightOfNode = -1.0d;
             }
         }
 
