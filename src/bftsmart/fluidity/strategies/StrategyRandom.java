@@ -89,9 +89,15 @@ public class StrategyRandom implements DistributionStrategy {
         ArrayList<Integer> selectedReplicas = new ArrayList<>();
 
         for (int i = 0; i < numOfReplicasToMove; i++) {
-            int index = getRandomNumberForNode(newlyMutedReplicas.size());
-            //TODO Check whether index alredy occured
-            selectedReplicas.add(newlyMutedReplicas.get(index));
+            boolean nodeFound = false;
+
+            while (!nodeFound) {
+                int index = getRandomNumberForNode(newlyMutedReplicas.size());
+                if (!selectedReplicas.contains(newlyMutedReplicas.get(index))) {
+                    selectedReplicas.add(newlyMutedReplicas.get(index));
+                    nodeFound = true;
+                }
+            }
         }
 
         return selectedReplicas;
