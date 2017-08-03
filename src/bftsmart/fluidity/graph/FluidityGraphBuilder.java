@@ -40,7 +40,7 @@ public class FluidityGraphBuilder {
                 if (tempNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element nodeElement = (Element) tempNode;
                     int datacenterId = Integer.parseInt(
-                            nodeElement.getAttribute("datacenterid"));
+                            nodeElement.getAttribute("datacenterId"));
 
                     int numOfReplicas = nodeElement.getElementsByTagName("replicaId").getLength();
                     ArrayList<Integer> replicaList = new ArrayList<>();
@@ -53,13 +53,14 @@ public class FluidityGraphBuilder {
                     }
 
                     int maxNumOfRep = Integer.parseInt(
-                            nodeElement.getElementsByTagName("maximumNumberOfElements")
+                            nodeElement.getElementsByTagName("maximumNumberOfReplicas")
                                     .item(0).getTextContent());
 
                     fluidityGraph.addNode(datacenterId, replicaList, maxNumOfRep);
                 }
             }
 
+            //TODO Make edges between all nodes default and only specify known latencies in the xml file
             NodeList edges = doc.getElementsByTagName("edge");
             for (int i = 0; i < edges.getLength(); i++) {
                 Node tempEdge = edges.item(i);

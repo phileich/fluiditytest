@@ -65,7 +65,7 @@ public class StrategyRandom implements DistributionStrategy {
             FluidityGraphNode node = fluidityGraph.getNodeById(nodeId);
                 if (newNodes.contains(node)) {
                     newNodes.remove(node);
-                    replicasToRemove.remove(replicaId); //TODO newNodes?
+                    replicasToRemove.remove(replicaId);
                 }
         }
 

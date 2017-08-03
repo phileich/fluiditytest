@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<graph>
+    <node datacenterId="0">
+        <replicaId>0</replicaId>
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="1">
+        <replicaId>1</replicaId>
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="2">
+        <replicaId>2</replicaId>
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="3">
+        <replicaId>3</replicaId>
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="4">
+        <replicaId>4</replicaId>
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="5">
+        <replicaId>5</replicaId>
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+</graph>
+

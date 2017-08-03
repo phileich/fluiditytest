@@ -8,7 +8,7 @@ import bftsmart.fluidity.strategies.StrategyLatency;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.util.Logger;
 
-public class WeightGraphReconfigurator{
+public class WeightGraphReconfigurator {
     private LatencyStorage latStorage;
     private StrategyLatency strategyLatency;
     private int currentN;
