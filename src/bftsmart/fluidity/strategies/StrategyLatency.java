@@ -43,7 +43,7 @@ public class StrategyLatency implements DistributionStrategy {
         this.bestWeightAssignment = bestWeightAssignment;
         this.latencyStorage = latencyStorage;
         this.numberOfReplicasToMove = numberOfReplicasToMove;
-        this.svController = serverViewController;
+//        this.svController = serverViewController;
 
         numOfVariants = svController.getStaticConf().getNumberOfVariants();
         useGraph = true;
@@ -192,7 +192,7 @@ public class StrategyLatency implements DistributionStrategy {
             oldReplicasToRemove = getReplicaIDsToMove();
             double[][] replaceLatencies;
 
-            for (int i = 0; i < variantsOfNewNodes.length; i++) { //TODO numOfVariants?
+            for (int i = 0; i < variantsOfNewNodes.length; i++) {
                 replaceLatencies = getLantencyOfMutedReplica(oldReplicasToRemove, i);
 
                 for (int j = 0; j < numOfVariants; j++) {
