@@ -3,7 +3,6 @@ package bftsmart.fluidity;
 import bftsmart.dynamicWeights.DynamicWeightController;
 import bftsmart.dynamicWeights.LatencyMonitor;
 import bftsmart.fluidity.graph.FluidityGraph;
-import bftsmart.fluidity.graph.FluidityGraphBuilder;
 import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.fluidity.strategies.FluidityReconfigurator;
 import bftsmart.fluidity.strategies.StrategyConstant;
@@ -14,8 +13,6 @@ import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.util.Logger;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Random;
 
 /**
  * This class is the main controller for the fluidity approach
@@ -82,6 +79,10 @@ public class FluidityController implements Runnable {
 
     public DynamicWeightController getDwc() {
         return dwc;
+    }
+
+    public int getNumberOfReplicasToMove() {
+        return svController.getStaticConf().getNumberOfReplicasToMove();
     }
 
     public void notifyNewFluidityGraph(FluidityGraph newFluidityGraph, FluidityGraph oldFluidityGraph) {

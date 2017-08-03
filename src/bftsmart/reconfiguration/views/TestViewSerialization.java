@@ -31,7 +31,7 @@ public class TestViewSerialization {
         in[3] = new InetSocketAddress("127.0.0.1",1234);
         in[4] = new InetSocketAddress("127.0.0.1",1234);
         in[5] = new InetSocketAddress("127.0.0.1",1234);
-        View v = new View(10, ids,1,in,true,1, true);
+        View v = new View(10, ids,1,in,true,1, true, "");
         ViewStorage st = new DefaultViewStorage();
         st.storeView(v);
         

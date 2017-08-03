@@ -2,6 +2,7 @@ package bftsmart.fluidity.strategies;
 
 import bftsmart.dynamicWeights.LatencyStorage;
 import bftsmart.fluidity.graph.FluidityGraph;
+import bftsmart.reconfiguration.ServerViewController;
 
 import java.util.Map;
 
@@ -11,5 +12,6 @@ import java.util.Map;
 public interface DistributionStrategy {
 
     FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
-                                          LatencyStorage latencyStorage);
+                                   LatencyStorage latencyStorage, int numberOfReplicasToMove,
+                                   ServerViewController serverViewController);
 }

@@ -4,6 +4,7 @@ import bftsmart.reconfiguration.views.View;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created by philipp on 19.06.17.
@@ -145,11 +146,15 @@ public class FluidityGraph implements Serializable{
     }
 
     public FluidityGraphEdge getEdgeByNodes(FluidityGraphNode nodeFrom, FluidityGraphNode nodeTo) {
-        FluidityGraphEdge neededEdge = new FluidityGraphEdge(nodeFrom, nodeTo, -1);
+        if (!nodeFrom.equals(nodeTo)) {
+            FluidityGraphEdge neededEdge = new FluidityGraphEdge(nodeFrom, nodeTo, -1);
 
-        int index = edges.indexOf(neededEdge);
+            int index = edges.indexOf(neededEdge);
 
-        return edges.get(index);
+            return edges.get(index);
+        } else {
+            return new FluidityGraphEdge(nodeFrom, nodeTo, 0.0d);
+        }
     }
 
     public boolean checkForConsistencyWithRules() {
@@ -179,5 +184,18 @@ public class FluidityGraph implements Serializable{
         }
 
         return weightsOfReplicas;
+    }
+
+    public double getLatencyBetweenReplicas(int replicaFrom, int replicaTo) {
+        FluidityGraphNode nodeFrom = getNodeById(getNodeIdFromReplicaId(replicaFrom));
+        FluidityGraphNode nodeTo = getNodeById(getNodeIdFromReplicaId(replicaTo));
+
+        FluidityGraphEdge edge = getEdgeByNodes(nodeFrom, nodeTo);
+
+        return edge.getLatencyValue();
+    }
+
+    public int[] getReplicasOfSystem() {
+        return view.getProcesses();
     }
 }

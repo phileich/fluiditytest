@@ -1,26 +1,27 @@
 package bftsmart.fluidity.strategies.WeightGraph;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import bftsmart.dynamicWeights.*;
+import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.fluidity.strategies.StrategyLatency;
+import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.util.Logger;
 
-public class WeightGraphReconfigurator implements Runnable {
+public class WeightGraphReconfigurator{
     private LatencyStorage latStorage;
     private StrategyLatency strategyLatency;
     private int currentN;
+    private ServerViewController svController;
 
-    public WeightGraphReconfigurator(LatencyStorage latStorage, StrategyLatency strategyLatency, int currentN) {
+    public WeightGraphReconfigurator(ServerViewController svController, LatencyStorage latStorage, StrategyLatency strategyLatency, int currentN) {
         this.latStorage = latStorage;
         this.strategyLatency = strategyLatency;
         this.currentN = currentN;
+        this.svController = svController;
     }
 
-    @Override
-    public void run() {
+    public Map<Integer, Double> runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies) {
         Logger.println("Start Reconfiguration calculation");
 
         // get last 'windowSize' entries
@@ -126,10 +127,27 @@ public class WeightGraphReconfigurator implements Runnable {
         }
 
         //TODO Delete the muted replicas and add latencies for new ones
-        ArrayList<Integer> mutedReplicaIds = strategyLatency.getMutedReplicaIDs();
-        
 
-        DecisionLogic dl = new WeightGraphDecisionLogic(svController, reducedClientValues, reducedServerProposeValues,
+        //Replace the reduced server latencies of the muted replicas
+        for (int replicaId : mutedReplicaIds) {
+            for (int j = 0; j < currentN; j++) {
+                //double[] newLatencies = strategyLatency.getLantencyOfMutedReplica(replicaId, j);
+                reducedServerValues[replicaId][j] = replaceLatencies[replicaId][j];
+                reducedServerValues[j][replicaId] = replaceLatencies[j][replicaId];
+            }
+        }
+
+        //Replace the reduced server propose latencies of the muted replicas
+        for (int replicaId : mutedReplicaIds) {
+            for (int j = 0; j < currentN; j++) {
+                //double[] newLatencies = strategyLatency.getLantencyOfMutedReplica(replicaId, j);
+                reducedServerProposeValues[replicaId][j] = replaceLatencies[replicaId][j];//TODO Check for propose Values
+                reducedServerProposeValues[j][replicaId] = replaceLatencies[j][replicaId];
+            }
+        }
+
+
+        WeightGraphDecisionLogic dl = new WeightGraphDecisionLogic(svController, reducedClientValues, reducedServerProposeValues,
                 reducedServerValues);
 
         dl.calculateBestGraph();
@@ -137,7 +155,9 @@ public class WeightGraphReconfigurator implements Runnable {
         dl.getBestWeightAssignment();
         dl.getBestLeader();
 
-        strategyLatency.notifyReconfiguration(dl.getBestLeader(), dl.getBestWeightAssignment());
+        //strategyLatency.notifyReconfiguration(dl.getBestWeightAssignment());
+
+        return dl.getBestWeightAssignment();
 
     }
 
