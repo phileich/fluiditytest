@@ -55,26 +55,27 @@ public class StrategyRandom implements DistributionStrategy {
             }
         }
 
+        categorizeNodes();
         replicasToRemove = getReplicasToRemove(newlyMutedReplicas);
 
         // Small optimization to let old and new replicas running
         newNodes = getNodesForNewReplica(numOfReplicasToMove);
-        for (int replicaId : newlyMutedReplicas) {
+        for (int replicaId : replicasToRemove) {
             int nodeId = fluidityGraph.getNodeIdFromReplicaId(replicaId);
             FluidityGraphNode node = fluidityGraph.getNodeById(nodeId);
                 if (newNodes.contains(node)) {
                     newNodes.remove(node);
-                    newlyMutedReplicas.remove(replicaId); //TODO newNodes?
+                    replicasToRemove.remove(replicaId); //TODO newNodes?
                 }
         }
 
         // Delete the old replicas from the graph
-        for (int repId : newlyMutedReplicas) {
+        for (int repId : replicasToRemove) {
             fluidityGraph.removeReplicaFromNode(repId);
         }
 
         // Distribute new Replicas
-        newReplicas = generateNewReplicas(newlyMutedReplicas.size());
+        newReplicas = generateNewReplicas(replicasToRemove.size());
 
         // Add new replicas to the graph
         for (int proId : newReplicas) {
