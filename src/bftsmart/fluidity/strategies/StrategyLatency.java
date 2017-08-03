@@ -45,7 +45,7 @@ public class StrategyLatency implements DistributionStrategy {
         this.numberOfReplicasToMove = numberOfReplicasToMove;
         this.svController = serverViewController;
 
-        numOfVariants = 3; //TODO Through config file?
+        numOfVariants = svController.getStaticConf().getNumberOfVariants();
         useGraph = true;
         replicaIds = this.fluidityGraph.getReplicasOfSystem();
         replicaIdsToReplace = new HashMap<>();
