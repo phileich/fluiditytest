@@ -60,7 +60,6 @@ public class FluidityGraphBuilder {
                 }
             }
 
-            //TODO Make edges between all nodes default and only specify known latencies in the xml file
             NodeList edges = doc.getElementsByTagName("edge");
             for (int i = 0; i < edges.getLength(); i++) {
                 Node tempEdge = edges.item(i);
@@ -82,6 +81,9 @@ public class FluidityGraphBuilder {
 
                 }
             }
+
+            //Make edges between all nodes default and only specify known latencies in the xml file
+            fluidityGraph.addRemainingEdges();
 
 
         } catch (ParserConfigurationException e) {

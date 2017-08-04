@@ -24,5 +24,11 @@
         <replicaId>5</replicaId>
         <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
     </node>
+    <node datacenterId="6">
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="7">
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
 </graph>
 

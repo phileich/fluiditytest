@@ -39,6 +39,17 @@ public class FluidityGraph implements Serializable{
         }
     }
 
+    protected void addRemainingEdges() {
+        for (FluidityGraphNode nodeFrom : nodes) {
+            for (FluidityGraphNode nodeTo : nodes) {
+                if (!edges.contains(new FluidityGraphEdge(nodeFrom, nodeTo, -1)) &&
+                        !nodeFrom.equals(nodeTo)) {
+                    addEdge(nodeFrom.getNodeId(), nodeTo.getNodeId(), 0);
+                }
+            }
+        }
+    }
+
     public void changeEdgeLatencyData(int idNodeFrom, int idNodeTo, double newLatencyData) {
         FluidityGraphNode nodeFrom = getNodeById(idNodeFrom);
         FluidityGraphNode nodeTo = getNodeById(idNodeTo);
