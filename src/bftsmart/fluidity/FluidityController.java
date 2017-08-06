@@ -89,6 +89,8 @@ public class FluidityController implements Runnable {
         this.newFluidityGraph = newFluidityGraph;
         this.oldFluidityGraph = oldFluidityGraph;
 
+        System.out.println(this.newFluidityGraph.toString());
+
         // TODO Check difference between graphs (deep copy)
         // compare nodes and check for differences (relevant for cloud connection)
         for (FluidityGraphNode newNode : newFluidityGraph.getNodes()) {

@@ -83,4 +83,12 @@ public class FluidityGraphNode implements Serializable{
         return dataCenterId;
     }
 
+    @Override
+    public String toString() {
+        return "FluidityGraphNode{" +
+                "dataCenterId=" + dataCenterId +
+                ", replicas=" + replicas +
+                ", maximumNumberOfReplicas=" + maximumNumberOfReplicas +
+                '}';
+    }
 }

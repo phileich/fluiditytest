@@ -209,4 +209,11 @@ public class FluidityGraph implements Serializable{
     public int[] getReplicasOfSystem() {
         return view.getProcesses();
     }
+
+    @Override
+    public String toString() {
+        return "FluidityGraph{" +
+                "nodes=" + nodes +
+                '}';
+    }
 }
