@@ -158,8 +158,8 @@ public class StrategyRandom implements DistributionStrategy {
 
     private void categorizeNodes() {
         ArrayList<FluidityGraphNode> nodesOfGraph = fluidityGraph.getNodes();
-        for (ArrayList<FluidityGraphNode> nodeList : nodeCategory) {
-            nodeList = new ArrayList<>();
+        for (int i = 0; i < nodeCategory.length; i++) {
+            nodeCategory[i] = new ArrayList<>();
         }
 
         for (FluidityGraphNode node : nodesOfGraph) {
