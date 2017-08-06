@@ -39,7 +39,8 @@ public class FluidityGraphNode implements Serializable{
     }
 
     protected void deleteReplica(int replicaId) {
-        this.replicas.remove(replicaId);
+        Integer replica = new Integer(replicaId);
+        replicas.remove(replica);
     }
 
     public int getMaximumNumberOfReplicas() {
