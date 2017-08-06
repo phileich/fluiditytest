@@ -190,6 +190,8 @@ public class DecisionLogic {
 				weights.put(i, newConfig.getWeights()[i]); //TODO Is i really the process ID? normally they start with 1
 			}
 
+			bestWeightAssignment = weights;
+
 			TreeMap<Integer, Double> sortedMap = sortMapByValue(weights);
 
 			int[] newProcesses = new int[sortedMap.size()];
