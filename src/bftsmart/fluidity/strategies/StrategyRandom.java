@@ -60,13 +60,22 @@ public class StrategyRandom implements DistributionStrategy {
 
         // Small optimization to let old and new replicas running
         newNodes = getNodesForNewReplica(numOfReplicasToMove);
+
+        ArrayList<Integer> removeReplicasFromList = new ArrayList<>();
         for (int replicaId : replicasToRemove) {
             int nodeId = fluidityGraph.getNodeIdFromReplicaId(replicaId);
             FluidityGraphNode node = fluidityGraph.getNodeById(nodeId);
                 if (newNodes.contains(node)) {
                     newNodes.remove(node);
-                    replicasToRemove.remove(replicaId);
+                    removeReplicasFromList.add(replicaId);
                 }
+        }
+
+        for (int repId : removeReplicasFromList) {
+            Integer integerRepId = new Integer(repId);
+            if (replicasToRemove.contains(integerRepId)) {
+                replicasToRemove.remove(integerRepId);
+            }
         }
 
         // Delete the old replicas from the graph
@@ -136,17 +145,17 @@ public class StrategyRandom implements DistributionStrategy {
         ArrayList<FluidityGraphNode> returnNodes = new ArrayList<>();
 
         for (int i = 0; i < numOfReplicas; i++) {
-            boolean foundNode = false;
-            while (!foundNode) {
+            //boolean foundNode = false;
+            //while (!foundNode) {
                 int nodeNr = getRandomNumberForNode(possibleNodes.size());
                 FluidityGraphNode tempNode = possibleNodes.get(nodeNr);
-                if (fluidityGraph.checkForCapacity(tempNode)) {
-                    if (!fluidityGraph.hasAlreadyUnmutedReplica(tempNode)) {
+                //if (fluidityGraph.checkForCapacity(tempNode)) {
+                    //if (!fluidityGraph.hasAlreadyUnmutedReplica(tempNode)) {
                         returnNodes.add(tempNode);
-                        foundNode = true;
-                    }
-                }
-            }
+                        //foundNode = true;
+                    //}
+                //}
+            //}
         }
 
         return returnNodes;
