@@ -382,7 +382,7 @@ public class StrategyLatency implements DistributionStrategy {
                 for (int otherReplica : replicaIds) {
                     replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
                     FluidityGraphNode nodeStandard = fluidityGraph.getNodeById(fluidityGraph.getNodeIdFromReplicaId(otherReplica));
-                    FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica);
+                    FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica); //TODO Fix null of value of replicaIdsToReplace
                     FluidityGraphEdge fromEdge = fluidityGraph.getEdgeByNodes(nodeToReplace, nodeStandard);
                     FluidityGraphEdge toEdge = fluidityGraph.getEdgeByNodes(nodeStandard, nodeToReplace);
 

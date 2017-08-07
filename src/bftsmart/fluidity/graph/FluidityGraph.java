@@ -214,6 +214,6 @@ public class FluidityGraph implements Serializable{
     public String toString() {
         return "FluidityGraph{" +
                 "nodes=" + nodes +
-                '}';
+                '}' + "\n";
     }
 }
