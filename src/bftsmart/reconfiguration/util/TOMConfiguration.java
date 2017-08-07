@@ -398,7 +398,7 @@ public class TOMConfiguration extends Configuration {
 				numberOfReplicasToMove = (s != null) ? Integer.parseInt(s) : 0;
 			}
 
-			if (useFluidity && fluidityDistributionStrategy == "StrategyLatency") {
+			if (useFluidity && fluidityDistributionStrategy.equals("Latency Distribution")) {
 				s = (String) configs.remove("system.fluidityNumberOfVariants");
 				numberOfVariants = (s != null) ? Integer.parseInt(s) : 3;
 			}

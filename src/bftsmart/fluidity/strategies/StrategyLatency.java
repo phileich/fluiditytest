@@ -43,7 +43,7 @@ public class StrategyLatency implements DistributionStrategy {
         this.bestWeightAssignment = bestWeightAssignment;
         this.latencyStorage = latencyStorage;
         this.numberOfReplicasToMove = numberOfReplicasToMove;
-//        this.svController = serverViewController;
+        this.svController = serverViewController;
 
         numOfVariants = svController.getStaticConf().getNumberOfVariants();
         useGraph = true;
