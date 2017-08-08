@@ -25,9 +25,9 @@ public class WeightGraphReconfigurator {
         Logger.println("Start Reconfiguration calculation");
 
         // get last 'windowSize' entries
-        List<Latency[]> clientLatencies = latStorage.getClientLatencies();
-        List<Latency[]> serverLatencies = latStorage.getServerLatencies();
-        List<Latency[]> serverProposeLatencies = latStorage.getServerProposeLatencies();
+        List<Latency[]> clientLatencies = latStorage.getClientLatencies(true);
+        List<Latency[]> serverLatencies = latStorage.getServerLatencies(true);
+        List<Latency[]> serverProposeLatencies = latStorage.getServerProposeLatencies(true);
 
         System.out.println("clientLatencies: " + Arrays.deepToString(clientLatencies.toArray()));
         System.out.println("serverLatencies: " + Arrays.deepToString(serverLatencies.toArray()));

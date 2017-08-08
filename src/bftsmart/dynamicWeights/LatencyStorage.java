@@ -42,10 +42,12 @@ public class LatencyStorage {
 	 * 
 	 * @return
 	 */
-	public List<Latency[]> getServerLatencies() { //TODO give boolean whether to delete latencies or not
+	public List<Latency[]> getServerLatencies(boolean delete) { //TODO give boolean whether to delete latencies or not
 		// int start = Math.max(0, serverLatencies.size() - lastValues);
 		List<Latency[]> copyList = new ArrayList<Latency[]>(serverLatencies);
-		serverLatencies.clear();
+		if (delete) {
+			serverLatencies.clear();
+		}
 		return copyList;
 	}
 
@@ -54,10 +56,12 @@ public class LatencyStorage {
 	 * 
 	 * @return
 	 */
-	public List<Latency[]> getServerProposeLatencies() {
+	public List<Latency[]> getServerProposeLatencies(boolean delete) {
 		// int start = Math.max(0, serverProposeLatencies.size() - lastValues);
 		List<Latency[]> copyList = new ArrayList<Latency[]>(serverProposeLatencies);
-		serverProposeLatencies.clear();
+		if (delete) {
+			serverProposeLatencies.clear();
+		}
 		return copyList;
 	}
 
@@ -66,10 +70,12 @@ public class LatencyStorage {
 	 * 
 	 * @return
 	 */
-	public List<Latency[]> getClientLatencies() {
+	public List<Latency[]> getClientLatencies(boolean delete) {
 		// int start = Math.max(0, clientLatencies.size() - lastValues);
 		List<Latency[]> copyList = new ArrayList<Latency[]>(clientLatencies);
-		clientLatencies.clear();
+		if (delete) {
+			clientLatencies.clear();
+		}
 		return copyList;
 	}
 

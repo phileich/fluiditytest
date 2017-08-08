@@ -10,12 +10,14 @@ public class Reconfigurator implements Runnable {
 	private LatencyStorage latStorage;
 	private ServerViewController svController;
 	private DynamicWeightController dwController;
+	private boolean useFluidity;
 
 	public Reconfigurator(LatencyStorage latStorage, ServerViewController svController,
 			DynamicWeightController dwController) {
 		this.latStorage = latStorage;
 		this.svController = svController;
 		this.dwController = dwController;
+		useFluidity = svController.getStaticConf().useFluidity();
 	}
 
 	@Override
@@ -24,9 +26,9 @@ public class Reconfigurator implements Runnable {
 		int currentN = svController.getCurrentViewN();
 
 		// get last 'windowSize' entries
-		List<Latency[]> clientLatencies = latStorage.getClientLatencies();
-		List<Latency[]> serverLatencies = latStorage.getServerLatencies();
-		List<Latency[]> serverProposeLatencies = latStorage.getServerProposeLatencies();
+		List<Latency[]> clientLatencies = latStorage.getClientLatencies(!useFluidity);
+		List<Latency[]> serverLatencies = latStorage.getServerLatencies(!useFluidity);
+		List<Latency[]> serverProposeLatencies = latStorage.getServerProposeLatencies(!useFluidity);
 
 		System.out.println("clientLatencies: " + Arrays.deepToString(clientLatencies.toArray()));
 		System.out.println("serverLatencies: " + Arrays.deepToString(serverLatencies.toArray()));

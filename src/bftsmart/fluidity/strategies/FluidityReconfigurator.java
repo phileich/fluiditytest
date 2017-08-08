@@ -36,7 +36,7 @@ public class FluidityReconfigurator implements Runnable {
     @Override
     public void run() {
         LatencyStorage latencyStorage = fluidityController.getDwc().getLatStorage();
-        FluidityGraph filledFluidityGraph = fillGraphWithLatency(latencyStorage.getServerLatencies());
+        FluidityGraph filledFluidityGraph = fillGraphWithLatency(latencyStorage.getServerLatencies(false));
         int numOfReplicasToMove = fluidityController.getNumberOfReplicasToMove();
 
         oldFluidityGraph = deepCopyFluidityGraph(filledFluidityGraph);
