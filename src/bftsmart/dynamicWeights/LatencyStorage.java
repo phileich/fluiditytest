@@ -42,7 +42,7 @@ public class LatencyStorage {
 	 * 
 	 * @return
 	 */
-	public List<Latency[]> getServerLatencies() {
+	public List<Latency[]> getServerLatencies() { //TODO give boolean whether to delete latencies or not
 		// int start = Math.max(0, serverLatencies.size() - lastValues);
 		List<Latency[]> copyList = new ArrayList<Latency[]>(serverLatencies);
 		serverLatencies.clear();
