@@ -379,10 +379,10 @@ public class StrategyLatency implements DistributionStrategy {
 
         for (int oldReplica : replicasToReplace) {
             for (int i = 0; i < variantsOfNewNodes[0].size(); i++) {
+                replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
                 for (int otherReplica : replicaIds) {
-                    replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
                     FluidityGraphNode nodeStandard = fluidityGraph.getNodeById(fluidityGraph.getNodeIdFromReplicaId(otherReplica));
-                    FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica); //TODO Fix null of value of replicaIdsToReplace
+                    FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica);
                     FluidityGraphEdge fromEdge = fluidityGraph.getEdgeByNodes(nodeToReplace, nodeStandard);
                     FluidityGraphEdge toEdge = fluidityGraph.getEdgeByNodes(nodeStandard, nodeToReplace);
 
@@ -395,11 +395,10 @@ public class StrategyLatency implements DistributionStrategy {
     }
 
     private FluidityGraphNode getOneOfNewNodes(int variant, int nodeNr) {
-            FluidityGraphNode tempNode = variantsOfNewNodes[variant].get(nodeNr);
-            if (!replicaIdsToReplace.containsValue(tempNode)) {
-                return tempNode;
-            }
-
+        FluidityGraphNode tempNode = variantsOfNewNodes[variant].get(nodeNr);
+        if (!replicaIdsToReplace.containsValue(tempNode)) {
+            return tempNode;
+        }
 
         return null;
     }
