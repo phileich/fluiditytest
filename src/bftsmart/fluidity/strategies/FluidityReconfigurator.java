@@ -103,6 +103,7 @@ public class FluidityReconfigurator implements Runnable {
 
     private FluidityGraph getGraphWithReducedLatencies(List<FluidityGraphLatency> graphLatencies) {
         FluidityGraph returnGraph = serverViewController.getCurrentView().getFluidityGraph();
+        ArrayList<Integer> tempGraphLatencyIndex = new ArrayList<>();;
 
         for (FluidityGraphLatency fgL : graphLatencies) {
             int from = fgL.getNodeIdFrom();
@@ -112,23 +113,23 @@ public class FluidityReconfigurator implements Runnable {
             ArrayList<Integer> indexList = indexOfAll(tempObj, graphLatencies);
             ArrayList<FluidityGraphLatency> reduceList = new ArrayList<>();
 
-            for(int index : indexList) {
-                reduceList.add(graphLatencies.get(index));
+            if (!tempGraphLatencyIndex.contains(indexList.get(0))) {
+                for(int index : indexList) {
+                    reduceList.add(graphLatencies.get(index));
+                }
+
+                ArrayList<Double> reduceValues = new ArrayList<>();
+                for (FluidityGraphLatency fgl : reduceList) {
+                    reduceValues.add(fgl.getLatencyValue());
+                }
+
+                double medianValue = medianReducer(reduceValues);
+
+                returnGraph.changeEdgeLatencyData(from, to, medianValue);
+
+                tempGraphLatencyIndex.addAll(indexList);
             }
-
-            ArrayList<Double> reduceValues = new ArrayList<>();
-            for (FluidityGraphLatency fgl : reduceList) {
-                reduceValues.add(fgl.getLatencyValue());
-            }
-
-            double medianValue = medianReducer(reduceValues);
-
-            returnGraph.changeEdgeLatencyData(from, to, medianValue);
-
-            for(int index : indexList) {
-                graphLatencies.remove(index);
-            }
-         }
+        }
 
         return returnGraph;
     }
