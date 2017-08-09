@@ -198,7 +198,7 @@ public class StrategyLatency implements DistributionStrategy {
                 for (int j = 0; j < numOfVariants; j++) {
                     WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController,
                             latencyStorage, this, replicaIds.length);
-                    boolean delete = (j + 1) == numOfVariants;
+                    boolean delete = ((j + 1) == numOfVariants) && ((i+1) == variantsOfNewNodes.length);
                     bestAssignment[j] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies, delete);
                 }
             }
