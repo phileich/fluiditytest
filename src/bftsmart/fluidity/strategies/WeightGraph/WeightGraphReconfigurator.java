@@ -21,13 +21,13 @@ public class WeightGraphReconfigurator {
         this.svController = svController;
     }
 
-    public Map<Integer, Double> runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies) {
+    public Map<Integer, Double> runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies, boolean delete) {
         Logger.println("Start Reconfiguration calculation");
 
         // get last 'windowSize' entries
-        List<Latency[]> clientLatencies = latStorage.getClientLatencies(true);
-        List<Latency[]> serverLatencies = latStorage.getServerLatencies(true);
-        List<Latency[]> serverProposeLatencies = latStorage.getServerProposeLatencies(true);
+        List<Latency[]> clientLatencies = latStorage.getClientLatencies(delete);
+        List<Latency[]> serverLatencies = latStorage.getServerLatencies(delete);
+        List<Latency[]> serverProposeLatencies = latStorage.getServerProposeLatencies(delete);
 
         System.out.println("clientLatencies: " + Arrays.deepToString(clientLatencies.toArray()));
         System.out.println("serverLatencies: " + Arrays.deepToString(serverLatencies.toArray()));
