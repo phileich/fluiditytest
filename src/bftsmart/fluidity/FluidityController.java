@@ -29,6 +29,7 @@ public class FluidityController implements Runnable {
     private FluidityGraph newFluidityGraph;
     private FluidityGraph oldFluidityGraph;
     private FluidityReconfigurator fluidityReconfigurator;
+    private long calcDuration;
 
 
     public FluidityController(int id, ServerViewController svController, LatencyMonitor latencyMonitor,
@@ -51,6 +52,8 @@ public class FluidityController implements Runnable {
 
         switch (distributionStrategy) {
             case "Random Distribution":
+                calcDuration = System.currentTimeMillis();
+                System.out.println("---------------- Fluidity Strategy started ----------------");
                 fluidityReconfigurator.setDistributionStrategy(new StrategyRandom());
                 Thread randomStrategy = new Thread(fluidityReconfigurator, "RandomStrategyThread");
                 randomStrategy.setPriority(Thread.MIN_PRIORITY);
@@ -58,6 +61,8 @@ public class FluidityController implements Runnable {
                 break;
 
             case "Latency Distribution":
+                calcDuration = System.currentTimeMillis();
+                System.out.println("---------------- Fluidity Strategy started ----------------");
                 fluidityReconfigurator.setDistributionStrategy(new StrategyLatency());
                 Thread latencyStrategy = new Thread(fluidityReconfigurator, "LatencyStrategyThread");
                 latencyStrategy.setPriority(Thread.MIN_PRIORITY);
@@ -65,6 +70,8 @@ public class FluidityController implements Runnable {
                 break;
 
             case "Constant Distribution":
+                calcDuration = System.currentTimeMillis();
+                System.out.println("---------------- Fluidity Strategy started ----------------");
                 fluidityReconfigurator.setDistributionStrategy(new StrategyConstant());
                 Thread constantStrategy = new Thread(fluidityReconfigurator, "ConstantStrategyThread");
                 constantStrategy.setPriority(Thread.MIN_PRIORITY);
@@ -86,10 +93,14 @@ public class FluidityController implements Runnable {
     }
 
     public void notifyNewFluidityGraph(FluidityGraph newFluidityGraph, FluidityGraph oldFluidityGraph) {
+
+
         this.newFluidityGraph = newFluidityGraph;
         this.oldFluidityGraph = oldFluidityGraph;
 
         System.out.println(this.newFluidityGraph.toString());
+        System.out.println("---------------- Fluidity Strategy finished (duration: "
+                + (System.currentTimeMillis() - calcDuration) + "ms) ----------------");
 
         // TODO Check difference between graphs (deep copy)
         // compare nodes and check for differences (relevant for cloud connection)

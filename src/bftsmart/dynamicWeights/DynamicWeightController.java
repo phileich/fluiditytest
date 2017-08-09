@@ -156,7 +156,6 @@ public class DynamicWeightController implements Runnable {
 		this.bestLeader = bestLeader;
 		this.bestWeightAssignment = bestWeightAssignment;
 
-		//TODO set here the dwc to fc with latencystorage
 		// If Fluidity is chosen then start thread
 		if (svController.getStaticConf().useFluidity()) {
 			Thread fluidityThread = new Thread(fc, "FluidityThread");

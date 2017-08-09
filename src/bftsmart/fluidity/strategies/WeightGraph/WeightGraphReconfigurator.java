@@ -155,7 +155,6 @@ public class WeightGraphReconfigurator {
         //strategyLatency.notifyReconfiguration(dl.getBestWeightAssignment());
 
         return dl.getBestWeightAssignment();
-
     }
 
 }
