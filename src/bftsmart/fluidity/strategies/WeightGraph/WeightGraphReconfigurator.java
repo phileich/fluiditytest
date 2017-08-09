@@ -151,9 +151,6 @@ public class WeightGraphReconfigurator {
                 reducedServerValues);
 
         dl.calculateBestGraph();
-        dl.getBestLeader();
-        dl.getBestWeightAssignment();
-        dl.getBestLeader();
 
         //strategyLatency.notifyReconfiguration(dl.getBestWeightAssignment());
 
