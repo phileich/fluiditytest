@@ -64,42 +64,48 @@ public class DynamicWeightController implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public synchronized void run() {
 		/*
 		Wenn internalLatencies eine gewisse menge an latencies bekommen hat wird dann das ganze aufgerufen,
 		anslcießend noch 5000ms gewartet (wie jetzt) und dann reconfigurator aufgerufen
 		 */
 		currentReceivedInternalConsensus = 0;
 		while (true) { //while(internalLatencies.poll() != null)
-			byte[] data = internalLatencies.poll();
-			if (data != null) {
-				addToLatStorage(data);
-				currentReceivedInternalConsensus++;
-				// if n-f entries -> trigger calculation
-				if (!calcStarted && currentReceivedInternalConsensus >= (svController.getCurrentViewN()
-						- svController.getCurrentViewF())) { //TODO Maybe problem with n-f being bigger
 
-					// wait for slower data
-					calcStarted = true;
-					System.out.println("n-f internal received- waiting for slower");
-					try {
-						Thread.sleep(5000);
-						// check if slower data has arrived -> add
-						if (internalLatencies.peek() != null) {
-							while (internalLatencies.peek() != null) {
-								data = internalLatencies.poll();
-								addToLatStorage(data);
-							}
-						}
-						Thread reconfigThread = new Thread(new Reconfigurator(latStorage, svController, this),
-								"ReconfigurationThread");
-						reconfigThread.setPriority(Thread.MIN_PRIORITY);
-						reconfigThread.start();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
+			try {
+				this.wait();
+				byte[] data = internalLatencies.poll();
+				if (data != null) {
+                    addToLatStorage(data);
+                    currentReceivedInternalConsensus++;
+                    // if n-f entries -> trigger calculation
+                    if (!calcStarted && currentReceivedInternalConsensus >= (svController.getCurrentViewN()
+                            - svController.getCurrentViewF())) { //TODO Maybe problem with n-f being bigger
 
+                        // wait for slower data
+                        calcStarted = true;
+                        System.out.println("n-f internal received- waiting for slower");
+                        try {
+                            Thread.sleep(5000);
+                            // check if slower data has arrived -> add
+                            if (internalLatencies.peek() != null) {
+                                while (internalLatencies.peek() != null) {
+                                    data = internalLatencies.poll();
+                                    addToLatStorage(data);
+                                }
+                            }
+                            Thread reconfigThread = new Thread(new Reconfigurator(latStorage, svController, this),
+                                    "ReconfigurationThread");
+                            reconfigThread.setPriority(Thread.MIN_PRIORITY);
+                            reconfigThread.start();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -145,8 +151,9 @@ public class DynamicWeightController implements Runnable {
 		this.scs = scs;
 	}
 
-	public void addInternalConsensusDataToStorage(byte[] data) {
+	public synchronized void addInternalConsensusDataToStorage(byte[] data) {
 		internalLatencies.add(data);
+		notifyAll();
 	}
 
 	public void notifyReconfigFinished(int bestLeader, Map<Integer, Double> bestWeightAssignment) {

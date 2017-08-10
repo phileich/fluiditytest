@@ -49,6 +49,7 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 		long latReceived = System.currentTimeMillis();
 		try {
 			runServerLatencies.put(new LatencyPOJO(serverID, consensusID, latReceived));
+			notifyAll();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -66,6 +67,7 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 		long latReceived = System.currentTimeMillis();
 		try {
 			runProposeLatencies.put(new LatencyPOJO(serverID, consensusID, latReceived));
+			notifyAll();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -138,6 +140,7 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 
 	public synchronized void storeClientLatencies(byte[] cls) {
 		runClientLatencies.add(cls);
+		notifyAll();
 		// Logger.println("Store client latencies: " + StringUtils.join(cls,
 		// ","));
 	}
@@ -178,122 +181,127 @@ public class LatencyMonitorPiggybackServer extends LatencyMonitor {
 	}
 
 	@Override
-	public void run() {
+	public synchronized void run() {
 		// System.out.println("LatencyMonitorPiggybackServer Thread started");
 		while (true) {
-			// check if addServerLatency
-			while (runServerLatencies.peek() != null) {
-				LatencyPOJO latPOJO = runServerLatencies.poll();
-				int serverID = latPOJO.serverID;
-				long consensusID = latPOJO.consensusID;
-				long latReceived = latPOJO.latReceived;
+			try {
+				this.wait();
+				// check if addServerLatency
+				while (runServerLatencies.peek() != null) {
+                    LatencyPOJO latPOJO = runServerLatencies.poll();
+                    int serverID = latPOJO.serverID;
+                    long consensusID = latPOJO.consensusID;
+                    long latReceived = latPOJO.latReceived;
 
-				// get Latency
-				int key = createHash(serverID, consensusID);
-				ServerLatency storedLatency = tmpServerLatencies.get(key);
-				if (storedLatency == null) {
-					// error not created yet
-				} else {
-					storedLatency.setReceived(latReceived);
-					Logger.println("Store Server Latency: latency:" + storedLatency.getValue() + ",id:" + serverID
-							+ ",consensusID:" + consensusID);
+                    // get Latency
+                    int key = createHash(serverID, consensusID);
+                    ServerLatency storedLatency = tmpServerLatencies.get(key);
+                    if (storedLatency == null) {
+                        // error not created yet
+                    } else {
+                        storedLatency.setReceived(latReceived);
+                        Logger.println("Store Server Latency: latency:" + storedLatency.getValue() + ",id:" + serverID
+                                + ",consensusID:" + consensusID);
 
-					ServerLatency[] latencyOfRound = serverLatencies.get(consensusID);
+                        ServerLatency[] latencyOfRound = serverLatencies.get(consensusID);
 
-					if (latencyOfRound == null) {
-						// this does not exist yet -> create
-						int n = svc.getCurrentViewN();
-						latencyOfRound = new ServerLatency[n];
-						latencyOfRound[serverID] = storedLatency;
-						// my own latency with lat = 0
-						ServerLatency myLat = new ServerLatency(new Long(0), new Long(0), myID, myID);
-						latencyOfRound[myID] = myLat;
+                        if (latencyOfRound == null) {
+                            // this does not exist yet -> create
+                            int n = svc.getCurrentViewN();
+                            latencyOfRound = new ServerLatency[n];
+                            latencyOfRound[serverID] = storedLatency;
+                            // my own latency with lat = 0
+                            ServerLatency myLat = new ServerLatency(new Long(0), new Long(0), myID, myID);
+                            latencyOfRound[myID] = myLat;
 
-					} else {
-						// check if correct id
-						if (serverID < latencyOfRound.length) {
-							latencyOfRound[serverID] = storedLatency;
-						} else {
-							// ERROR!
-						}
-					}
-					serverLatencies.put(consensusID, latencyOfRound);
+                        } else {
+                            // check if correct id
+                            if (serverID < latencyOfRound.length) {
+                                latencyOfRound[serverID] = storedLatency;
+                            } else {
+                                // ERROR!
+                            }
+                        }
+                        serverLatencies.put(consensusID, latencyOfRound);
 
-					// remove tmpLatency, no longer needed to store
-					tmpServerLatencies.remove(key);
+                        // remove tmpLatency, no longer needed to store
+                        tmpServerLatencies.remove(key);
 
-					// print
-					String serverLatenciesString = "Server Latencies: ";
+                        // print
+                        String serverLatenciesString = "Server Latencies: ";
 
-					for (Long name : serverLatencies.keySet()) {
-						String printKey = name.toString();
-						String value = Arrays.deepToString(serverLatencies.get(name));
-						serverLatenciesString = serverLatenciesString + "(" + printKey + ":" + value + "); ";
+                        for (Long name : serverLatencies.keySet()) {
+                            String printKey = name.toString();
+                            String value = Arrays.deepToString(serverLatencies.get(name));
+                            serverLatenciesString = serverLatenciesString + "(" + printKey + ":" + value + "); ";
 
-					}
-					Logger.println(serverLatenciesString);
-				}
+                        }
+                        Logger.println(serverLatenciesString);
+                    }
 
-			}
+                }
 
-			// check if addProposeLatency
-			while (runProposeLatencies.peek() != null) {
-				LatencyPOJO latPOJO = runProposeLatencies.poll();
-				int serverID = latPOJO.serverID;
-				long consensusID = latPOJO.consensusID;
-				long latReceived = latPOJO.latReceived;
-				// get Latency
-				int key = createHash(serverID, consensusID);
-				ServerLatency storedLatency = tmpServerProposeLatencies.get(key);
-				if (storedLatency == null) {
-					// error not created yet
-				} else {
-					storedLatency.setReceived(latReceived);
-					storedLatency.setValue(storedLatency.getValue() / 2); // half
-																			// ->
-																			// RTT
-					Logger.println("Store Server Propose Latency: latency:" + storedLatency.getValue() + ",id:"
-							+ serverID + ",consensusID:" + consensusID);
+				// check if addProposeLatency
+				while (runProposeLatencies.peek() != null) {
+                    LatencyPOJO latPOJO = runProposeLatencies.poll();
+                    int serverID = latPOJO.serverID;
+                    long consensusID = latPOJO.consensusID;
+                    long latReceived = latPOJO.latReceived;
+                    // get Latency
+                    int key = createHash(serverID, consensusID);
+                    ServerLatency storedLatency = tmpServerProposeLatencies.get(key);
+                    if (storedLatency == null) {
+                        // error not created yet
+                    } else {
+                        storedLatency.setReceived(latReceived);
+                        storedLatency.setValue(storedLatency.getValue() / 2); // half
+                                                                                // ->
+                                                                                // RTT
+                        Logger.println("Store Server Propose Latency: latency:" + storedLatency.getValue() + ",id:"
+                                + serverID + ",consensusID:" + consensusID);
 
-					ServerLatency[] latencyOfRound = serverProposeLatencies.get(consensusID);
+                        ServerLatency[] latencyOfRound = serverProposeLatencies.get(consensusID);
 
-					if (latencyOfRound == null) {
-						// this does not exist yet -> create
-						int n = svc.getCurrentViewN();
-						latencyOfRound = new ServerLatency[n];
-						latencyOfRound[serverID] = storedLatency;
-						// my own latency with lat = 0
-						ServerLatency myLat = new ServerLatency(new Long(0), new Long(0), myID, myID);
-						latencyOfRound[myID] = myLat;
+                        if (latencyOfRound == null) {
+                            // this does not exist yet -> create
+                            int n = svc.getCurrentViewN();
+                            latencyOfRound = new ServerLatency[n];
+                            latencyOfRound[serverID] = storedLatency;
+                            // my own latency with lat = 0
+                            ServerLatency myLat = new ServerLatency(new Long(0), new Long(0), myID, myID);
+                            latencyOfRound[myID] = myLat;
 
-					} else {
-						// check if correct id
-						if (serverID < latencyOfRound.length) {
-							latencyOfRound[serverID] = storedLatency;
-						} else {
-							// ERROR!
-						}
-					}
-					serverProposeLatencies.put(consensusID, latencyOfRound);
+                        } else {
+                            // check if correct id
+                            if (serverID < latencyOfRound.length) {
+                                latencyOfRound[serverID] = storedLatency;
+                            } else {
+                                // ERROR!
+                            }
+                        }
+                        serverProposeLatencies.put(consensusID, latencyOfRound);
 
-					// remove tmpLatency, no longer needed to store
-					tmpServerProposeLatencies.remove(key);
+                        // remove tmpLatency, no longer needed to store
+                        tmpServerProposeLatencies.remove(key);
 
-					// print
-					String serverLatenciesString = "Server Propose Latencies: ";
-					for (Long name : serverProposeLatencies.keySet()) {
-						String printKey = name.toString();
-						String value = Arrays.deepToString(serverProposeLatencies.get(name));
-						serverLatenciesString = serverLatenciesString + "(" + printKey + ":" + value + "); ";
-					}
-					Logger.println(serverLatenciesString);
-				}
-			}
+                        // print
+                        String serverLatenciesString = "Server Propose Latencies: ";
+                        for (Long name : serverProposeLatencies.keySet()) {
+                            String printKey = name.toString();
+                            String value = Arrays.deepToString(serverProposeLatencies.get(name));
+                            serverLatenciesString = serverLatenciesString + "(" + printKey + ":" + value + "); ";
+                        }
+                        Logger.println(serverLatenciesString);
+                    }
+                }
 
-			while (runClientLatencies.peek() != null) {
-				byte[] clientLat = runClientLatencies.poll();
-				ArrayList<ClientLatency> cls = SerializationUtils.deserialize(clientLat);
-				clientLatencies.addAll(cls);
+				while (runClientLatencies.peek() != null) {
+                    byte[] clientLat = runClientLatencies.poll();
+                    ArrayList<ClientLatency> cls = SerializationUtils.deserialize(clientLat);
+                    clientLatencies.addAll(cls);
+                }
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 
 		}
