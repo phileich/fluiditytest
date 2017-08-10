@@ -91,7 +91,7 @@ public class FluidityReconfigurator implements Runnable {
                 double latencyValue = tempLatency.getValue();
 
                 int nodeFrom = returnGraph.getNodeIdFromReplicaId(replicaFrom);
-                int nodeTo = returnGraph.getNodeIdFromReplicaId(replicaTo);
+                int nodeTo = returnGraph.getNodeIdFromReplicaId(replicaTo); //TODO zweiter durchlauf replicaTo = -1!
 
                 FluidityGraphLatency latencyEntry = new FluidityGraphLatency(nodeFrom, nodeTo, latencyValue);
                 fluidityGraphLatencies.add(latencyEntry);
