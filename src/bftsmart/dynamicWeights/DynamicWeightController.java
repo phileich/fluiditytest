@@ -65,8 +65,12 @@ public class DynamicWeightController implements Runnable {
 
 	@Override
 	public void run() {
+		/*
+		Wenn internalLatencies eine gewisse menge an latencies bekommen hat wird dann das ganze aufgerufen,
+		anslcießend noch 5000ms gewartet (wie jetzt) und dann reconfigurator aufgerufen
+		 */
 		currentReceivedInternalConsensus = 0;
-		while (true) {
+		while (true) { //while(internalLatencies.poll() != null)
 			byte[] data = internalLatencies.poll();
 			if (data != null) {
 				addToLatStorage(data);
