@@ -36,7 +36,7 @@ public class FluidityReconfigurator implements Runnable {
     @Override
     public void run() {
         LatencyStorage latencyStorage = fluidityController.getDwc().getLatStorage();
-        FluidityGraph filledFluidityGraph = fillGraphWithLatency(latencyStorage.getServerLatencies(false));
+        FluidityGraph filledFluidityGraph = fillGraphWithLatency(latencyStorage.getServerLatencies(false)); //TODO Problem old latency storage
         int numOfReplicasToMove = fluidityController.getNumberOfReplicasToMove();
 
         oldFluidityGraph = deepCopyFluidityGraph(filledFluidityGraph);
@@ -91,7 +91,7 @@ public class FluidityReconfigurator implements Runnable {
                 double latencyValue = tempLatency.getValue();
 
                 int nodeFrom = returnGraph.getNodeIdFromReplicaId(replicaFrom);
-                int nodeTo = returnGraph.getNodeIdFromReplicaId(replicaTo); //TODO zweiter durchlauf replicaTo = -1!
+                int nodeTo = returnGraph.getNodeIdFromReplicaId(replicaTo); //TODO zweiter durchlauf nodeTo = -1!
 
                 FluidityGraphLatency latencyEntry = new FluidityGraphLatency(nodeFrom, nodeTo, latencyValue);
                 fluidityGraphLatencies.add(latencyEntry);
