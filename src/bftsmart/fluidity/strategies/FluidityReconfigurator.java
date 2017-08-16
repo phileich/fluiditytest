@@ -81,17 +81,16 @@ public class FluidityReconfigurator implements Runnable {
 
         // This class first completes the latency information of the graph with the one from the latency
         // storage and then calls the strategy
-        // TODO The above
 
-        for (Latency[] latency : serverLatencies) {
+        for (Latency[] latency : serverLatencies) { //TODO Check for null in replicas
             for (int i = 0; i < latency.length; i++) {
                 Latency tempLatency = latency[i];
-                int replicaFrom = tempLatency.getFrom();
+                int replicaFrom = tempLatency.getFrom(); //TODO Nullpointer here
                 int replicaTo = tempLatency.getTo();
                 double latencyValue = tempLatency.getValue();
 
                 int nodeFrom = returnGraph.getNodeIdFromReplicaId(replicaFrom);
-                int nodeTo = returnGraph.getNodeIdFromReplicaId(replicaTo); //TODO zweiter durchlauf nodeTo = -1!
+                int nodeTo = returnGraph.getNodeIdFromReplicaId(replicaTo);
 
                 FluidityGraphLatency latencyEntry = new FluidityGraphLatency(nodeFrom, nodeTo, latencyValue);
                 fluidityGraphLatencies.add(latencyEntry);
