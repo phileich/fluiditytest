@@ -372,7 +372,11 @@ public class TOMConfiguration extends Configuration {
 			}
 
 			s = (String) configs.remove("system.useFluidity");
-			useFluidity = (s != null) ? Boolean.parseBoolean(s) : false;
+			if (useDynamicWeights) {
+				useFluidity = (s != null) ? Boolean.parseBoolean(s) : false;
+			} else {
+				useFluidity = false;
+			}
 
 			if (useFluidity && useWeights) {
 				s = (String) configs.remove("system.delta");
