@@ -163,47 +163,55 @@ public class StrategyVector implements DistributionStrategy {
     }
 
     private ArrayList<FluidityGraphNode> getNodesForNewReplica() {
+        ArrayList<FluidityGraphNode> nodeList = new ArrayList<>();
         int[] nodeNr = getPossibleNodeForGraph();
-        int offset = 0;
 
-        if (useGraph) {
-            // Create variants here
-            for (int i = 0; i < numOfVariants; i++) {
-                variantsOfNewNodes[i] = new ArrayList<>();
-                for (int j = 0; j < numberOfReplicasToMove; j++) {
-                    if (j+offset < nodeNr.length) {
-                        FluidityGraphNode node = fluidityGraph.getNodeById(nodeNr[j + offset]);
-                        variantsOfNewNodes[i].add(node);
-                    }
-                }
-                if (variantsOfNewNodes[i].size() != numberOfReplicasToMove) {
-                    variantsOfNewNodes[i] = new ArrayList<>();
-                    //i = numOfVariants;
-                    numOfVariants = i;
-                }
-                offset++;
-            }
-
-            // Give graph variants
-            Map<Integer, Double>[] bestAssignment = new Map[numOfVariants];
-            oldReplicasToRemove = getReplicaIDsToMove();
-            double[][] replaceLatencies;
-
-            for (int i = 0; i < numOfVariants; i++) { //TODO Changed variantsOfNewNodes.length to numofvariants. Check!
-                replaceLatencies = getLantencyOfMutedReplica(oldReplicasToRemove, i);
-
-                for (int j = 0; j < numOfVariants; j++) {
-                    WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController,
-                            latencyStorage, this, replicaIds.length);
-                    boolean delete = ((j + 1) == numOfVariants) && ((i+1) == numOfVariants);
-                    bestAssignment[j] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies, delete);
-                }
-            }
-
-            return getBestNodes(bestAssignment);
-        } else {
-            return getRandomNodes();
+        for (int i = 0; i < numberOfReplicasToMove; i++) {
+            nodeList.add(fluidityGraph.getNodeById(nodeNr[i]));
         }
+
+        return nodeList;
+
+        //        int offset = 0;
+
+//        if (useGraph) {
+//            // Create variants here
+//            for (int i = 0; i < numOfVariants; i++) {
+//                variantsOfNewNodes[i] = new ArrayList<>();
+//                for (int j = 0; j < numberOfReplicasToMove; j++) {
+//                    if (j+offset < nodeNr.length) {
+//                        FluidityGraphNode node = fluidityGraph.getNodeById(nodeNr[j + offset]);
+//                        variantsOfNewNodes[i].add(node);
+//                    }
+//                }
+//                if (variantsOfNewNodes[i].size() != numberOfReplicasToMove) {
+//                    variantsOfNewNodes[i] = new ArrayList<>();
+//                    //i = numOfVariants;
+//                    numOfVariants = i;
+//                }
+//                offset++;
+//            }
+//
+//            // Give graph variants
+//            Map<Integer, Double>[] bestAssignment = new Map[numOfVariants];
+//            oldReplicasToRemove = getReplicaIDsToMove();
+//            double[][] replaceLatencies;
+//
+//            for (int i = 0; i < numOfVariants; i++) { //TODO Changed variantsOfNewNodes.length to numofvariants. Check!
+//                replaceLatencies = getLantencyOfMutedReplica(oldReplicasToRemove, i);
+//
+//                for (int j = 0; j < numOfVariants; j++) {
+//                    WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController,
+//                            latencyStorage, this, replicaIds.length);
+//                    boolean delete = ((j + 1) == numOfVariants) && ((i+1) == numOfVariants);
+//                    bestAssignment[j] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies, delete);
+//                }
+//            }
+//
+//            return getBestNodes(bestAssignment);
+//        } else {
+//            return getRandomNodes();
+//        }
     }
 
     private ArrayList<FluidityGraphNode> getBestNodes(Map<Integer, Double>[] bestAssignments) {
@@ -225,6 +233,7 @@ public class StrategyVector implements DistributionStrategy {
 
     private int[] getPossibleNodeForGraph() {
         ArrayList<NodeWeight> nodeWeights = new ArrayList<>();
+        int[] sortedNodes;
 
         categorizeNodes();
         int[] newNodes = new int[nodeCategory[0].size()];
@@ -249,55 +258,66 @@ public class StrategyVector implements DistributionStrategy {
             nodeWeights.add(new NodeWeight(node.getNodeId(), nodeLatency));
         }
 
-        int counter = 0;
-        for (NodeWeight weight : nodeWeights) {
-            if (weight.getWeight() != -1.0d) {
-                counter++;
-            }
+        Collections.sort(nodeWeights);
+        sortedNodes = new int[nodeWeights.size()];
+
+        for (int i = 0; i < nodeWeights.size(); i++) {
+            sortedNodes[i] = nodeWeights.get(i).getNodeId();
         }
 
-        if (counter < numberOfReplicasToMove) {
-            useGraph = false;
-        }
+        return sortedNodes;
 
-        if (useGraph) {
-            Collections.sort(nodeWeights, new Comparator<NodeWeight>() {
-                @Override
-                public int compare(NodeWeight lhs, NodeWeight rhs) {
-                    // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
-                    return lhs.getWeight() > rhs.getWeight() ? 1 : (lhs.getWeight() < rhs.getWeight() ) ? -1 : 0;
-                }
-            });
 
-            //Shift the -1 weights to the end
-            boolean stop = false;
-            int position = 0;
-            while (!stop) {
-                if (position < nodeWeights.size()) {
-                    if (nodeWeights.get(position).getWeight() == -1.0d) {
-                        NodeWeight tempWeights = nodeWeights.get(position);
-                        nodeWeights.remove(position);
-                        nodeWeights.add(tempWeights);
-                        position++;
-                    } else {
-                        stop = true;
-                    }
-                } else {
-                    stop = true;
-                }
-            }
 
-            for (int i = 0; i < nodeWeights.size(); i++) {
-                newNodes[i] = nodeWeights.get(i).getNodeId();
-            }
-        } else {
-            for (int i = 0; i < nodeWeights.size(); i++) {
-                newNodes[i] = nodeWeights.get(i).getNodeId();
-            }
-        }
+//        int counter = 0;
+//        for (NodeWeight weight : nodeWeights) {
+//            if (weight.getWeight() != -1.0d) {
+//                counter++;
+//            }
+//        }
+//
+//        if (counter < numberOfReplicasToMove) {
+//            useGraph = false;
+//        }
+//
+//        if (useGraph) {
+//            Collections.sort(nodeWeights, new Comparator<NodeWeight>() {
+//                @Override
+//                public int compare(NodeWeight lhs, NodeWeight rhs) {
+//                    // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+//                    return lhs.getWeight() > rhs.getWeight() ? 1 : (lhs.getWeight() < rhs.getWeight() ) ? -1 : 0;
+//                }
+//            });
+//
+//            //Shift the -1 weights to the end
+//            boolean stop = false;
+//            int position = 0;
+//            while (!stop) {
+//                if (position < nodeWeights.size()) {
+//                    if (nodeWeights.get(position).getWeight() == -1.0d) {
+//                        NodeWeight tempWeights = nodeWeights.get(position);
+//                        nodeWeights.remove(position);
+//                        nodeWeights.add(tempWeights);
+//                        position++;
+//                    } else {
+//                        stop = true;
+//                    }
+//                } else {
+//                    stop = true;
+//                }
+//            }
+//
+//            for (int i = 0; i < nodeWeights.size(); i++) {
+//                newNodes[i] = nodeWeights.get(i).getNodeId();
+//            }
+//        } else {
+//            for (int i = 0; i < nodeWeights.size(); i++) {
+//                newNodes[i] = nodeWeights.get(i).getNodeId();
+//            }
+//        }
 
         //variantsOfNewNodes = newNodes;
-        return newNodes;
+        //return newNodes;
     }
 
     private void categorizeNodes() {
@@ -475,7 +495,7 @@ public class StrategyVector implements DistributionStrategy {
         return selectedNodes;
     }
 
-    private class NodeWeight {
+    private class NodeWeight implements Comparable<NodeWeight> {
         private int nodeId;
         private double weight;
 
@@ -490,6 +510,17 @@ public class StrategyVector implements DistributionStrategy {
 
         public double getWeight() {
             return weight;
+        }
+
+        @Override
+        public int compareTo(NodeWeight nodeWeight) {
+            if (this.weight < nodeWeight.getWeight()) {
+                return -1;
+            } else if (this.weight > nodeWeight.getWeight()) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
     }
 }
