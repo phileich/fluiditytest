@@ -34,8 +34,8 @@ public class StrategyVector implements DistributionStrategy {
     private ArrayList<FluidityGraphNode>[] nodeCategory = new ArrayList[5];
 
     @Override
-    public FluidityGraph getReconfigGraph(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
-                                          LatencyStorage latencyStorage, int numberOfReplicasToMove, ServerViewController serverViewController) {
+    public FluidityGraph calculateNewConfiguration(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
+                                                   LatencyStorage latencyStorage, int numberOfReplicasToMove, ServerViewController serverViewController) {
         this.fluidityGraph = fluidityGraph;
         this.bestWeightAssignment = bestWeightAssignment;
         this.latencyStorage = latencyStorage;
