@@ -4,10 +4,7 @@ import bftsmart.dynamicWeights.DynamicWeightController;
 import bftsmart.dynamicWeights.LatencyMonitor;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphNode;
-import bftsmart.fluidity.strategies.FluidityReconfigurator;
-import bftsmart.fluidity.strategies.StrategyConstant;
-import bftsmart.fluidity.strategies.StrategyLatency;
-import bftsmart.fluidity.strategies.StrategyRandom;
+import bftsmart.fluidity.strategies.*;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.util.Logger;
@@ -76,6 +73,15 @@ public class FluidityController implements Runnable {
                 Thread constantStrategy = new Thread(fluidityReconfigurator, "ConstantStrategyThread");
                 constantStrategy.setPriority(Thread.MIN_PRIORITY);
                 constantStrategy.start();
+                break;
+
+            case "Vector Distribution":
+                calcDuration = System.currentTimeMillis();
+                System.out.println("---------------- Fluidity Strategy started ----------------");
+                fluidityReconfigurator.setDistributionStrategy(new StrategyVector());
+                Thread vectorStrategy = new Thread(fluidityReconfigurator, "VectorStrategyThread");
+                vectorStrategy.setPriority(Thread.MIN_PRIORITY);
+                vectorStrategy.start();
                 break;
 
             default:

@@ -106,29 +106,34 @@ public class StrategyVector implements DistributionStrategy {
 
         // Get the new nodes for the system to place the new muted replicas
         newNodes = getNodesForNewReplica();
-        int actualNumberOfReplicasToMove = newNodes.size();
+//        int actualNumberOfReplicasToMove = newNodes.size();
+//
+//        // Delete the old replicas from the graph
+//        if (actualNumberOfReplicasToMove != numberOfReplicasToMove) {
+//            int[] actualReplicasToReplace = new int[actualNumberOfReplicasToMove];
+//            Iterator<Integer> keyIterator = replicaIdsToReplace.keySet().iterator();
+//            for (int i = 0; i < actualReplicasToReplace.length; i++) {
+//                actualReplicasToReplace[i] = keyIterator.next();
+//            }
+//
+//            for (int repId : actualReplicasToReplace) {
+//                fluidityGraph.removeReplicaFromNode(repId);
+//            }
+//        } else {
+//            for (int repId : replicaIdsToReplace.keySet()) {
+//                fluidityGraph.removeReplicaFromNode(repId);
+//            }
+//        }
 
-        // Delete the old replicas from the graph
-        if (actualNumberOfReplicasToMove != numberOfReplicasToMove) {
-            int[] actualReplicasToReplace = new int[actualNumberOfReplicasToMove];
-            Iterator<Integer> keyIterator = replicaIdsToReplace.keySet().iterator();
-            for (int i = 0; i < actualReplicasToReplace.length; i++) {
-                actualReplicasToReplace[i] = keyIterator.next();
-            }
+        // Delete old replicas from graph
+        ArrayList<Integer> repToMove = getReplicaIDsToMove();
 
-            for (int repId : actualReplicasToReplace) {
-                fluidityGraph.removeReplicaFromNode(repId);
-            }
-        } else {
-            for (int repId : replicaIdsToReplace.keySet()) {
-                fluidityGraph.removeReplicaFromNode(repId);
-            }
+        for (int repId : repToMove) {
+            fluidityGraph.removeReplicaFromNode(repId);
         }
 
-
         // Generate new muted replicas
-        newReplicas = generateNewReplicas(actualNumberOfReplicasToMove);
-
+        newReplicas = generateNewReplicas(numberOfReplicasToMove);
 
         // Add new replicas to the graph
         for (int proId : newReplicas) {
