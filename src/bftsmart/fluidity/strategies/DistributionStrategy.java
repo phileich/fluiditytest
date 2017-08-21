@@ -11,6 +11,7 @@ import java.util.Map;
  */
 public interface DistributionStrategy {
 
+    //calculate best distribution
     FluidityGraph calculateNewConfiguration(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
                                             LatencyStorage latencyStorage, int numberOfReplicasToMove,
                                             ServerViewController serverViewController);

@@ -50,7 +50,7 @@ public class StrategyVector implements DistributionStrategy {
         variantsOfNewNodes = new ArrayList[numOfVariants];
 
 
-        latencyDistribution();
+        vectorDistribution();
 
         return this.fluidityGraph;
     }
@@ -94,7 +94,7 @@ public class StrategyVector implements DistributionStrategy {
         return randomGenerator.nextInt(range);
     }
 
-    private void latencyDistribution() {
+    private void vectorDistribution() {
         ArrayList<Integer> newlyMutedReplicas = new ArrayList<>();
         ArrayList<Integer> newReplicas;
 
@@ -224,19 +224,33 @@ public class StrategyVector implements DistributionStrategy {
     }
 
     private int[] getPossibleNodeForGraph() {
-        ArrayList<StrategyLatency.NodeWeights> nodeWeights = new ArrayList<>();
+        ArrayList<NodeWeight> nodeWeights = new ArrayList<>();
 
         categorizeNodes();
         int[] newNodes = new int[nodeCategory[0].size()];
         ArrayList<FluidityGraphNode> possibleNodes = nodeCategory[0];
 
         for (FluidityGraphNode node : possibleNodes) {
-            double weight = assignWeightToNode(node);
-            nodeWeights.add(new StrategyLatency.NodeWeights(node.getNodeId(), weight));
+            Vector<Double> latencyVector = assginLatencyVectorToNode(node);
+            latencyVector.sort(new Comparator<Double>() {
+                @Override
+                public int compare(Double aDouble, Double t1) {
+                    if (aDouble < t1) {
+                        return -1;
+                    } else if (aDouble > t1) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
+
+            double nodeLatency = latencyVector.get(svController.getOverlayQuorum() - 1);
+            nodeWeights.add(new NodeWeight(node.getNodeId(), nodeLatency));
         }
 
         int counter = 0;
-        for (StrategyLatency.NodeWeights weight : nodeWeights) {
+        for (NodeWeight weight : nodeWeights) {
             if (weight.getWeight() != -1.0d) {
                 counter++;
             }
@@ -247,9 +261,9 @@ public class StrategyVector implements DistributionStrategy {
         }
 
         if (useGraph) {
-            Collections.sort(nodeWeights, new Comparator<StrategyLatency.NodeWeights>() {
+            Collections.sort(nodeWeights, new Comparator<NodeWeight>() {
                 @Override
-                public int compare(StrategyLatency.NodeWeights lhs, StrategyLatency.NodeWeights rhs) {
+                public int compare(NodeWeight lhs, NodeWeight rhs) {
                     // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
                     return lhs.getWeight() > rhs.getWeight() ? 1 : (lhs.getWeight() < rhs.getWeight() ) ? -1 : 0;
                 }
@@ -261,7 +275,7 @@ public class StrategyVector implements DistributionStrategy {
             while (!stop) {
                 if (position < nodeWeights.size()) {
                     if (nodeWeights.get(position).getWeight() == -1.0d) {
-                        StrategyLatency.NodeWeights tempWeights = nodeWeights.get(position);
+                        NodeWeight tempWeights = nodeWeights.get(position);
                         nodeWeights.remove(position);
                         nodeWeights.add(tempWeights);
                         position++;
@@ -358,6 +372,42 @@ public class StrategyVector implements DistributionStrategy {
         return weightOfNode;
     }
 
+    /**
+     * Assigns the given node a vector consisting of its latencies.
+     * @return
+     */
+    private Vector<Double> assginLatencyVectorToNode (FluidityGraphNode node) {
+        Vector<Double> latencyVector = new Vector<>();
+        ArrayList<FluidityGraphNode> unmutedNodes = nodeCategory[1];
+        unmutedNodes.addAll(nodeCategory[2]);
+        Set<FluidityGraphNode> uniqueNodes = new HashSet<>(unmutedNodes);
+
+        // For every node get the latency information and the weights of the replicas to create the vector
+        for (FluidityGraphNode unmutedNode : uniqueNodes) {
+            List<Integer> replicasOfNode = unmutedNode.getReplicas();
+            double nodeWeight = getSumOfReplicaWeights(replicasOfNode);
+
+            double tempLatency1 = fluidityGraph.getEdgeByNodes(node, unmutedNode).getLatencyValue();
+            double tempLatency2 = fluidityGraph.getEdgeByNodes(unmutedNode, node).getLatencyValue();
+            double latency = tempLatency1 + tempLatency2;
+
+            latencyVector.add(latency * nodeWeight);
+        }
+
+        return latencyVector;
+
+    }
+
+    private double getSumOfReplicaWeights(List<Integer> replicas) {
+        double weight = 0.0d;
+
+        for (int replica : replicas) {
+            weight =+ bestWeightAssignment.get(replica);
+        }
+
+        return weight;
+    }
+
     private double getHighestWeightOfReplicas(ArrayList<Integer> replicas) {
         double[] weights = fluidityGraph.getWeightsOfReplicas(replicas);
 
@@ -425,11 +475,11 @@ public class StrategyVector implements DistributionStrategy {
         return selectedNodes;
     }
 
-    private class NodeWeights{
+    private class NodeWeight {
         private int nodeId;
         private double weight;
 
-        public NodeWeights(int nodeId, double weight) {
+        public NodeWeight(int nodeId, double weight) {
             this.nodeId = nodeId;
             this.weight = weight;
         }
