@@ -4,7 +4,6 @@ import bftsmart.dynamicWeights.LatencyStorage;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphEdge;
 import bftsmart.fluidity.graph.FluidityGraphNode;
-import bftsmart.fluidity.strategies.WeightGraph.WeightGraphReconfigurator;
 import bftsmart.reconfiguration.ServerViewController;
 
 import java.util.*;
@@ -186,7 +185,7 @@ public class StrategyVector implements DistributionStrategy {
         ArrayList<FluidityGraphNode> possibleNodes = nodeCategory[0];
 
         for (FluidityGraphNode node : possibleNodes) {
-            Vector<Double> latencyVector = assginLatencyVectorToNode(node);
+            Vector<Double> latencyVector = assignLatencyVectorToNode(node);
             latencyVector.sort(new Comparator<Double>() {
                 @Override
                 public int compare(Double aDouble, Double t1) {
@@ -290,7 +289,7 @@ public class StrategyVector implements DistributionStrategy {
      * Assigns the given node a vector consisting of its latencies.
      * @return
      */
-    private Vector<Double> assginLatencyVectorToNode (FluidityGraphNode node) {
+    private Vector<Double> assignLatencyVectorToNode(FluidityGraphNode node) {
         Vector<Double> latencyVector = new Vector<>();
         ArrayList<FluidityGraphNode> unmutedNodes = nodeCategory[1];
         unmutedNodes.addAll(nodeCategory[2]);
