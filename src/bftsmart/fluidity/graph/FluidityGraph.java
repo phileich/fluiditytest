@@ -44,7 +44,7 @@ public class FluidityGraph implements Serializable{
             for (FluidityGraphNode nodeTo : nodes) {
                 if (!edges.contains(new FluidityGraphEdge(nodeFrom, nodeTo, -1)) &&
                         !nodeFrom.equals(nodeTo)) {
-                    addEdge(nodeFrom.getNodeId(), nodeTo.getNodeId(), 0);
+                    addEdge(nodeFrom.getNodeId(), nodeTo.getNodeId(), -1);
                 }
             }
         }

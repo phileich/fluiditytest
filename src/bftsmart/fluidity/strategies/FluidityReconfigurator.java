@@ -103,7 +103,7 @@ public class FluidityReconfigurator implements Runnable {
 
     private FluidityGraph getGraphWithReducedLatencies(List<FluidityGraphLatency> graphLatencies) {
         FluidityGraph returnGraph = serverViewController.getCurrentView().getFluidityGraph();
-        ArrayList<Integer> tempGraphLatencyIndex = new ArrayList<>();;
+        ArrayList<Integer> tempGraphLatencyIndex = new ArrayList<>();
 
         for (FluidityGraphLatency fgL : graphLatencies) {
             int from = fgL.getNodeIdFrom();
@@ -125,7 +125,9 @@ public class FluidityReconfigurator implements Runnable {
 
                 double medianValue = medianReducer(reduceValues);
 
-                returnGraph.changeEdgeLatencyData(from, to, medianValue);
+                if (medianValue != 0.0d) {
+                    returnGraph.changeEdgeLatencyData(from, to, medianValue);
+                }
 
                 tempGraphLatencyIndex.addAll(indexList);
             }
