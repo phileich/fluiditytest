@@ -303,7 +303,16 @@ public class StrategyVector implements DistributionStrategy {
 
             double tempLatency1 = fluidityGraph.getEdgeByNodes(node, unmutedNode).getLatencyValue();
             double tempLatency2 = fluidityGraph.getEdgeByNodes(unmutedNode, node).getLatencyValue();
-            double latency = tempLatency1 + tempLatency2;
+            double latency;
+            if (tempLatency1 == -1.0d && tempLatency2 == -1.0d) {
+                latency = -1;//TODO get a value for this case. Maybe get random nodes if there is no latency information
+            } else if (tempLatency1 == -1.0d) {
+                latency = tempLatency2 + tempLatency2;
+            } else if (tempLatency2 == -1.0d) {
+                latency = tempLatency1 + tempLatency1;
+            } else {
+                latency = tempLatency1 + tempLatency2;
+            }
 
             latencyVector.add(latency * nodeWeight);
         }
