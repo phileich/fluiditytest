@@ -125,9 +125,7 @@ public class FluidityReconfigurator implements Runnable {
 
                 double medianValue = medianReducer(reduceValues);
 
-               // if (medianValue != 0.0d) { TODO why nullpointer?
-                    returnGraph.changeEdgeLatencyData(from, to, medianValue);
-                //}
+                returnGraph.changeEdgeLatencyData(from, to, medianValue);
 
                 tempGraphLatencyIndex.addAll(indexList);
             }
