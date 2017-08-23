@@ -82,8 +82,8 @@ Session.vim
 
 .DS_Store
 files
-#config/currentView
-#config/system.config
+config/currentView
+config/system.config
 bin
 bin/*
 
