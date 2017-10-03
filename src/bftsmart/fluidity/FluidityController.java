@@ -111,9 +111,8 @@ public class FluidityController implements Runnable {
 
         //TODO Only the leader starts the cloudconnector, which creates an internal consensus
         if (svController.getCurrentLeader() == replicaId) {
-            Thread cloudconn = new Thread(new CloudConnector(replicaId, newFluidityGraph), "CloudConnectorThread");
-            cloudconn.setPriority(Thread.MIN_PRIORITY);
-            cloudconn.start();
+            String[] args = {String.valueOf(replicaId)};
+            CloudConnector.main(args);
         }
 
 

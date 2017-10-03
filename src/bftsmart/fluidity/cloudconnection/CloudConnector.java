@@ -13,18 +13,18 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class CloudConnector implements Runnable {
+public class CloudConnector {
     private int id;
     private FluidityGraph fluidityGraph;
 
-    public CloudConnector(int id, FluidityGraph fluidityGraph) {
+    public CloudConnector(int id) {
         this.id = id;
-        this.fluidityGraph = fluidityGraph;
     }
 
-    @Override
-    public void run() {
+    public void start() {
     InternalServiceProxy internalClient = new InternalServiceProxy(id + 100);
+    fluidityGraph = internalClient.getViewManager().getCurrentView().getFluidityGraph();
+
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream(4);
             DataOutputStream dos = new DataOutputStream(out);
@@ -45,7 +45,7 @@ public class CloudConnector implements Runnable {
                 System.out.println("--------------------------------");
                 System.out.println("replyfl: " + replyFluidityGraph.toString());
 
-                ViewManager viewManager = new ViewManager();
+                ViewManager.main(null);
                 //TODO Extend view manager to change weights and fluidity graph
 
                 //TODO Extend this client for giving cloud provider commands
@@ -59,5 +59,15 @@ public class CloudConnector implements Runnable {
         } finally {
             internalClient.close();
         }
+    }
+
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println("You have to specify an <id>");
+            System.exit(-1);
+        }
+
+        CloudConnector cloudConnector = new CloudConnector(Integer.parseInt(args[0]));
+        cloudConnector.start();
     }
 }
