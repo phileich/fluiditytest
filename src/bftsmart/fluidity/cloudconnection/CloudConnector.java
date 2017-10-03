@@ -37,7 +37,8 @@ public class CloudConnector implements Runnable {
             byte[] reply = internalClient.invokeInternal(out.toByteArray());
             if (reply != null) {
                 //Logger.println("Received Internal Consensus: " + new String(reply));
-                
+                //TODO For all replicas get enough correct graphs before proceeding
+
             } else {
                 Logger.println("Received Internal Consensus: NULL");
             }
