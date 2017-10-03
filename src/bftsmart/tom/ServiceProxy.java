@@ -247,7 +247,7 @@ public class ServiceProxy extends TOMSender {
 				Logger.println("###################RETRY#######################");
 				return invokeOrdered(request);
 			} else {
-				throw new RuntimeException("Received n-f replies without f+1 of them matching.");
+				throw new RuntimeException("Received n-f replies without f+1 of them matching."); //TODO check replies of replicas
 			}
 		} else {
 			// normal operation
