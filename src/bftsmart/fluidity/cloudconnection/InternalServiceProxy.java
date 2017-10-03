@@ -21,6 +21,6 @@ public class InternalServiceProxy extends ServiceProxy {
     }
 
     public byte[] invokeInternal(byte[] request) {
-        return invoke(request, TOMMessageType.INTERNAL_CONSENSUS);
+        return invoke(request, TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS);
     }
 }
