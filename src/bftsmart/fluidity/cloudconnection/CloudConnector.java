@@ -29,7 +29,8 @@ public class CloudConnector implements Runnable {
             DataOutputStream dos = new DataOutputStream(out);
 
 
-            byte[] serializedFluidityGraph = SerializationUtils.serialize(fluidityGraph);
+            //byte[] serializedFluidityGraph = SerializationUtils.serialize(fluidityGraph);
+            byte[] serializedFluidityGraph = (new String("FluidityConsensus")).getBytes();
             dos.writeInt(serializedFluidityGraph.length);
             dos.write(serializedFluidityGraph);
 
@@ -38,6 +39,10 @@ public class CloudConnector implements Runnable {
             if (reply != null) {
                 //Logger.println("Received Internal Consensus: " + new String(reply));
                 //TODO For all replicas get enough correct graphs before proceeding
+                FluidityGraph replyFluidityGraph = SerializationUtils.deserialize(reply);
+                System.out.println("Oldfl: " + fluidityGraph.toString());
+                System.out.println("--------------------------------");
+                System.out.println("replyfl: " + replyFluidityGraph.toString());
 
             } else {
                 Logger.println("Received Internal Consensus: NULL");
