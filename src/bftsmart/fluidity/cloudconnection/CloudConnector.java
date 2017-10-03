@@ -3,6 +3,7 @@ package bftsmart.fluidity.cloudconnection;
 import bftsmart.dynamicWeights.Latency;
 import bftsmart.dynamicWeights.MedianReducer;
 import bftsmart.fluidity.graph.FluidityGraph;
+import bftsmart.reconfiguration.ViewManager;
 import bftsmart.tom.util.Logger;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -43,6 +44,9 @@ public class CloudConnector implements Runnable {
                 System.out.println("Oldfl: " + fluidityGraph.toString());
                 System.out.println("--------------------------------");
                 System.out.println("replyfl: " + replyFluidityGraph.toString());
+
+                ViewManager viewManager = new ViewManager();
+                //TODO Extend view manager to change weights and fluidity graph
 
             } else {
                 Logger.println("Received Internal Consensus: NULL");
