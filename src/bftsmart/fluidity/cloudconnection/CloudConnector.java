@@ -48,6 +48,8 @@ public class CloudConnector implements Runnable {
                 ViewManager viewManager = new ViewManager();
                 //TODO Extend view manager to change weights and fluidity graph
 
+                //TODO Extend this client for giving cloud provider commands
+
             } else {
                 Logger.println("Received Internal Consensus: NULL");
             }
