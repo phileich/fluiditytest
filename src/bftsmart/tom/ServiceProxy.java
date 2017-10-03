@@ -60,7 +60,7 @@ public class ServiceProxy extends TOMSender {
 	/**
 	 * Constructor
 	 *
-	 * @see bellow
+	 * bellow
 	 */
 	public ServiceProxy(int processId) {
 		this(processId, null, null, null);
@@ -69,7 +69,7 @@ public class ServiceProxy extends TOMSender {
 	/**
 	 * Constructor
 	 *
-	 * @see bellow
+	 * bellow
 	 */
 	public ServiceProxy(int processId, String configHome) {
 		this(processId, configHome, null, null);
@@ -272,12 +272,19 @@ public class ServiceProxy extends TOMSender {
 					canSendLock.unlock();
 					return invoke(request, TOMMessageType.ORDERED_REQUEST);
 				}
-			} else if (reqType == TOMMessageType.INTERNAL_CONSENSUS) { //TODO Extend to Internal_fluidity_Consensus
+			} else if (reqType == TOMMessageType.INTERNAL_CONSENSUS) {
 				if (response.getViewID() == getViewManager().getCurrentViewId()) {
 					ret = response.getContent(); // return the response
 				} else {
 					canSendLock.unlock();
 					return invoke(request, TOMMessageType.INTERNAL_CONSENSUS);
+				}
+			} else if (reqType == TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS) { //TODO Extend to Internal_fluidity_Consensus
+				if (response.getViewID() == getViewManager().getCurrentViewId()) {
+					ret = response.getContent(); // return the response
+				} else {
+					canSendLock.unlock();
+					return invoke(request, TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS);
 				}
 			} else {
 				if (response.getViewID() > getViewManager().getCurrentViewId()) {
