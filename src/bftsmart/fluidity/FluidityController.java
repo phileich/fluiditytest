@@ -2,6 +2,7 @@ package bftsmart.fluidity;
 
 import bftsmart.dynamicWeights.DynamicWeightController;
 import bftsmart.dynamicWeights.LatencyMonitor;
+import bftsmart.fluidity.cloudconnection.CloudConnector;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.fluidity.strategies.*;
@@ -23,7 +24,7 @@ public class FluidityController implements Runnable {
     private View currentView;
     private ArrayList<FluidityGraphNode> nodeOfGraph;
 
-    private FluidityGraph newFluidityGraph;
+    private FluidityGraph calculatedFluidityGraph;
     private FluidityGraph oldFluidityGraph;
     private FluidityReconfigurator fluidityReconfigurator;
     private long calcDuration;
@@ -101,12 +102,20 @@ public class FluidityController implements Runnable {
     public void notifyNewFluidityGraph(FluidityGraph newFluidityGraph, FluidityGraph oldFluidityGraph) {
 
 
-        this.newFluidityGraph = newFluidityGraph;
+        this.calculatedFluidityGraph = newFluidityGraph;
         this.oldFluidityGraph = oldFluidityGraph;
 
-        System.out.println(this.newFluidityGraph.toString());
+        System.out.println(this.calculatedFluidityGraph.toString());
         System.out.println("---------------- Fluidity Strategy finished (duration: "
                 + (System.currentTimeMillis() - calcDuration) + "ms) ----------------");
+
+        //TODO Only the leader starts the cloudconnector, which creates an internal consensus
+        if (svController.getCurrentLeader() == replicaId) {
+            Thread cloudconn = new Thread(new CloudConnector(replicaId, newFluidityGraph), "CloudConnectorThread");
+            cloudconn.setPriority(Thread.MIN_PRIORITY);
+            cloudconn.start();
+        }
+
 
         // TODO Check difference between graphs (deep copy)
         // compare nodes and check for differences (relevant for cloud connection)
@@ -127,5 +136,9 @@ public class FluidityController implements Runnable {
                 }
             }
         }
+    }
+
+    public FluidityGraph getCalculatedFluidityGraph() {
+        return calculatedFluidityGraph;
     }
 }

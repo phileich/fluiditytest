@@ -303,7 +303,13 @@ public class FluidityServiceReplica extends ServiceReplica {
                         // Send the replies back to the client
                         //byte[] replies = (new String("ConsensusStored")).getBytes();
                         //TODO Get newest fluidity graph
-                        byte[] replies = SerializationUtils.serialize(fluidityGraph);
+                        byte[] replies;
+                        FluidityGraph calcFluidityGraph = fc.getCalculatedFluidityGraph();
+                        if (calcFluidityGraph != null) {
+                            replies = SerializationUtils.serialize(calcFluidityGraph);
+                        } else {
+                            replies = (new String("No Graph")).getBytes();
+                        }
 
                         request.reply = new TOMMessage(id, request.getSession(), request.getSequence(), replies,
                                 SVController.getCurrentViewId(), TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS);
