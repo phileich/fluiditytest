@@ -203,6 +203,7 @@ public class DecisionLogic {
 			System.out.println("new Weights@process " + Arrays.toString(newProcesses));
 		} else {
 			System.out.println("No configuration is better than the current one! NO RECONFIG");
+			bestWeightAssignment = svController.getCurrentView().getWeights();
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("--------- calc Best finished - " + (end - startBest) + "ms -------------");
