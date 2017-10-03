@@ -21,6 +21,7 @@ import bftsmart.tom.server.*;
 import bftsmart.tom.server.defaultservices.DefaultReplier;
 import bftsmart.tom.util.ShutdownHookThread;
 import bftsmart.tom.util.TOMUtil;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -275,13 +276,37 @@ public class FluidityServiceReplica extends ServiceReplica {
                         }
 
                         dwc.addInternalConsensusDataToStorage(request.getContent());
-                        //TODO Add graph consensus as well and filter for graph/latency (Old)
 
                         // Send the replies back to the client
                         byte[] replies = (new String("ConsensusStored")).getBytes();
 
                         request.reply = new TOMMessage(id, request.getSession(), request.getSequence(), replies,
                                 SVController.getCurrentViewId(), TOMMessageType.INTERNAL_CONSENSUS);
+                        replier.manageReply(request, msgCtx);
+                    } else if (request.getReqType() == TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS) {
+                        noop = false;
+
+                        MessageContext msgCtx = new MessageContext(request.getSender(), request.getViewID(),
+                                request.getReqType(), request.getSession(), request.getSequence(),
+                                request.getOperationId(), request.getReplyServer(), request.serializedMessageSignature,
+                                firstRequest.timestamp, request.numOfNonces, request.seed, regencies[consensusCount],
+                                leaders[consensusCount], consId[consensusCount],
+                                cDecs[consensusCount].getConsMessages(), firstRequest, false);
+
+                        if (requestCount + 1 == requestsFromConsensus.length) {
+
+                            msgCtx.setLastInBatch();
+                        }
+
+                        //dwc.addInternalConsensusDataToStorage(request.getContent());
+
+                        // Send the replies back to the client
+                        //byte[] replies = (new String("ConsensusStored")).getBytes();
+                        //TODO Get newest fluidity graph
+                        byte[] replies = SerializationUtils.serialize(fluidityGraph);
+
+                        request.reply = new TOMMessage(id, request.getSession(), request.getSequence(), replies,
+                                SVController.getCurrentViewId(), TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS);
                         replier.manageReply(request, msgCtx);
                     } else {
                         throw new RuntimeException("Should never reach here!");
@@ -410,12 +435,6 @@ public class FluidityServiceReplica extends ServiceReplica {
         }
     }
 
-    /**
-     * This method initializes the object
-     *
-     * @param cs   Server side communication System
-     * @param conf Total order messaging configuration
-     */
     protected void initTOMLayer() {
         if (tomStackCreated) { // if this object was already initialized, don't
             // do it again

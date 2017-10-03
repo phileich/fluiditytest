@@ -28,7 +28,8 @@ public enum TOMMessageType {
     ASK_STATUS, // 4
     STATUS_REPLY,// 5
     UNORDERED_HASHED_REQUEST, //6
-	INTERNAL_CONSENSUS; //7
+	INTERNAL_CONSENSUS, //7
+    INTERNAL_FLUIDITY_CONSENSUS; //8
     
     public int toInt() {
         switch(this) {
@@ -40,6 +41,7 @@ public enum TOMMessageType {
             case STATUS_REPLY: return 5;
             case UNORDERED_HASHED_REQUEST: return 6;
             case INTERNAL_CONSENSUS: return 7;
+            case INTERNAL_FLUIDITY_CONSENSUS: return 8;
             default: return -1;
         }
     }
@@ -54,6 +56,7 @@ public enum TOMMessageType {
             case 5: return STATUS_REPLY;
             case 6: return UNORDERED_HASHED_REQUEST;
             case 7: return INTERNAL_CONSENSUS;
+            case 8: return INTERNAL_FLUIDITY_CONSENSUS;
             default: return RECONFIG;
         }            
     }
