@@ -226,6 +226,7 @@ public class View implements Serializable {
 		for (int i = 0; i < processes.length; i++) {
 			ret = ret + processes[i] + "(" + addresses.get(processes[i]) + ",W: " + weights.get(processes[i]) + "),";
 		}
+		ret = ret + "\n" + fluidityGraph.toString();
 
 		return ret;
 	}
