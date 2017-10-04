@@ -16,11 +16,9 @@ limitations under the License.
 package bftsmart.reconfiguration;
 
 import java.net.InetSocketAddress;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
+import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -35,6 +33,8 @@ public class ServerViewController extends ViewController {
 	public static final int ADD_SERVER = 0;
 	public static final int REMOVE_SERVER = 1;
 	public static final int CHANGE_F = 2;
+	public static final int UPDATE_FLUIDITYGRAPH = 3;
+	public static final int UPDATE_WEIGHTS = 4;
 
 	private int quorumBFT; // ((n + f) / 2) replicas
 	private int quorumCFT; // (n / 2) replicas
@@ -138,6 +138,10 @@ public class ServerViewController extends ViewController {
 						}
 					} else if (key == CHANGE_F) {
 						add = false;
+					} else if (key == UPDATE_FLUIDITYGRAPH) {
+						add = false;
+					} else if (key == UPDATE_WEIGHTS) {
+						add = false;
 					}
 				}
 				if (add) {
@@ -152,6 +156,8 @@ public class ServerViewController extends ViewController {
 		List<Integer> jSet = new LinkedList<>();
 		List<Integer> rSet = new LinkedList<>();
 		int f = -1;
+		FluidityGraph fluidityGraph = null;
+		Map weightAssignment = null;
 
 		List<String> jSetInfo = new LinkedList<>();
 
@@ -161,26 +167,45 @@ public class ServerViewController extends ViewController {
 
 			while (it.hasNext()) {
 				int key = it.next();
-				String value = request.getProperties().get(key);
+				Object obj = request.getProperties().get(key);
 
 				if (key == ADD_SERVER) {
-					StringTokenizer str = new StringTokenizer(value, ":");
-					if (str.countTokens() > 2) {
-						int id = Integer.parseInt(str.nextToken());
-						if (!isCurrentViewMember(id) && !contains(id, jSet)) {
-							jSetInfo.add(value);
-							jSet.add(id);
-							String host = str.nextToken();
-							int port = Integer.valueOf(str.nextToken());
-							this.getStaticConf().addHostInfo(id, host, port);
+					if (obj instanceof String) {
+						String value = (String) obj;
+						StringTokenizer str = new StringTokenizer(value, ":");
+						if (str.countTokens() > 2) {
+							int id = Integer.parseInt(str.nextToken());
+							if (!isCurrentViewMember(id) && !contains(id, jSet)) {
+								jSetInfo.add(value);
+								jSet.add(id);
+								String host = str.nextToken();
+								int port = Integer.valueOf(str.nextToken());
+								this.getStaticConf().addHostInfo(id, host, port);
+							}
 						}
 					}
 				} else if (key == REMOVE_SERVER) {
-					if (isCurrentViewMember(Integer.parseInt(value))) {
-						rSet.add(Integer.parseInt(value));
+					if (obj instanceof String) {
+						String value = (String) obj;
+						if (isCurrentViewMember(Integer.parseInt(value))) {
+							rSet.add(Integer.parseInt(value));
+						}
 					}
 				} else if (key == CHANGE_F) {
-					f = Integer.parseInt(value);
+					if (obj instanceof String) {
+						String value = (String) obj;
+						f = Integer.parseInt(value);
+					}
+				} else if (key == UPDATE_FLUIDITYGRAPH) {
+					if (obj instanceof FluidityGraph) {
+						FluidityGraph newFluidityGraph = (FluidityGraph) obj;
+						fluidityGraph = newFluidityGraph;
+					}
+				} else if (key == UPDATE_WEIGHTS) {
+					if (obj instanceof Map) {
+						Map newWeightAssignment = (Map) obj;
+						weightAssignment = newWeightAssignment;
+					}
 				}
 			}
 

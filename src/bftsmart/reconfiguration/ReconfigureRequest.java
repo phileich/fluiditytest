@@ -29,7 +29,7 @@ import java.util.Iterator;
 public class ReconfigureRequest implements Externalizable{
 
     private int sender;
-    private Hashtable<Integer,String> properties = new Hashtable<Integer,String>();
+    private Hashtable<Integer,Object> properties = new Hashtable<Integer,Object>();
     private byte[] signature;
     
     
@@ -48,7 +48,7 @@ public class ReconfigureRequest implements Externalizable{
         return signature;
     }
 
-    public Hashtable<Integer, String> getProperties() {
+    public Hashtable<Integer, Object> getProperties() {
         return properties;
     }
 
@@ -56,7 +56,7 @@ public class ReconfigureRequest implements Externalizable{
         return sender;
     }
     
-    public void setProperty(int prop, String value){
+    public void setProperty(int prop, Object value){
         this.properties.put(prop, value);
     }
     

@@ -15,6 +15,7 @@ limitations under the License.
 */
 package bftsmart.reconfiguration;
 
+import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.util.TOMUtil;
@@ -52,6 +53,10 @@ public class Reconfiguration {
 
     public void setF(int f){
       this.setReconfiguration(ServerViewController.CHANGE_F,String.valueOf(f));  
+    }
+
+    public void updateFluidityGraph(FluidityGraph fluidityGraph) {
+        this.setReconfiguration(ServerViewController.UPDATE_FLUIDITYGRAPH, fluidityGraph);
     }
     
     
