@@ -82,6 +82,40 @@ public class View implements Serializable {
 
 	}
 
+	public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta, boolean useFluidity,
+				FluidityGraph fluidityGraph, Map<Integer, Double> weightAssignment) {
+		this.id = id;
+		this.processes = processes;
+		this.isBFT = isBFT;
+		this.addresses = new HashMap<Integer, InetSocketAddress>();
+		this.weights = new HashMap<Integer, Double>();
+		this.f = f;
+		this.delta = delta;
+		//this.delta = delta;
+		this.useFluidity = useFluidity;
+		//this.fluidityGraphPath = fluidityGraphPath;
+
+		/*for (int i = 0; i < this.processes.length; i++)
+			this.addresses.put(processes[i], addresses[i]);
+		if (delta > 0) {
+			computeWeights();
+		} else {
+			overlayF = this.f;
+			overlayN = this.processes.length;
+			u = 0;
+			for (int i = 0; i < this.processes.length; i++)
+				this.weights.put(processes[i], 1.00);
+		}
+
+		Arrays.sort(this.processes); */
+
+		if (useFluidity) {
+			this.fluidityGraph = fluidityGraph;
+			weights = weightAssignment;
+		}
+
+	}
+
 	private void buildFluidtiyGraph() {
 		FluidityGraphBuilder fluidityGraphBuilder = new FluidityGraphBuilder(this);
 		this.fluidityGraph = fluidityGraphBuilder.generateGraphFromXML(fluidityGraphPath);

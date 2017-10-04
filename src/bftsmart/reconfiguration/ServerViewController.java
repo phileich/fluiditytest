@@ -117,24 +117,30 @@ public class ServerViewController extends ViewController {
 				Iterator<Integer> it = request.getProperties().keySet().iterator();
 				while (it.hasNext()) {
 					int key = it.next();
-					String value = request.getProperties().get(key);
+					Object obj = request.getProperties().get(key);
 					if (key == ADD_SERVER) {
-						StringTokenizer str = new StringTokenizer(value, ":");
-						if (str.countTokens() > 2) {
-							int id = Integer.parseInt(str.nextToken());
-							if (id != request.getSender()) {
+						if (obj instanceof String) {
+							String value = (String) obj;
+							StringTokenizer str = new StringTokenizer(value, ":");
+							if (str.countTokens() > 2) {
+								int id = Integer.parseInt(str.nextToken());
+								if (id != request.getSender()) {
+									add = false;
+								}
+							} else {
 								add = false;
 							}
-						} else {
-							add = false;
 						}
 					} else if (key == REMOVE_SERVER) {
-						if (isCurrentViewMember(Integer.parseInt(value))) {
-							if (Integer.parseInt(value) != request.getSender()) {
+						if (obj instanceof String) {
+							String value = (String) obj;
+							if (isCurrentViewMember(Integer.parseInt(value))) {
+								if (Integer.parseInt(value) != request.getSender()) {
+									add = false;
+								}
+							} else {
 								add = false;
 							}
-						} else {
-							add = false;
 						}
 					} else if (key == CHANGE_F) {
 						add = false;
@@ -211,7 +217,7 @@ public class ServerViewController extends ViewController {
 
 		}
 		// ret = reconfigure(updates.get(i).getContent());
-		return reconfigure(jSetInfo, jSet, rSet, f, cid);
+		return reconfigure(jSetInfo, jSet, rSet, f, cid, fluidityGraph, weightAssignment);
 	}
 
 	private boolean contains(int id, List<Integer> list) {
@@ -223,7 +229,8 @@ public class ServerViewController extends ViewController {
 		return false;
 	}
 
-	private byte[] reconfigure(List<String> jSetInfo, List<Integer> jSet, List<Integer> rSet, int f, int cid) {
+	private byte[] reconfigure(List<String> jSetInfo, List<Integer> jSet, List<Integer> rSet, int f, int cid,
+							   FluidityGraph fluidityGraph, Map weightAssignment) {
 		// ReconfigureRequest request = (ReconfigureRequest)
 		// TOMUtil.getObject(req);
 		// Hashtable<Integer, String> props = request.getProperties();
@@ -252,13 +259,21 @@ public class ServerViewController extends ViewController {
 			f = currentView.getF();
 		}
 
+		if (fluidityGraph == null) {
+			fluidityGraph = currentView.getFluidityGraph();
+		}
+
+		if (weightAssignment == null) {
+			weightAssignment = currentView.getWeights();
+		}
+
 		InetSocketAddress[] addresses = new InetSocketAddress[nextV.length];
 
 		for (int i = 0; i < nextV.length; i++)
 			addresses[i] = getStaticConf().getRemoteAddress(nextV[i]);
 
 		View newV = new View(currentView.getId() + 1, nextV, f, addresses, getStaticConf().isBFT(),
-				getStaticConf().getDelta(), getStaticConf().useFluidity(), getStaticConf().getFluidityGraphPath());
+				getStaticConf().getDelta(), getStaticConf().useFluidity(), fluidityGraph, weightAssignment);
 
 		System.out.println("new view: " + newV);
 		System.out.println("installed on CID: " + cid);
@@ -267,6 +282,7 @@ public class ServerViewController extends ViewController {
 		// TODO:Remove all information stored about each process in rSet
 		// processes execute the leave!!!
 		reconfigureTo(newV);
+		// TODO Check for leader change in weight assignment
 
 		if (forceLC) {
 

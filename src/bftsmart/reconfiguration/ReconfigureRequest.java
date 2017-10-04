@@ -72,10 +72,10 @@ public class ReconfigureRequest implements Externalizable{
         
         while(it.hasNext()){
             int key = it.next();
-            String value = properties.get(key);
+            Object value = properties.get(key);
             
             out.writeInt(key);
-            out.writeUTF(value);
+            out.writeObject(value);
         }
         
         
@@ -93,7 +93,7 @@ public class ReconfigureRequest implements Externalizable{
         
         for(int i = 0; i < num; i++){
             int key = in.readInt();
-            String value = in.readUTF();
+            Object value = in.readObject();
             properties.put(key, value);
         }
         
@@ -109,7 +109,7 @@ public class ReconfigureRequest implements Externalizable{
         Iterator<Integer> it = properties.keySet().iterator() ;
         while(it.hasNext()){
             int key = it.next();
-            String value = properties.get(key);
+            String value = properties.get(key).toString();
             ret = ret+key+value;
         }
         return ret;

@@ -56,7 +56,7 @@ public class Reconfiguration {
     }
 
     public void updateFluidityGraph(FluidityGraph fluidityGraph) {
-        this.setReconfiguration(ServerViewController.UPDATE_FLUIDITYGRAPH, fluidityGraph);
+        this.setReconfiguration(ServerViewController.UPDATE_FLUIDITYGRAPH, fluidityGraph.toString());
     }
     
     
