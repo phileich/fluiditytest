@@ -283,6 +283,7 @@ public class ServerViewController extends ViewController {
 		// processes execute the leave!!!
 		reconfigureTo(newV);
 		// TODO Check for leader change in weight assignment
+		// TODO Check for weight assignment causing no side effects, like when changing the weights during a consensus
 
 		if (forceLC) {
 

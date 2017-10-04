@@ -1,9 +1,11 @@
 package bftsmart.fluidity;
 
 import bftsmart.communication.server.ServerConnection;
+import bftsmart.fluidity.cloudconnection.InternalServiceProxy;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.reconfiguration.*;
 import bftsmart.reconfiguration.views.View;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.*;
 import java.util.*;
@@ -19,15 +21,63 @@ public class FluidityViewManager {
     //Need only inform those that are entering the systems, as those already
     //in the system will execute the reconfiguration request
     private List<Integer> addIds = new LinkedList<Integer>();
+    private FluidityGraph fluidityGraph = null;
+    private Map<Integer, Double> weights = null;
+    private int proxyId;
 
-    public FluidityViewManager() {
-        this("");
+    public FluidityViewManager(int proxyId) {
+        this("", proxyId);
     }
 
-    public FluidityViewManager(String configHome) {
+    public FluidityViewManager(String configHome, int proxyId) {
         this.id = loadID(configHome);
         this.controller = new ServerViewController(id, configHome);
         this.rec = new Reconfiguration(id);
+        this.proxyId = proxyId;
+
+        start();
+    }
+
+    public void start() {
+        InternalServiceProxy internalClient = new InternalServiceProxy(id + 100);
+        fluidityGraph = internalClient.getViewManager().getCurrentView().getFluidityGraph();
+
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream(4);
+            DataOutputStream dos = new DataOutputStream(out);
+
+
+            //byte[] serializedFluidityGraph = SerializationUtils.serialize(fluidityGraph);
+            byte[] serializedFluidityGraph = (new String("FluidityConsensus")).getBytes();
+            dos.writeInt(serializedFluidityGraph.length);
+            dos.write(serializedFluidityGraph);
+
+
+            byte[] reply = internalClient.invokeInternal(out.toByteArray());
+            if (reply != null) {
+                //Logger.println("Received Internal Consensus: " + new String(reply));
+                //TODO For all replicas get enough correct graphs before proceeding
+                FluidityGraph replyFluidityGraph = SerializationUtils.deserialize(reply);
+                System.out.println("Oldfl: " + fluidityGraph.toString());
+                System.out.println("--------------------------------");
+                System.out.println("replyfl: " + replyFluidityGraph.toString());
+
+                //FluidityViewManager.main(null);
+                //TODO Extend view manager to change weights and fluidity graph
+                updateFluidityGraph(fluidityGraph);
+                executeUpdates();
+
+                //TODO Extend this client for giving cloud provider commands
+
+            } else {
+                bftsmart.tom.util.Logger.println("Received Internal Consensus: NULL");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            internalClient.close();
+        }
     }
 
     public void connect(){
@@ -137,17 +187,23 @@ public class FluidityViewManager {
         rec.close();
     }
 
+
+
     public static void main(String[] args) {
 
         FluidityViewManager viewManager = null;
 
-        if (args.length > 0) {
-            viewManager = new FluidityViewManager(args[0]);
-        } else {
-            viewManager = new FluidityViewManager("");
+//        if (args.length > 0) {
+//            viewManager = new FluidityViewManager(args[0]);
+//        } else {
+//            viewManager = new FluidityViewManager("");
+//        }
+
+        if (args.length > 1) {
+            viewManager = new FluidityViewManager(args[0], Integer.parseInt(args[1]));
         }
 
-        Scanner scan = new Scanner(System.in);
+        /* Scanner scan = new Scanner(System.in);
         String str = null;
         do {
             str = scan.nextLine();
@@ -172,8 +228,8 @@ public class FluidityViewManager {
                 viewManager.executeUpdates();
             }
 
-        } while (!str.equals("exit"));
+        } while (!str.equals("exit")); */
         viewManager.close();
-        System.exit(0);
+        //System.exit(0);
     }
 }

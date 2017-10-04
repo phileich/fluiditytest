@@ -2,6 +2,7 @@ package bftsmart.fluidity.cloudconnection;
 
 import bftsmart.dynamicWeights.Latency;
 import bftsmart.dynamicWeights.MedianReducer;
+import bftsmart.fluidity.FluidityViewManager;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.reconfiguration.ViewManager;
 import bftsmart.tom.util.Logger;
@@ -45,7 +46,7 @@ public class CloudConnector {
                 System.out.println("--------------------------------");
                 System.out.println("replyfl: " + replyFluidityGraph.toString());
 
-                ViewManager.main(null);
+                FluidityViewManager.main(null);
                 //TODO Extend view manager to change weights and fluidity graph
 
                 //TODO Extend this client for giving cloud provider commands

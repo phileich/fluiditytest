@@ -111,8 +111,8 @@ public class FluidityController implements Runnable {
 
         //TODO Only the leader starts the cloudconnector, which creates an internal consensus
         if (svController.getCurrentLeader() == replicaId) {
-            String[] args = {String.valueOf(replicaId)};
-            CloudConnector.main(args);
+            String[] args = {"", String.valueOf(replicaId)};
+            FluidityViewManager.main(args);
         }
 
 
