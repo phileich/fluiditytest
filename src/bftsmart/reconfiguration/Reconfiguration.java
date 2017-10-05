@@ -20,6 +20,8 @@ import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.util.TOMUtil;
 
+import java.util.Map;
+
 /**
  *
  * @author eduardo
@@ -56,11 +58,15 @@ public class Reconfiguration {
     }
 
     public void updateFluidityGraph(FluidityGraph fluidityGraph) {
-        this.setReconfiguration(ServerViewController.UPDATE_FLUIDITYGRAPH, fluidityGraph.toString());
+        this.setReconfiguration(ServerViewController.UPDATE_FLUIDITYGRAPH, fluidityGraph);
+    }
+
+    public void updateVotingWeights(Map<Integer, Double> weights) {
+        this.setReconfiguration(ServerViewController.UPDATE_WEIGHTS, weights);
     }
     
     
-    public void setReconfiguration(int prop, String value){
+    public void setReconfiguration(int prop, Object value){
         if(request == null){
             //request = new ReconfigureRequest(proxy.getViewManager().getStaticConf().getProcessId());
             request = new ReconfigureRequest(id);
