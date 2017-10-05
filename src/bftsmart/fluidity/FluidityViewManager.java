@@ -48,7 +48,7 @@ public class FluidityViewManager {
 
 
             //byte[] serializedFluidityGraph = SerializationUtils.serialize(fluidityGraph);
-            byte[] serializedFluidityGraph = (new String("FluidityConsensus")).getBytes();
+            byte[] serializedFluidityGraph = (new String("FluidityGraph")).getBytes();
             dos.writeInt(serializedFluidityGraph.length);
             dos.write(serializedFluidityGraph);
 
@@ -65,6 +65,7 @@ public class FluidityViewManager {
                 //FluidityViewManager.main(null);
                 //TODO Extend view manager to change weights and fluidity graph
                 updateFluidityGraph(replyFluidityGraph);
+                //updateWeights(weights);
                 executeUpdates();
 
                 //TODO Extend this client for giving cloud provider commands
@@ -136,6 +137,10 @@ public class FluidityViewManager {
 
     public void updateFluidityGraph(FluidityGraph fluidityGraph)  {
         rec.updateFluidityGraph(fluidityGraph);
+    }
+
+    public void updateWeights(Map<Integer, Double> weights) {
+        rec.updateVotingWeights(weights);
     }
 
     public void executeUpdates() {

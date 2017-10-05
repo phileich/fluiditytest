@@ -23,8 +23,11 @@ import bftsmart.tom.util.ShutdownHookThread;
 import bftsmart.tom.util.TOMUtil;
 import org.apache.commons.lang3.SerializationUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -300,16 +303,30 @@ public class FluidityServiceReplica extends ServiceReplica {
 
                         //dwc.addInternalConsensusDataToStorage(request.getContent());
 
-                        // Send the replies back to the client
-                        //byte[] replies = (new String("ConsensusStored")).getBytes();
-                        //TODO Get newest fluidity graph
-                        byte[] replies;
-                        FluidityGraph calcFluidityGraph = fc.getCalculatedFluidityGraph();
-                        if (calcFluidityGraph != null) {
-                            replies = SerializationUtils.serialize(calcFluidityGraph);
-                        } else {
-                            replies = (new String("No Graph")).getBytes();
+                        byte[] replies = null;
+                        String consensusAbout = new String(request.getContent());
+                        System.out.println("OUTPUT OF WHAT TO RECONFIGURE: " + consensusAbout);
+
+                        if (consensusAbout.equals("FluidityGraph")) {
+                            // Send the replies back to the client
+                            //byte[] replies = (new String("ConsensusStored")).getBytes();
+                            //TODO Get newest fluidity graph
+
+                            FluidityGraph calcFluidityGraph = fc.getCalculatedFluidityGraph();
+                            if (calcFluidityGraph != null) {
+                                replies = SerializationUtils.serialize(calcFluidityGraph);
+                            } else {
+                                replies = (new String("No Graph")).getBytes();
+                            }
+                        } else if (consensusAbout.equals("Weights")) {
+                            Map<Integer, Double> newWeights = fc.getDwc().getBestWeightAssignment();
+                            HashMap<Integer, Double> weightsToSerialize = null;
+                            weightsToSerialize.putAll(newWeights);
+                            if (newWeights != null) {
+                                replies = SerializationUtils.serialize(weightsToSerialize);
+                            }
                         }
+
 
                         request.reply = new TOMMessage(id, request.getSession(), request.getSequence(), replies,
                                 SVController.getCurrentViewId(), TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS);
