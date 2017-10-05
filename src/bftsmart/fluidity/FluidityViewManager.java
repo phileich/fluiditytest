@@ -64,7 +64,7 @@ public class FluidityViewManager {
 
                 //FluidityViewManager.main(null);
                 //TODO Extend view manager to change weights and fluidity graph
-                updateFluidityGraph(fluidityGraph);
+                updateFluidityGraph(replyFluidityGraph);
                 executeUpdates();
 
                 //TODO Extend this client for giving cloud provider commands
