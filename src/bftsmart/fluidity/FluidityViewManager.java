@@ -234,7 +234,7 @@ public class FluidityViewManager {
             }
 
         } while (!str.equals("exit")); */
-        viewManager.close();
+        //viewManager.close();
         //System.exit(0);
     }
 }
