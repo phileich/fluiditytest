@@ -68,6 +68,8 @@ public class FluidityViewManager {
                 //updateWeights(weights);
                 executeUpdates();
 
+                //TODO Extract commands to remove servers and add new ones later
+
                 //TODO Extend this client for giving cloud provider commands
 
             } else {
