@@ -305,6 +305,7 @@ public class FluidityServiceReplica extends ServiceReplica {
 
                         byte[] replies = null;
                         String consensusAbout = new String(request.getContent());
+                        consensusAbout = consensusAbout.substring(4);
                         System.out.println("OUTPUT OF WHAT TO RECONFIGURE: " + consensusAbout);
 
                         if (consensusAbout.equals("FluidityGraph")) {
