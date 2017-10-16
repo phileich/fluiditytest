@@ -59,7 +59,7 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 							&& controller.getStaticConf().useWriteResponse()) {
 						// store latency in volatile storage
 						lmps.addServerLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
-						System.out.println("stored Write response");
+						//System.out.println("stored Write response");
 					} else if ((sm instanceof ConsensusMessage)
 							&& ((ConsensusMessage) sm).getPaxosVerboseType() == "WRITE"
 							&& controller.getStaticConf().measureServers()
