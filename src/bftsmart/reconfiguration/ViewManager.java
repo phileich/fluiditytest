@@ -183,7 +183,9 @@ public class ViewManager {
                     viewManager.addServer(arg, "127.0.0.1", port);
                 } else if (cmd.equals("rem")) {
                     viewManager.removeServer(arg);
-                }
+                } else if (cmd.equals("f")) {
+                    viewManager.setF(arg);
+                } 
 
                 viewManager.executeUpdates();
             }
