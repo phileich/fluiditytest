@@ -185,7 +185,7 @@ public class ViewManager {
                     viewManager.removeServer(arg);
                 } else if (cmd.equals("f")) {
                     viewManager.setF(arg);
-                } 
+                }
 
                 viewManager.executeUpdates();
             }

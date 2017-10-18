@@ -92,8 +92,12 @@ public class FluidityViewManager {
             //FluidityViewManager.main(null);
             //TODO Extend view manager to change currentWeights and fluidity graph
             updateFluidityGraph(newFluidityGraph);
+
+            //TODO Update is of weight distribution to new ids from the fluidity graph
             updateWeights(currentWeights);
+            
             executeUpdates();
+
 
             //TODO Extract commands to remove servers and add new ones later
 

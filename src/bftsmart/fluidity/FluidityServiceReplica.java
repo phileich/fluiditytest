@@ -308,7 +308,7 @@ public class FluidityServiceReplica extends ServiceReplica {
                         consensusAbout = consensusAbout.substring(4);
                         System.out.println("OUTPUT OF WHAT TO RECONFIGURE: " + consensusAbout);
 
-                        if (consensusAbout.equals("FluidityGraph")) {
+                        if (consensusAbout.substring(consensusAbout.length()-13, consensusAbout.length()).equals("FluidityGraph")) {
                             // Send the replies back to the client
                             //byte[] replies = (new String("ConsensusStored")).getBytes();
                             //TODO Get newest fluidity graph
@@ -319,9 +319,9 @@ public class FluidityServiceReplica extends ServiceReplica {
                             } else {
                                 replies = (new String("No Graph")).getBytes();
                             }
-                        } else if (consensusAbout.equals("Weights")) {
+                        } else if (consensusAbout.substring(consensusAbout.length()-7, consensusAbout.length()).equals("Weights")) {
                             Map<Integer, Double> newWeights = fc.getDwc().getBestWeightAssignment();
-                            HashMap<Integer, Double> weightsToSerialize = null;
+                            HashMap<Integer, Double> weightsToSerialize = new HashMap<>();
                             weightsToSerialize.putAll(newWeights);
                             if (newWeights != null) {
                                 replies = SerializationUtils.serialize(weightsToSerialize);
