@@ -122,7 +122,7 @@ public class FluidityViewManager {
             adoptWeights(idsOfNewReplicas, idsOfRemovedReplicas);
 
             //TODO Extract commands to remove servers and add new ones later
-            
+
 
             updateFluidityGraph(newFluidityGraph);
 
