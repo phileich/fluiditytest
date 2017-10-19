@@ -20,10 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,6 +99,17 @@ public class ViewManager {
 
     public void setF(int f) {
         rec.setF(f);
+    }
+
+    public void updateWeights() {
+        Map<Integer, Double> weights = new HashMap<>();
+        weights.put(0, 2.0);
+        weights.put(1, 2.0);
+        weights.put(2, 1.0);
+        weights.put(3, 1.0);
+        weights.put(4, 1.0);
+        weights.put(6, 0.0);
+        rec.updateVotingWeights(weights);
     }
 
     public void executeUpdates() {
@@ -185,6 +193,8 @@ public class ViewManager {
                     viewManager.removeServer(arg);
                 } else if (cmd.equals("f")) {
                     viewManager.setF(arg);
+                } else if (cmd.equals("changew")) {
+                    viewManager.updateWeights();
                 }
 
                 viewManager.executeUpdates();
