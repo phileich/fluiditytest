@@ -95,9 +95,9 @@ public class View implements Serializable {
 		this.useFluidity = useFluidity;
 		//this.fluidityGraphPath = fluidityGraphPath;
 
-		/*for (int i = 0; i < this.processes.length; i++)
+		for (int i = 0; i < this.processes.length; i++)
 			this.addresses.put(processes[i], addresses[i]);
-		if (delta > 0) {
+		/*if (delta > 0) {
 			computeWeights();
 		} else {
 			overlayF = this.f;
@@ -108,6 +108,8 @@ public class View implements Serializable {
 		}
 
 		Arrays.sort(this.processes); */
+
+		computeOverlay();
 
 		if (useFluidity) {
 			this.fluidityGraph = fluidityGraph;
@@ -150,6 +152,18 @@ public class View implements Serializable {
 			this.weights.put(processes[i], wZero);
 		}
 
+	}
+
+	private void computeOverlay() {
+		overlayF = delta + f;
+
+		if (isBFT) {
+			u = 2 * f;
+			overlayN = (3 * overlayF) + 1;
+		} else {
+			u = f;
+			overlayN = (2 * overlayF) + 1;
+		}
 	}
 
 	public boolean isMember(int id) {
