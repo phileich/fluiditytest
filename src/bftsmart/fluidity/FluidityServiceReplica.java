@@ -24,10 +24,7 @@ import bftsmart.tom.util.TOMUtil;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -321,7 +318,7 @@ public class FluidityServiceReplica extends ServiceReplica {
                             }
                         } else if (consensusAbout.substring(consensusAbout.length()-7, consensusAbout.length()).equals("Weights")) {
                             Map<Integer, Double> newWeights = fc.getDwc().getBestWeightAssignment();
-                            HashMap<Integer, Double> weightsToSerialize = new HashMap<>();
+                            TreeMap<Integer, Double> weightsToSerialize = new TreeMap<>();
                             weightsToSerialize.putAll(newWeights);
                             if (newWeights != null) {
                                 replies = SerializationUtils.serialize(weightsToSerialize);
