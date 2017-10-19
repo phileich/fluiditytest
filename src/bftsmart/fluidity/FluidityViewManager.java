@@ -292,4 +292,8 @@ public class FluidityViewManager {
         //viewManager.close();
         //System.exit(0);
     }
+
+    private void calculatePositionChanges(FluidityGraph oldGraph, FluidityGraph newGraph) {
+
+    }
 }

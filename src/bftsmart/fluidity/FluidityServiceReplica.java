@@ -322,6 +322,8 @@ public class FluidityServiceReplica extends ServiceReplica {
                             weightsToSerialize.putAll(newWeights);
                             if (newWeights != null) {
                                 replies = SerializationUtils.serialize(weightsToSerialize);
+                            } else {
+                                replies = (new String("No Weights")).getBytes();
                             }
                         }
 
