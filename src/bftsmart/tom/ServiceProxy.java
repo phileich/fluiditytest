@@ -282,7 +282,7 @@ public class ServiceProxy extends TOMSender {
 				}
 			} else if (reqType == TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS) { //TODO Extend to Internal_fluidity_Consensus
 				if (response.getViewID() == getViewManager().getCurrentViewId()) {
-					ret = response.getContent(); // return the response
+					ret = response.getContent(); // return the response //TODO Problem?
 				} else {
 					canSendLock.unlock();
 					return invoke(request, TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS);

@@ -123,7 +123,7 @@ public class StrategyRandom implements DistributionStrategy {
         return oldNodes;
     }
 
-    private ArrayList<Integer> generateNewReplicas(int size) {
+    private ArrayList<Integer> generateNewReplicas(int size) { //TODO Change for keeping old replica ids
         ArrayList<Integer> newReplicas = new ArrayList<>();
 
         int maxProcessId = Collections.max(bestWeightAssignment.keySet());
