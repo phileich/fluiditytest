@@ -26,6 +26,8 @@ public class FluidityViewManager {
     private FluidityGraph newFluidityGraph = null;
     private Map<Integer, Double> currentWeights = null;
     private Map<Integer, Double> newWeights = null;
+    // Oldrep replaced by newrep
+    private Map<Integer, Integer> substitudeReplicas = null;
     private int proxyId;
 
     public FluidityViewManager(int proxyId) {
@@ -117,15 +119,22 @@ public class FluidityViewManager {
                 //System.out.println("Ids of Removed: " + idsOfRemovedReplicas.get(0));
             }
 
+            adoptWeights(idsOfNewReplicas, idsOfRemovedReplicas);
+
+            //TODO Extract commands to remove servers and add new ones later
+            
+
             updateFluidityGraph(newFluidityGraph);
 
-            //TODO Update is of weight distribution to new ids from the fluidity graph
+            //TODO First remove old replicas, then update weights and graph and finally start new instances and
+            // add the new replicas to the view
+
             //updateWeights(currentWeights);
 
             executeUpdates();
 
 
-            //TODO Extract commands to remove servers and add new ones later
+
 
             //TODO Extend this client for giving cloud provider commands
 
@@ -133,6 +142,18 @@ public class FluidityViewManager {
             e.printStackTrace();
         } finally {
             internalClient.close();
+        }
+    }
+
+    private void adoptWeights(ArrayList<Integer> newReplicas, ArrayList<Integer> oldReplicas) {
+        substitudeReplicas = new HashMap<>();
+
+        for (int i = 0; i < newReplicas.size(); i++) {
+            int newRep = newReplicas.get(i);
+            int replaceRep = oldReplicas.get(i);
+            newWeights.remove(replaceRep);
+            newWeights.put(newRep, 0.0d);
+            substitudeReplicas.put(replaceRep, newRep);
         }
     }
 
