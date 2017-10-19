@@ -3,6 +3,7 @@ package bftsmart.fluidity;
 import bftsmart.communication.server.ServerConnection;
 import bftsmart.fluidity.cloudconnection.InternalServiceProxy;
 import bftsmart.fluidity.graph.FluidityGraph;
+import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.reconfiguration.*;
 import bftsmart.reconfiguration.views.View;
 import org.apache.commons.lang3.SerializationUtils;
@@ -88,14 +89,39 @@ public class FluidityViewManager {
                 bftsmart.tom.util.Logger.println("Received Internal Consensus: NULL");
             }
 
-
+            ArrayList<Integer> idsOfNewReplicas = new ArrayList<>();
+            ArrayList<Integer> idsOfRemovedReplicas = new ArrayList<>();
             //FluidityViewManager.main(null);
             //TODO Extend view manager to change currentWeights and fluidity graph
+            // compare nodes and check for differences (relevant for cloud connection)
+            for (FluidityGraphNode newNode : newFluidityGraph.getNodes()) {
+                FluidityGraphNode oldNode = currentfluidityGraph.getNodeById(newNode.getNodeId());
+                ArrayList<Integer> oldReplicaIds = currentfluidityGraph.getReplicasFromNode(oldNode);
+                ArrayList<Integer> newReplicaIds = newFluidityGraph.getReplicasFromNode(newNode);
+
+                for (int repId : newReplicaIds) {
+                    if (!oldReplicaIds.contains(repId)) {
+                        // new replica created
+                        idsOfNewReplicas.add(repId);
+                    }
+                }
+                //System.out.println("Ids of New: " + idsOfNewReplicas.get(0));
+
+                for (int repId : oldReplicaIds) {
+                    if (!newReplicaIds.contains(repId)) {
+                        // old replica deleted
+                        idsOfRemovedReplicas.add(repId);
+                    }
+                }
+
+                //System.out.println("Ids of Removed: " + idsOfRemovedReplicas.get(0));
+            }
+
             updateFluidityGraph(newFluidityGraph);
 
             //TODO Update is of weight distribution to new ids from the fluidity graph
-            updateWeights(currentWeights);
-            
+            //updateWeights(currentWeights);
+
             executeUpdates();
 
 

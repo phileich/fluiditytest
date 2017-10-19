@@ -232,6 +232,7 @@ public class ServiceProxy extends TOMSender {
 		}
 
 		Logger.println("Response extracted = " + response);
+		System.out.println("Response extracted = " + response);
 
 		byte[] ret = null;
 
