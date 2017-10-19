@@ -95,8 +95,9 @@ public class View implements Serializable {
 		this.useFluidity = useFluidity;
 		//this.fluidityGraphPath = fluidityGraphPath;
 
-		for (int i = 0; i < this.processes.length; i++)
-			this.addresses.put(processes[i], addresses[i]);
+		//for (int i = 0; i < this.processes.length; i++) WTF?
+		//	this.addresses.put(processes[i], addresses[i]);
+
 		/*if (delta > 0) {
 			computeWeights();
 		} else {
