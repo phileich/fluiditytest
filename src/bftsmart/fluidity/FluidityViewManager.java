@@ -7,8 +7,13 @@ import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.reconfiguration.*;
 import bftsmart.reconfiguration.views.View;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.math3.genetics.OnePointCrossover;
+import org.opennebula.client.Client;
+import org.opennebula.client.ClientConfigurationException;
+import org.opennebula.client.vm.VirtualMachinePool;
 
 import java.io.*;
+import java.net.URI;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +34,19 @@ public class FluidityViewManager {
     // Oldrep replaced by newrep
     private Map<Integer, Integer> substitudeReplicas = null;
     private int proxyId;
+    private Client oneClient;
+
+    private static final String ONE_USERNAME = "oneadmin";
+    private static final String ONE_PASSWORD = "opennebula";
+    private static final String URI_ADDRESS = "http://132.231.173.228:2633/RPC2";
+
+    private static final  String VM_TEMPLATE =
+            "NAME     = ttylinux    CPU = 0.1    MEMORY = 64\n";
+    // + "DISK     = [\n"
+    // + "\tsource   = \"/home/user/vmachines/ttylinux/ttylinux.img\",\n"
+    // + "\ttarget   = \"hda\",\n"
+    // + "\treadonly = \"no\" ]\n"
+    // + "FEATURES = [ acpi=\"no\" ]";
 
     public FluidityViewManager(int proxyId) {
         this("", proxyId);
@@ -154,6 +172,18 @@ public class FluidityViewManager {
             newWeights.remove(replaceRep);
             newWeights.put(newRep, 0.0d);
             substitudeReplicas.put(replaceRep, newRep);
+        }
+    }
+
+    private void connectToCloud() {
+        try {
+            String credentials = ONE_USERNAME + ":" + ONE_PASSWORD;
+            oneClient = new Client(credentials, URI.create(URI_ADDRESS).toString());
+
+            VirtualMachinePool pool = new VirtualMachinePool(oneClient);
+
+        } catch (ClientConfigurationException e) {
+            e.printStackTrace();
         }
     }
 
