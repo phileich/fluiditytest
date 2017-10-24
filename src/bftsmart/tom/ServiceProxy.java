@@ -343,6 +343,7 @@ public class ServiceProxy extends TOMSender {
 			canReceiveLock.lock();
 			if (reqId == -1) {// no message being expected
 				Logger.println("throwing out request: sender=" + reply.getSender() + " reqId=" + reply.getSequence());
+				System.out.println("throwing out request: sender=" + reply.getSender() + " reqId=" + reply.getSequence());
 				canReceiveLock.unlock();
 				return;
 			}
@@ -359,6 +360,8 @@ public class ServiceProxy extends TOMSender {
 			if (reply.getSequence() == reqId && reply.getReqType() == requestType) {
 
 				Logger.println("Receiving reply from " + reply.getSender() + " with reqId:" + reply.getSequence()
+						+ ". Putting on pos=" + pos);
+				System.out.println("Receiving reply from " + reply.getSender() + " with reqId:" + reply.getSequence()
 						+ ". Putting on pos=" + pos);
 
 				if (requestType == TOMMessageType.UNORDERED_HASHED_REQUEST) {

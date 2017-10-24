@@ -143,6 +143,7 @@ public class FluidityViewManager {
 
 
             updateFluidityGraph(newFluidityGraph);
+            removeServer(idsOfRemovedReplicas.get(0));
 
             //TODO First remove old replicas, then update weights and graph and finally start new instances and
             // add the new replicas to the view
