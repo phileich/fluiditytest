@@ -35,6 +35,7 @@ public class DynamicWeightController implements Runnable {
 	private FluidityController fc;
 	private int bestLeader;
 	private Map<Integer, Double> bestWeightAssignment;
+	private int numExecuted;
 
 	public DynamicWeightController(int id, ServerViewController svController) {
 		this(id, svController, new DummyStorage());
@@ -130,6 +131,7 @@ public class DynamicWeightController implements Runnable {
 	public void receiveExec(int exec) {
 		// System.out.println("EXEC " + exec);
 		if (((exec + 1) % calculationInterval == 0) && (exec != -1)) {
+			numExecuted = exec + 1;
 			if (!reconfigInExec) {
 				reconfigInExec = true;
 				calcDuration = System.currentTimeMillis();
@@ -169,9 +171,13 @@ public class DynamicWeightController implements Runnable {
 
 		// If Fluidity is chosen then start thread
 		if (svController.getStaticConf().useFluidity()) {
-			Thread fluidityThread = new Thread(fc, "FluidityThread");
-			fluidityThread.setPriority(Thread.MIN_PRIORITY);
-			fluidityThread.start();
+			int times = svController.getStaticConf().getFluidityInterval();
+			int interval = calculationInterval * times;
+			if (numExecuted % interval == 0 && numExecuted != -1) {
+				Thread fluidityThread = new Thread(fc, "FluidityThread");
+				fluidityThread.setPriority(Thread.MIN_PRIORITY);
+				fluidityThread.start();
+			}
 		}
 
 	}

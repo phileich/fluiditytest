@@ -70,6 +70,7 @@ public class TOMConfiguration extends Configuration {
 	private boolean use_write_response;
 
 	private boolean useFluidity;
+	private int fluidityInterval;
 	private String fluidityGraphPath;
 	private String fluidityDistributionStrategy;
 	private int numberOfReplicasToMove;
@@ -371,15 +372,20 @@ public class TOMConfiguration extends Configuration {
 				localClients = false;
 			}
 
-			s = (String) configs.remove("system.useFluidity");
+			s = (String) configs.remove("system.fluidity.useFluidity");
 			if (useDynamicWeights) {
 				useFluidity = (s != null) ? Boolean.parseBoolean(s) : false;
 			} else {
 				useFluidity = false;
 			}
 
+			if (useFluidity) {
+				s = (String) configs.remove("system.fluidity.interval");
+				fluidityInterval = (s != null) ? Integer.parseInt(s) : 1;
+			}
+
 			if (useFluidity && useWeights) {
-				s = (String) configs.remove("system.delta");
+				s = (String) configs.remove("system.fluidity.delta");
 				delta = (s != null) ? Integer.parseInt(s) : 0;
 			} else if (useWeights && !useFluidity) {
 				delta = n - ((isBFT ? 3 * f : 2 * f) + 1);
@@ -388,22 +394,22 @@ public class TOMConfiguration extends Configuration {
 			}
 
 			if (useFluidity) {
-				s = (String) configs.remove("system.fluidityGraphPath");
+				s = (String) configs.remove("system.fluidity.GraphPath");
 				fluidityGraphPath = (s != null) ? s : "";
 			}
 
 			if (useFluidity) {
-				s = (String) configs.remove("system.fluidityDistributionStrategy");
+				s = (String) configs.remove("system.fluidity.DistributionStrategy");
 				fluidityDistributionStrategy = (s != null) ? s : "";
 			}
 
 			if (useFluidity) {
-				s = (String) configs.remove("system.fluidityNumberOfReplicasToMove");
+				s = (String) configs.remove("system.fluidity.NumberOfReplicasToMove");
 				numberOfReplicasToMove = (s != null) ? Integer.parseInt(s) : 0;
 			}
 
 			if (useFluidity && fluidityDistributionStrategy.equals("Latency Distribution")) {
-				s = (String) configs.remove("system.fluidityNumberOfVariants");
+				s = (String) configs.remove("system.fluidity.NumberOfVariants");
 				numberOfVariants = (s != null) ? Integer.parseInt(s) : 3;
 			}
 
@@ -654,6 +660,10 @@ public class TOMConfiguration extends Configuration {
 
 	public int getNumberOfVariants() {
 		return numberOfVariants;
+	}
+
+	public int getFluidityInterval() {
+		return fluidityInterval;
 	}
 
 }
