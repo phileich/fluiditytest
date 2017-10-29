@@ -2,7 +2,6 @@ package bftsmart.fluidity;
 
 import bftsmart.dynamicWeights.DynamicWeightController;
 import bftsmart.dynamicWeights.LatencyMonitor;
-import bftsmart.fluidity.cloudconnection.CloudConnector;
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.fluidity.strategies.*;
@@ -76,10 +75,10 @@ public class FluidityController implements Runnable {
                 constantStrategy.start();
                 break;
 
-            case "Vector Distribution":
+            case "Weight Graph Distribution":
                 calcDuration = System.currentTimeMillis();
                 System.out.println("---------------- Fluidity Strategy started ----------------");
-                fluidityReconfigurator.setDistributionStrategy(new StrategyVector());
+                fluidityReconfigurator.setDistributionStrategy(new StrategyWeightGraph());
                 Thread vectorStrategy = new Thread(fluidityReconfigurator, "VectorStrategyThread");
                 vectorStrategy.setPriority(Thread.MIN_PRIORITY);
                 vectorStrategy.start();

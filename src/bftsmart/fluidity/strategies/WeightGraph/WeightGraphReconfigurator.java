@@ -3,20 +3,19 @@ package bftsmart.fluidity.strategies.WeightGraph;
 import java.util.*;
 
 import bftsmart.dynamicWeights.*;
-import bftsmart.fluidity.graph.FluidityGraphNode;
-import bftsmart.fluidity.strategies.StrategyLatency;
+import bftsmart.fluidity.strategies.StrategyWeightGraph;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.util.Logger;
 
 public class WeightGraphReconfigurator {
     private LatencyStorage latStorage;
-    private StrategyLatency strategyLatency;
+    private StrategyWeightGraph strategyWeightGraph;
     private int currentN;
     private ServerViewController svController;
 
-    public WeightGraphReconfigurator(ServerViewController svController, LatencyStorage latStorage, StrategyLatency strategyLatency, int currentN) {
+    public WeightGraphReconfigurator(ServerViewController svController, LatencyStorage latStorage, StrategyWeightGraph strategyWeightGraph, int currentN) {
         this.latStorage = latStorage;
-        this.strategyLatency = strategyLatency;
+        this.strategyWeightGraph = strategyWeightGraph;
         this.currentN = currentN;
         this.svController = svController;
     }

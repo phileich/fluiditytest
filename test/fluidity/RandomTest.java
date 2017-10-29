@@ -1,13 +1,8 @@
 package fluidity;
 
-import bftsmart.fluidity.graph.FluidityGraphNode;
-import bftsmart.fluidity.strategies.StrategyLatency;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Random;
 
 /**
  * Created by philipp on 31.07.17.
