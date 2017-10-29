@@ -57,7 +57,7 @@ public class FluidityGraphBuilder {
                                     .item(0).getTextContent());
 
                     double clientLatency = -1;
-                    if (nodeElement.getElementsByTagName("clientLatency") != null) {
+                    if (nodeElement.getElementsByTagName("clientLatency").getLength() != 0) {
                         clientLatency = Double.parseDouble(
                                 nodeElement.getElementsByTagName("clientLatency")
                                         .item(0).getTextContent());

@@ -181,10 +181,11 @@ public class StrategyLatency implements DistributionStrategy {
         int[] sortedNodes;
 
         categorizeNodes();
-        int[] newNodes = new int[nodeCategory[0].size()];
         ArrayList<FluidityGraphNode> possibleNodes = nodeCategory[0];
+        ArrayList<FluidityGraphNode> useableNodes = new ArrayList<>();
 
         for (FluidityGraphNode node : possibleNodes) {
+            boolean isUsable = false;
             Vector<Double> latencyVector = assignLatencyVectorToNode(node);
             latencyVector.sort(new Comparator<Double>() {
                 @Override
@@ -199,21 +200,41 @@ public class StrategyLatency implements DistributionStrategy {
                 }
             });
 
-            double nodeLatency = latencyVector.get(svController.getOverlayQuorum() - 1);
-            //TODO Add client latency
-            double clientLatency = node.getClientLatency();
-            nodeLatency = nodeLatency + clientLatency;
-            nodeWeights.add(new NodeWeight(node.getNodeId(), nodeLatency));
+            for (int i = 0; i < latencyVector.size(); i++) {
+                if (latencyVector.get(i) != -1) {
+                    isUsable = true;
+                    i = latencyVector.size();
+                }
+            }
+
+            if (isUsable) {
+                useableNodes.add(node);
+                double nodeLatency = latencyVector.get(svController.getOverlayQuorum() - 1);
+                double clientLatency = node.getClientLatency();
+                nodeLatency = nodeLatency + clientLatency;
+                nodeWeights.add(new NodeWeight(node.getNodeId(), nodeLatency));
+            }
         }
 
-        Collections.sort(nodeWeights);
-        sortedNodes = new int[nodeWeights.size()];
+        if (useableNodes.size() > 0) {
+            Collections.sort(nodeWeights);
+            sortedNodes = new int[nodeWeights.size()];
 
-        for (int i = 0; i < nodeWeights.size(); i++) {
-            sortedNodes[i] = nodeWeights.get(i).getNodeId();
+            for (int i = 0; i < nodeWeights.size(); i++) {
+                sortedNodes[i] = nodeWeights.get(i).getNodeId();
+            }
+
+            return sortedNodes;
+        } else {
+            int[] returnNodes = new int[possibleNodes.size()];
+            for (int i = 0; i < returnNodes.length; i++) {
+                returnNodes[i] = possibleNodes.get(i).getNodeId();
+            }
+
+            return returnNodes;
         }
 
-        return sortedNodes;
+
     }
 
     private void categorizeNodes() {
