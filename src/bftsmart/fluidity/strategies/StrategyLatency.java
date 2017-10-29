@@ -22,6 +22,7 @@ public class StrategyLatency implements DistributionStrategy {
     private int numOfVariants;
     private Random randomGenerator = new Random(1234);
     private boolean useGraph;
+    private double probablilty;
 
     /*
     0 = nodes that contain no replicas
@@ -31,6 +32,7 @@ public class StrategyLatency implements DistributionStrategy {
     4 = nodes containing muted replicas, which were unmuted before the bestweightcalculation
      */
     private ArrayList<FluidityGraphNode>[] nodeCategory = new ArrayList[5];
+    private FluidityGraphNode randomNode;
 
     @Override
     public FluidityGraph calculateNewConfiguration(FluidityGraph fluidityGraph, Map<Integer, Double> bestWeightAssignment,
@@ -47,6 +49,7 @@ public class StrategyLatency implements DistributionStrategy {
         replicaIdsToReplace = new HashMap<>();
         oldReplicasToRemove = new ArrayList<>();
         variantsOfNewNodes = new ArrayList[numOfVariants];
+        probablilty = serverViewController.getStaticConf().getFluidityProbability();
 
 
         latencyDistribution();
@@ -151,9 +154,15 @@ public class StrategyLatency implements DistributionStrategy {
     private ArrayList<FluidityGraphNode> getNodesForNewReplica() {
         ArrayList<FluidityGraphNode> nodeList = new ArrayList<>();
         int[] nodeNr = getPossibleNodeForGraph();
+        Random randomGenerator = new Random();
+        randomGenerator.setSeed(1234);
 
         for (int i = 0; i < numberOfReplicasToMove; i++) {
-            nodeList.add(fluidityGraph.getNodeById(nodeNr[i]));
+            if (randomGenerator.nextDouble() <= probablilty) {
+                nodeList.add(getRandomNode());
+            } else {
+                nodeList.add(fluidityGraph.getNodeById(nodeNr[i]));
+            }
         }
 
         return nodeList;
@@ -178,11 +187,10 @@ public class StrategyLatency implements DistributionStrategy {
 
     private int[] getPossibleNodeForGraph() {
         ArrayList<NodeWeight> nodeWeights = new ArrayList<>();
-        int[] sortedNodes;
 
         categorizeNodes();
         ArrayList<FluidityGraphNode> possibleNodes = nodeCategory[0];
-        ArrayList<FluidityGraphNode> useableNodes = new ArrayList<>();
+        int useableNodes = 0;
 
         for (FluidityGraphNode node : possibleNodes) {
             boolean isUsable = false;
@@ -208,7 +216,7 @@ public class StrategyLatency implements DistributionStrategy {
             }
 
             if (isUsable) {
-                useableNodes.add(node);
+                useableNodes++;
                 double nodeLatency = latencyVector.get(svController.getOverlayQuorum() - 1);
                 double clientLatency = node.getClientLatency();
                 nodeLatency = nodeLatency + clientLatency;
@@ -216,9 +224,9 @@ public class StrategyLatency implements DistributionStrategy {
             }
         }
 
-        if (useableNodes.size() > 0) {
+        if (useableNodes > 0) {
             Collections.sort(nodeWeights);
-            sortedNodes = new int[nodeWeights.size()];
+            int[] sortedNodes = new int[nodeWeights.size()];
 
             for (int i = 0; i < nodeWeights.size(); i++) {
                 sortedNodes[i] = nodeWeights.get(i).getNodeId();
@@ -425,6 +433,14 @@ public class StrategyLatency implements DistributionStrategy {
         }
 
         return selectedNodes;
+    }
+
+    public FluidityGraphNode getRandomNode() {
+        Random randomGenerator = new Random();
+        randomGenerator.setSeed(1234);
+
+        int catId = randomGenerator.nextInt(nodeCategory[0].size());
+        return nodeCategory[0].get(catId);
     }
 
     private class NodeWeight implements Comparable<NodeWeight> {

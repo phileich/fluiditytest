@@ -75,6 +75,7 @@ public class TOMConfiguration extends Configuration {
 	private String fluidityDistributionStrategy;
 	private int numberOfReplicasToMove;
 	private int numberOfVariants;
+	private double probability;
 
 	/** Creates a new instance of TOMConfiguration */
 	public TOMConfiguration(int processId) {
@@ -413,6 +414,12 @@ public class TOMConfiguration extends Configuration {
 				numberOfVariants = (s != null) ? Integer.parseInt(s) : 3;
 			}
 
+			if (useFluidity && (fluidityDistributionStrategy.equals("Latency Distribution") ||
+					fluidityDistributionStrategy.equals("WeightGraph Distribution"))) {
+				s = (String) configs.remove("system.fluidity.Probability");
+				probability = (s != null) ? Double.parseDouble(s) : 0.01;
+			}
+
 			rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -664,6 +671,10 @@ public class TOMConfiguration extends Configuration {
 
 	public int getFluidityInterval() {
 		return fluidityInterval;
+	}
+
+	public double getFluidityProbability() {
+		return probability;
 	}
 
 }
