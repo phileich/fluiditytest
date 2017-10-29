@@ -13,13 +13,15 @@ public class FluidityGraphNode implements Serializable{
     private int dataCenterId;
     private ArrayList<Integer> replicas;
     private int maximumNumberOfReplicas;
+    private double clientLatency;
 //    private ArrayList<FluidityGraphEdge> inEdges;
 //    private ArrayList<FluidityGraphEdge> outEdges;
 
-    protected FluidityGraphNode(int id, ArrayList<Integer> replicas, int maximumNumberOfReplicas) {
+    protected FluidityGraphNode(int id, ArrayList<Integer> replicas, int maximumNumberOfReplicas, double clientLatency) {
         this.dataCenterId = id;
         this.replicas = replicas;
         this.maximumNumberOfReplicas = maximumNumberOfReplicas;
+        this.clientLatency = clientLatency;
     }
 
     public int getNodeId() {
@@ -49,6 +51,14 @@ public class FluidityGraphNode implements Serializable{
 
     protected void setMaximumNumberOfReplicas(int maximumNumberOfReplicas) {
         this.maximumNumberOfReplicas = maximumNumberOfReplicas;
+    }
+
+    protected void updateClientLatency(double clientLatency) {
+        this.clientLatency = clientLatency;
+    }
+
+    public double getClientLatency() {
+        return clientLatency;
     }
 
 //    protected void addInEdge(FluidityGraphEdge inEdge) {

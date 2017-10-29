@@ -22,8 +22,8 @@ public class FluidityGraph implements Serializable{
         this.view = view;
     }
 
-    public void addNode(int id, ArrayList<Integer> replicas, int maxNumOfRep) {
-        FluidityGraphNode tempNode = new FluidityGraphNode(id, replicas, maxNumOfRep);
+    public void addNode(int id, ArrayList<Integer> replicas, int maxNumOfRep, double clientLatency) {
+        FluidityGraphNode tempNode = new FluidityGraphNode(id, replicas, maxNumOfRep, clientLatency);
         nodes.add(tempNode);
     }
 
@@ -145,7 +145,7 @@ public class FluidityGraph implements Serializable{
     }
 
     public FluidityGraphNode getNodeById(int nodeId) {
-        FluidityGraphNode neededNode = new FluidityGraphNode(nodeId, null, -1);
+        FluidityGraphNode neededNode = new FluidityGraphNode(nodeId, null, -1, -1);
 
         int index = nodes.indexOf(neededNode);
 

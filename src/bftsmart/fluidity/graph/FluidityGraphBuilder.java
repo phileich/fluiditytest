@@ -56,7 +56,14 @@ public class FluidityGraphBuilder {
                             nodeElement.getElementsByTagName("maximumNumberOfReplicas")
                                     .item(0).getTextContent());
 
-                    fluidityGraph.addNode(datacenterId, replicaList, maxNumOfRep);
+                    double clientLatency = -1;
+                    if (nodeElement.getElementsByTagName("clientLatency") != null) {
+                        clientLatency = Double.parseDouble(
+                                nodeElement.getElementsByTagName("clientLatency")
+                                        .item(0).getTextContent());
+                    }
+
+                    fluidityGraph.addNode(datacenterId, replicaList, maxNumOfRep, clientLatency);
                 }
             }
 
