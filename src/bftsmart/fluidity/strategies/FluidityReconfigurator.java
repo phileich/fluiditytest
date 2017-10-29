@@ -1,10 +1,9 @@
 package bftsmart.fluidity.strategies;
 
-import bftsmart.dynamicWeights.DynamicWeightController;
-import bftsmart.dynamicWeights.Latency;
-import bftsmart.dynamicWeights.LatencyStorage;
+import bftsmart.dynamicWeights.*;
 import bftsmart.fluidity.FluidityController;
 import bftsmart.fluidity.graph.FluidityGraph;
+import bftsmart.fluidity.graph.FluidityGraphNode;
 import bftsmart.reconfiguration.ServerViewController;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
@@ -20,6 +19,7 @@ public class FluidityReconfigurator implements Runnable {
     private ServerViewController serverViewController;
     private FluidityController fluidityController;
     private DynamicWeightController dynamicWeightController;
+    private LatencyStorage latencyStorage;
 
     private FluidityGraph oldFluidityGraph;
     private FluidityGraph newFluidityGraph;
@@ -34,7 +34,7 @@ public class FluidityReconfigurator implements Runnable {
 
     @Override
     public void run() {
-        LatencyStorage latencyStorage = fluidityController.getDwc().getLatStorage();
+        latencyStorage = fluidityController.getDwc().getLatStorage();
         FluidityGraph filledFluidityGraph = fillGraphWithLatency(latencyStorage.getServerLatencies(false)); //TODO Problem old latency storage
         int numOfReplicasToMove = fluidityController.getNumberOfReplicasToMove();
 
@@ -76,6 +76,7 @@ public class FluidityReconfigurator implements Runnable {
 
     private FluidityGraph fillGraphWithLatency(List<Latency[]> serverLatencies) {
         FluidityGraph returnGraph = serverViewController.getCurrentView().getFluidityGraph();
+        FluidityGraph filledGraph;
         List<FluidityGraphLatency> fluidityGraphLatencies = new ArrayList<>();
 
         // This class first completes the latency information of the graph with the one from the latency
@@ -98,7 +99,39 @@ public class FluidityReconfigurator implements Runnable {
             }
         }
 
-        return getGraphWithReducedLatencies(fluidityGraphLatencies);
+        filledGraph = getGraphWithReducedLatencies(fluidityGraphLatencies);
+
+        return addClientLatencies(filledGraph);
+    }
+
+    private FluidityGraph addClientLatencies(FluidityGraph filledGraph) {
+        List<Latency[]> clientLatencies = latencyStorage.getClientLatencies(false);
+        LatencyReducer mean = new MedianReducer();
+        Latency[] reducedClients = mean.reduce2d(clientLatencies, serverViewController.getCurrentViewN());
+
+        for (FluidityGraphNode node : filledGraph.getNodes()) {
+            ArrayList<Integer> replicaIds = node.getReplicas();
+            double[] nodeClientLatencies = new double[replicaIds.size()];
+            int n = 0;
+
+            for (int repId : replicaIds) {
+                for (int i = 0; i < reducedClients.length; i++) {
+                    if (reducedClients[i].getTo() == repId) {
+                        nodeClientLatencies[n] = reducedClients[i].getValue();
+                        n++;
+                    }
+                }
+            }
+
+            double clientLatencyForNode;
+            Median median = new Median();
+            clientLatencyForNode = median.evaluate(nodeClientLatencies);
+
+
+            filledGraph.updateClientLatencyToNode(node, clientLatencyForNode);
+        }
+
+        return filledGraph;
     }
 
     private FluidityGraph getGraphWithReducedLatencies(List<FluidityGraphLatency> graphLatencies) {

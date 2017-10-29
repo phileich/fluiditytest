@@ -206,6 +206,10 @@ public class FluidityGraph implements Serializable{
         return edge.getLatencyValue();
     }
 
+    public void updateClientLatencyToNode(FluidityGraphNode node, double clientLatency) {
+        node.updateClientLatency(clientLatency);
+    }
+
     public int[] getReplicasOfSystem() {
         return view.getProcesses();
     }
