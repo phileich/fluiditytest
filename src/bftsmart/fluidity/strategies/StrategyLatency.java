@@ -201,6 +201,8 @@ public class StrategyLatency implements DistributionStrategy {
 
             double nodeLatency = latencyVector.get(svController.getOverlayQuorum() - 1);
             //TODO Add client latency
+            double clientLatency = node.getClientLatency();
+            nodeLatency = nodeLatency + clientLatency;
             nodeWeights.add(new NodeWeight(node.getNodeId(), nodeLatency));
         }
 
