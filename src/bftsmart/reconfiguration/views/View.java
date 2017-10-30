@@ -49,6 +49,17 @@ public class View implements Serializable {
 	private String fluidityGraphPath;
 	private FluidityGraph fluidityGraph;
 
+	/**
+	 * This constructor is only called once during the initial start up
+	 * @param id
+	 * @param processes
+	 * @param f
+	 * @param addresses
+	 * @param isBFT
+	 * @param delta
+	 * @param useFluidity
+	 * @param fluidityGraphPath
+	 */
 	public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta, boolean useFluidity,
 				String fluidityGraphPath) {
 		this.id = id;
@@ -65,7 +76,7 @@ public class View implements Serializable {
 		for (int i = 0; i < this.processes.length; i++)
 			this.addresses.put(processes[i], addresses[i]);
 		if (delta > 0) {
-			computeWeights();
+			initiallyComputeWeights();
 		} else {
 			overlayF = this.f;
 			overlayN = this.processes.length;
@@ -82,6 +93,18 @@ public class View implements Serializable {
 
 	}
 
+	/**
+	 * This constructor is called every time the system is reconfigured
+	 * @param id
+	 * @param processes
+	 * @param f
+	 * @param addresses
+	 * @param isBFT
+	 * @param delta
+	 * @param useFluidity
+	 * @param fluidityGraph
+	 * @param weightAssignment
+	 */
 	public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta, boolean useFluidity,
 				FluidityGraph fluidityGraph, Map<Integer, Double> weightAssignment) {
 		this.id = id;
@@ -93,27 +116,25 @@ public class View implements Serializable {
 		this.delta = delta;
 		//this.delta = delta;
 		this.useFluidity = useFluidity;
+		this.weights = weightAssignment;
 		//this.fluidityGraphPath = fluidityGraphPath;
 
 		for (int i = 0; i < this.processes.length; i++) {//TODO WTF?
 			this.addresses.put(processes[i], addresses[i]);
 		}
 
-		if (weightAssignment == null) {
-			if (delta > 0) {
-				computeWeights();
-			} else {
-				overlayF = this.f;
-				overlayN = this.processes.length;
-				u = 0;
-				for (int i = 0; i < this.processes.length; i++)
-					this.weights.put(processes[i], 1.00);
-			}
-
-			Arrays.sort(this.processes);
+		if (delta > 0) {
+			updateWeights();
+		} else {
+			overlayF = this.f;
+			overlayN = this.processes.length;
+			u = 0;
+			for (int i = 0; i < this.processes.length; i++)
+				this.weights.put(processes[i], 1.00);
 		}
 
-		//computeOverlay();
+			Arrays.sort(this.processes);
+
 
 		if (useFluidity) {
 			this.fluidityGraph = fluidityGraph;
@@ -129,7 +150,7 @@ public class View implements Serializable {
 
 	}
 
-	private void computeWeights() {
+	private void initiallyComputeWeights() {
 
 		overlayF = delta + f;
 
@@ -156,6 +177,27 @@ public class View implements Serializable {
 			this.weights.put(processes[i], wZero);
 		}
 
+	}
+
+	private void updateWeights() {
+		overlayF = delta + f;
+
+		if (isBFT) {
+			u = 2 * f;
+			overlayN = (3 * overlayF) + 1;
+		} else {
+			u = f;
+			overlayN = (2 * overlayF) + 1;
+		}
+
+		//TODO keep the old weight assignment and maybe add muted replicas
+		double wZero = 0.00;
+
+		for (int i = 0; i < this.processes.length; i++) {
+			if (this.weights.get(processes[i]) == null) {
+				this.weights.put(processes[i], wZero);
+			}
+		}
 	}
 
 	private void computeOverlay() {
