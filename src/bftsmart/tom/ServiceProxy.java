@@ -280,7 +280,7 @@ public class ServiceProxy extends TOMSender {
 					canSendLock.unlock();
 					return invoke(request, TOMMessageType.INTERNAL_CONSENSUS);
 				}
-			} else if (reqType == TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS) { //TODO Extend to Internal_fluidity_Consensus
+			} else if (reqType == TOMMessageType.INTERNAL_FLUIDITY_CONSENSUS) {
 				if (response.getViewID() == getViewManager().getCurrentViewId()) {
 					ret = response.getContent(); // return the response //TODO Problem?
 				} else {
@@ -338,6 +338,8 @@ public class ServiceProxy extends TOMSender {
 
 		Logger.println("Synchronously received reply from " + reply.getSender() + " with sequence number "
 				+ reply.getSequence());
+		System.out.println("Synchronously received reply from " + reply.getSender() + " with sequence number "
+				+ reply.getSequence());
 
 		try {
 			canReceiveLock.lock();
@@ -384,11 +386,18 @@ public class ServiceProxy extends TOMSender {
 
 					for (int i = 0; i < replies.length; i++) {
 
+						//TODO Delete
+						System.out.println("First: " + (i != pos || getViewManager().getCurrentViewN() == 1 || replyQuorum == 1));
+						System.out.println("Second: " + (replies[i] != null));
+
 						if ((i != pos || getViewManager().getCurrentViewN() == 1 || replyQuorum == 1)
 								&& replies[i] != null
 								&& (comparator.compare(replies[i].getContent(), reply.getContent()) == 0)) {
 							sameContent++;
 							overlay += getViewManager().getCurrentView().getWeight(replies[i].getSender());
+
+							//TODO Delete
+							System.out.println("Same content: " + sameContent + " overlay weights: " + overlay);
 
 							// code for classic quorums
 							// if (sameContent >= replyQuorum) {
@@ -408,6 +417,7 @@ public class ServiceProxy extends TOMSender {
 				}
 
 				if (response == null) {
+					System.out.println("Response is null in replyreceived");
 					if (requestType.equals(TOMMessageType.ORDERED_REQUEST)) {
 						if (receivedReplies == getViewManager().getCurrentViewN()) {
 							reqId = -1;
@@ -422,6 +432,8 @@ public class ServiceProxy extends TOMSender {
 						}
 					} else { // UNORDERED
 						if (receivedReplies != sameContent) {
+							//TODO Delete
+							System.out.println("kills since samecontent != receivedreplies");
 							reqId = -1;
 							this.sm.release(); // resumes the thread that is
 												// executing the "invoke" method
@@ -430,6 +442,9 @@ public class ServiceProxy extends TOMSender {
 				}
 			} else {
 				Logger.println("Ignoring reply from " + reply.getSender() + " with reqId:" + reply.getSequence()
+						+ ". Currently wait reqId= " + reqId);
+				//TODO Delete
+				System.out.println("Ignoring reply from " + reply.getSender() + " with reqId:" + reply.getSequence()
 						+ ". Currently wait reqId= " + reqId);
 
 			}
