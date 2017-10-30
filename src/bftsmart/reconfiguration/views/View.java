@@ -99,23 +99,25 @@ public class View implements Serializable {
 			this.addresses.put(processes[i], addresses[i]);
 		}
 
-		/*if (delta > 0) {
-			computeWeights();
-		} else {
-			overlayF = this.f;
-			overlayN = this.processes.length;
-			u = 0;
-			for (int i = 0; i < this.processes.length; i++)
-				this.weights.put(processes[i], 1.00);
+		if (weightAssignment == null) {
+			if (delta > 0) {
+				computeWeights();
+			} else {
+				overlayF = this.f;
+				overlayN = this.processes.length;
+				u = 0;
+				for (int i = 0; i < this.processes.length; i++)
+					this.weights.put(processes[i], 1.00);
+			}
+
+			Arrays.sort(this.processes);
 		}
 
-		Arrays.sort(this.processes); */
-
-		computeOverlay();
+		//computeOverlay();
 
 		if (useFluidity) {
 			this.fluidityGraph = fluidityGraph;
-			weights = weightAssignment;
+			//weights = weightAssignment;
 		}
 
 	}
@@ -242,7 +244,9 @@ public class View implements Serializable {
 		for (int i = 0; i < processes.length; i++) {
 			ret = ret + processes[i] + "(" + addresses.get(processes[i]) + ",W: " + weights.get(processes[i]) + "),";
 		}
-		ret = ret + "\n" + fluidityGraph.toString();
+		if (useFluidity) {
+			ret = ret + "\n" + fluidityGraph.toString();
+		}
 
 		return ret;
 	}

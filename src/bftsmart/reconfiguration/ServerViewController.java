@@ -255,6 +255,9 @@ public class ServerViewController extends ViewController {
 			}
 		}
 
+		//TODO Test
+		Arrays.sort(nextV);
+
 		if (f < 0) {
 			f = currentView.getF();
 		}
@@ -263,9 +266,9 @@ public class ServerViewController extends ViewController {
 			fluidityGraph = currentView.getFluidityGraph();
 		}
 
-		if (weightAssignment == null) {
-			weightAssignment = currentView.getWeights();
-		}
+//		if (weightAssignment == null) {
+//			weightAssignment = currentView.getWeights();
+//		}
 
 		InetSocketAddress[] addresses = new InetSocketAddress[nextV.length];
 
