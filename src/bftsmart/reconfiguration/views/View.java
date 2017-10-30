@@ -189,7 +189,7 @@ public class View implements Serializable {
 			u = f;
 			overlayN = (2 * overlayF) + 1;
 		}
-		
+
 		double wZero = 0.00;
 
 		for (int i = 0; i < this.processes.length; i++) {

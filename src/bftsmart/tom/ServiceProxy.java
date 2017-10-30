@@ -417,6 +417,7 @@ public class ServiceProxy extends TOMSender {
 				}
 
 				if (response == null) {
+					//TODO Delete
 					System.out.println("Response is null in replyreceived");
 					if (requestType.equals(TOMMessageType.ORDERED_REQUEST)) {
 						if (receivedReplies == getViewManager().getCurrentViewN()) {
