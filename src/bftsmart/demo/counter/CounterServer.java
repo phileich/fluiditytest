@@ -44,7 +44,7 @@ public final class CounterServer extends DefaultRecoverable {
 	ServiceReplica replica = null;
 
 	public CounterServer(int id) {
-		replica = new DWServiceReplica(id, this, this);
+		replica = new ServiceReplica(id, this, this);
 	}
 
 	@Override

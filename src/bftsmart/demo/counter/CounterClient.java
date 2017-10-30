@@ -41,7 +41,7 @@ public class CounterClient {
             System.exit(-1);
         }
 
-        ServiceProxy counterProxy = new DWServiceProxyLatencyMonitorPiggyBack(Integer.parseInt(args[0]));
+        ServiceProxy counterProxy = new ServiceProxy(Integer.parseInt(args[0]));
 
         //counterProxy.setInvokeTimeout(1);
 
