@@ -202,7 +202,7 @@ public class StrategyWeightGraph implements DistributionStrategy {
                     bestAssignment[j] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies, delete);
                 }
             }
-
+                //TODO Base decision on calculated value not most changed weights?
             return getBestNodes(bestAssignment);
         } else {
             return getRandomNodes();
