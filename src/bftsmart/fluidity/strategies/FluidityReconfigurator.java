@@ -78,6 +78,8 @@ public class FluidityReconfigurator implements Runnable {
         FluidityGraph returnGraph = serverViewController.getCurrentView().getFluidityGraph();
         FluidityGraph filledGraph;
         List<FluidityGraphLatency> fluidityGraphLatencies = new ArrayList<>();
+        List<FluidityGraphLatency> fluidityGraphProposeLatencies = new ArrayList<>();
+        List<Latency[]> serverProposeLatencies = latencyStorage.getServerProposeLatencies(false);
 
         // This class first completes the latency information of the graph with the one from the latency
         // storage and then calls the strategy
@@ -99,7 +101,27 @@ public class FluidityReconfigurator implements Runnable {
             }
         }
 
-        filledGraph = getGraphWithReducedLatencies(fluidityGraphLatencies);
+        //filledGraph = getGraphWithReducedLatencies(fluidityGraphLatencies, returnGraph, false);
+
+
+        for (Latency[] latency : serverProposeLatencies) {
+            for (int i = 0; i < latency.length; i++) {
+                Latency tempLatency = latency[i];
+                if (tempLatency != null) {
+                    int replicaFrom = tempLatency.getFrom();
+                    int replicaTo = tempLatency.getTo();
+                    double latencyValue = tempLatency.getValue();
+
+                    int nodeFrom = returnGraph.getNodeIdFromReplicaId(replicaFrom);
+                    int nodeTo = returnGraph.getNodeIdFromReplicaId(replicaTo);
+
+                    FluidityGraphLatency latencyEntry = new FluidityGraphLatency(nodeFrom, nodeTo, latencyValue);
+                    fluidityGraphProposeLatencies.add(latencyEntry);
+                }
+            }
+        }
+
+        filledGraph = getGraphWithReducedLatencies(fluidityGraphLatencies, fluidityGraphProposeLatencies);
 
         return addClientLatencies(filledGraph);
     }
@@ -134,7 +156,7 @@ public class FluidityReconfigurator implements Runnable {
         return filledGraph;
     }
 
-    private FluidityGraph getGraphWithReducedLatencies(List<FluidityGraphLatency> graphLatencies) {
+    private FluidityGraph getGraphWithReducedLatencies(List<FluidityGraphLatency> graphLatencies, List<FluidityGraphLatency> graphProposeLatencies) {
         FluidityGraph returnGraph = serverViewController.getCurrentView().getFluidityGraph();
         ArrayList<Integer> tempGraphLatencyIndex = new ArrayList<>();
 
@@ -159,6 +181,32 @@ public class FluidityReconfigurator implements Runnable {
                 double medianValue = medianReducer(reduceValues);
 
                 returnGraph.changeEdgeLatencyData(from, to, medianValue);
+
+                tempGraphLatencyIndex.addAll(indexList);
+            }
+        }
+
+        for (FluidityGraphLatency fgL : graphProposeLatencies) {
+            int from = fgL.getNodeIdFrom();
+            int to = fgL.getNodeIdTo();
+            FluidityGraphLatency tempObj = new FluidityGraphLatency(from, to);
+
+            ArrayList<Integer> indexList = indexOfAll(tempObj, graphProposeLatencies);
+            ArrayList<FluidityGraphLatency> reduceList = new ArrayList<>();
+
+            if (!tempGraphLatencyIndex.contains(indexList.get(0))) {
+                for(int index : indexList) {
+                    reduceList.add(graphProposeLatencies.get(index));
+                }
+
+                ArrayList<Double> reduceValues = new ArrayList<>();
+                for (FluidityGraphLatency fgl : reduceList) {
+                    reduceValues.add(fgl.getLatencyValue());
+                }
+
+                double medianValue = medianReducer(reduceValues);
+
+                returnGraph.changeEdgeLatencyProposeData(from, to, medianValue);
 
                 tempGraphLatencyIndex.addAll(indexList);
             }
