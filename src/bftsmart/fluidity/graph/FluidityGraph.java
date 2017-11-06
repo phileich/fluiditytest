@@ -27,12 +27,12 @@ public class FluidityGraph implements Serializable{
         nodes.add(tempNode);
     }
 
-    public void addEdge(int idNodeFrom, int idNodeTo, double latencyValue) {
+    public void addEdge(int idNodeFrom, int idNodeTo, double latencyValue, double latencyProposeValue) {
         FluidityGraphNode nodeFrom = getNodeById(idNodeFrom);
         FluidityGraphNode nodeTo = getNodeById(idNodeTo);
 
         if (nodeFrom != null && nodeTo != null) {
-            FluidityGraphEdge tempEdge = new FluidityGraphEdge(nodeFrom, nodeTo, latencyValue);
+            FluidityGraphEdge tempEdge = new FluidityGraphEdge(nodeFrom, nodeTo, latencyValue, latencyProposeValue);
             edges.add(tempEdge);
 //            nodeFrom.addOutEdge(tempEdge);
 //            nodeTo.addInEdge(tempEdge);
@@ -42,9 +42,9 @@ public class FluidityGraph implements Serializable{
     protected void addRemainingEdges() {
         for (FluidityGraphNode nodeFrom : nodes) {
             for (FluidityGraphNode nodeTo : nodes) {
-                if (!edges.contains(new FluidityGraphEdge(nodeFrom, nodeTo, -1)) &&
+                if (!edges.contains(new FluidityGraphEdge(nodeFrom, nodeTo, -1, -1)) &&
                         !nodeFrom.equals(nodeTo)) {
-                    addEdge(nodeFrom.getNodeId(), nodeTo.getNodeId(), -1);
+                    addEdge(nodeFrom.getNodeId(), nodeTo.getNodeId(), -1, -1);
                 }
             }
         }
@@ -56,6 +56,14 @@ public class FluidityGraph implements Serializable{
 
         FluidityGraphEdge tempEdge = getEdgeByNodes(nodeFrom, nodeTo);
         tempEdge.setLatencyValue(newLatencyData);
+    }
+
+    public void changeEdgeLatencyProposeData(int idNodeFrom, int idNodeTo, double newLatencyData) {
+        FluidityGraphNode nodeFrom = getNodeById(idNodeFrom);
+        FluidityGraphNode nodeTo = getNodeById(idNodeTo);
+
+        FluidityGraphEdge tempEdge = getEdgeByNodes(nodeFrom, nodeTo);
+        tempEdge.setLatencyProposeValue(newLatencyData);
     }
 
     public int getNodeIdFromReplicaId(int replicaId) {
@@ -158,13 +166,13 @@ public class FluidityGraph implements Serializable{
 
     public FluidityGraphEdge getEdgeByNodes(FluidityGraphNode nodeFrom, FluidityGraphNode nodeTo) {
         if (!nodeFrom.equals(nodeTo)) {
-            FluidityGraphEdge neededEdge = new FluidityGraphEdge(nodeFrom, nodeTo, -1);
+            FluidityGraphEdge neededEdge = new FluidityGraphEdge(nodeFrom, nodeTo, -1, -1);
 
             int index = edges.indexOf(neededEdge);
 
             return edges.get(index);
         } else {
-            return new FluidityGraphEdge(nodeFrom, nodeTo, 0.0d);
+            return new FluidityGraphEdge(nodeFrom, nodeTo, 0.0d, 0.0d);
         }
     }
 

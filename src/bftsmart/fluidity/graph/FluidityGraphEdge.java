@@ -12,11 +12,13 @@ public class FluidityGraphEdge implements Serializable{
     private FluidityGraphNode nodeFrom;
     private FluidityGraphNode nodeTo;
     private double latencyValue;
+    private double latencyProposeValue;
 
-    protected FluidityGraphEdge(FluidityGraphNode nodeFrom, FluidityGraphNode nodeTo, double value) {
+    protected FluidityGraphEdge(FluidityGraphNode nodeFrom, FluidityGraphNode nodeTo, double latencyValue, double latencyProposeValue) {
         this.nodeFrom = nodeFrom;
         this.nodeTo = nodeTo;
-        this.latencyValue = value;
+        this.latencyValue = latencyValue;
+        this.latencyProposeValue = latencyProposeValue;
     }
 
     protected FluidityGraphNode getNodeFrom() {
@@ -31,6 +33,10 @@ public class FluidityGraphEdge implements Serializable{
         return latencyValue;
     }
 
+    public double getLatencyProposeValue() {
+        return latencyProposeValue;
+    }
+
     protected void setNodeFrom(FluidityGraphNode nodeFrom) {
         this.nodeFrom = nodeFrom;
     }
@@ -41,6 +47,10 @@ public class FluidityGraphEdge implements Serializable{
 
     protected void setLatencyValue(double latencyValue) {
         this.latencyValue = latencyValue;
+    }
+
+    protected void setLatencyProposeValue(double latencyProposeValue) {
+        this.latencyProposeValue = latencyProposeValue;
     }
 
     @Override

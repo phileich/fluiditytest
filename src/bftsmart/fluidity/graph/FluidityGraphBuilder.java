@@ -84,7 +84,11 @@ public class FluidityGraphBuilder {
                             .getElementsByTagName("latency")
                             .item(0).getTextContent());
 
-                    fluidityGraph.addEdge(nodeFromId, nodeToId, latency);
+                    double proposeLatency = Double.parseDouble(edgeElement
+                            .getElementsByTagName("proposeLatency")
+                            .item(0).getTextContent());
+
+                    fluidityGraph.addEdge(nodeFromId, nodeToId, latency, proposeLatency);
 
                 }
             }
