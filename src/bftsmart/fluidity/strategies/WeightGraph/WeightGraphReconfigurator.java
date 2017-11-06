@@ -20,7 +20,8 @@ public class WeightGraphReconfigurator {
         this.svController = svController;
     }
 
-    public double runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies, double[] replaceClientLatencies, boolean delete) {
+    public double runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies, double[][] replaceProposeLatencies,
+                           double[] replaceClientLatencies, boolean delete) {
         Logger.println("Start Reconfiguration calculation");
 
         // get last 'windowSize' entries
@@ -140,8 +141,8 @@ public class WeightGraphReconfigurator {
         for (int replicaId : mutedReplicaIds) {
             for (int j = 0; j < currentN; j++) {
                 //double[] newLatencies = strategyLatency.getLantencyOfMutedReplica(replicaId, j);
-                reducedServerProposeValues[replicaId][j] = replaceLatencies[replicaId][j];//TODO Check for propose Values
-                reducedServerProposeValues[j][replicaId] = replaceLatencies[j][replicaId];
+                reducedServerProposeValues[replicaId][j] = replaceProposeLatencies[replicaId][j];
+                reducedServerProposeValues[j][replicaId] = replaceProposeLatencies[j][replicaId];
             }
         }
 
@@ -159,8 +160,6 @@ public class WeightGraphReconfigurator {
         dl.calculateBestGraph();
 
         //strategyLatency.notifyReconfiguration(dl.getBestWeightAssignment());
-
-        //TODO Get best calulated value
 
         return dl.getBestCalculatedValue();
     }
