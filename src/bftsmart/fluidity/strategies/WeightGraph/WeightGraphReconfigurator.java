@@ -20,7 +20,7 @@ public class WeightGraphReconfigurator {
         this.svController = svController;
     }
 
-    public Map<Integer, Double> runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies, boolean delete) {
+    public double runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies, boolean delete) {
         Logger.println("Start Reconfiguration calculation");
 
         // get last 'windowSize' entries
@@ -155,7 +155,7 @@ public class WeightGraphReconfigurator {
 
         //TODO Get best calulated value
 
-        return dl.getBestWeightAssignment();
+        return dl.getBestCalculatedValue();
     }
 
 }

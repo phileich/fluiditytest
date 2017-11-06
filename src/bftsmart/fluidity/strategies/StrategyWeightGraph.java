@@ -188,7 +188,7 @@ public class StrategyWeightGraph implements DistributionStrategy {
             }
 
             // Give graph variants
-            Map<Integer, Double>[] bestAssignment = new Map[numOfVariants];
+            double[] bestAssignment = new double[numOfVariants];
             oldReplicasToRemove = getReplicaIDsToMove();
             double[][] replaceLatencies;
 
@@ -209,18 +209,24 @@ public class StrategyWeightGraph implements DistributionStrategy {
         }
     }
 
-    private ArrayList<FluidityGraphNode> getBestNodes(Map<Integer, Double>[] bestAssignments) {
+    private ArrayList<FluidityGraphNode> getBestNodes(double[] bestAssignments) {
         int bestVariant = 0;
-        double maxWeight = 0;
+        double bestValue = Integer.MAX_VALUE;
 
         for (int i = 0; i < bestAssignments.length; i++) {
-            double weights = 0;
-            for (int replicas : oldReplicasToRemove) {
-                weights += bestAssignments[i].get(replicas);
-            }
-            if (weights > maxWeight) {
+            double value = bestAssignments[i];
+
+            if (value < bestValue) {
                 bestVariant = i;
             }
+
+            //double weights = 0;
+//            for (int replicas : oldReplicasToRemove) {
+//                weights += bestAssignments[i].get(replicas);
+//            }
+//            if (weights > maxWeight) {
+//                bestVariant = i;
+//            }
         }
 
         return variantsOfNewNodes[bestVariant];
