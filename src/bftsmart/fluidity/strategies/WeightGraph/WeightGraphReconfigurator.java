@@ -20,7 +20,7 @@ public class WeightGraphReconfigurator {
         this.svController = svController;
     }
 
-    public double runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies, boolean delete) {
+    public double runGraph(ArrayList<Integer> mutedReplicaIds, double[][] replaceLatencies, double[] replaceClientLatencies, boolean delete) {
         Logger.println("Start Reconfiguration calculation");
 
         // get last 'windowSize' entries
@@ -143,6 +143,13 @@ public class WeightGraphReconfigurator {
                 reducedServerProposeValues[replicaId][j] = replaceLatencies[replicaId][j];//TODO Check for propose Values
                 reducedServerProposeValues[j][replicaId] = replaceLatencies[j][replicaId];
             }
+        }
+
+        //Replace the reduced client latencies of the muted replicas
+        int j = 0;
+        for (int replicaId : mutedReplicaIds) {
+            reducedClientValues[replicaId] = replaceClientLatencies[j];
+            j++;
         }
 
 

@@ -191,18 +191,20 @@ public class StrategyWeightGraph implements DistributionStrategy {
             double[] bestAssignment = new double[numOfVariants];
             oldReplicasToRemove = getReplicaIDsToMove();
             double[][] replaceLatencies;
+            double[] replaceClientLatencies;
 
             for (int i = 0; i < numOfVariants; i++) { //TODO Changed variantsOfNewNodes.length to numofvariants. Check!
                 replaceLatencies = getLantencyOfMutedReplica(oldReplicasToRemove, i);
+                replaceClientLatencies = getClientLatencyOfMutedReplica(oldReplicasToRemove, i);
 
                 for (int j = 0; j < numOfVariants; j++) {
                     WeightGraphReconfigurator weightGraphReconfigurator = new WeightGraphReconfigurator(svController,
                             latencyStorage, this, replicaIds.length);
                     boolean delete = ((j + 1) == numOfVariants) && ((i+1) == numOfVariants);
-                    bestAssignment[j] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies, delete);
+                    bestAssignment[j] = weightGraphReconfigurator.runGraph(oldReplicasToRemove, replaceLatencies, replaceClientLatencies, delete);
                 }
             }
-                //TODO Base decision on calculated value not most changed weights?
+
             return getBestNodes(bestAssignment);
         } else {
             return getRandomNodes();
@@ -396,6 +398,29 @@ public class StrategyWeightGraph implements DistributionStrategy {
                     latencies[oldReplica][otherReplica] = fromEdge.getLatencyValue();
                     latencies[otherReplica][oldReplica] = toEdge.getLatencyValue();
                 }
+            }
+        }
+        return latencies;
+    }
+
+    public double[] getClientLatencyOfMutedReplica(ArrayList<Integer> replicasToReplace, int variant) {
+        double[] latencies = new double[replicasToReplace.size()];
+
+        for (int oldReplica : replicasToReplace) {
+            for (int i = 0; i < variantsOfNewNodes[0].size(); i++) {
+                replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
+
+                FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica); //TODO Check for array index out of bounds
+                latencies[i] = nodeToReplace.getClientLatency();
+
+//                    FluidityGraphNode nodeStandard = fluidityGraph.getNodeById(fluidityGraph.getNodeIdFromReplicaId(otherReplica));
+//                    FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica);
+//                    FluidityGraphEdge fromEdge = fluidityGraph.getEdgeByNodes(nodeToReplace, nodeStandard);
+//                    FluidityGraphEdge toEdge = fluidityGraph.getEdgeByNodes(nodeStandard, nodeToReplace);
+
+//                    latencies[oldReplica]= fromEdge.getLatencyValue();
+//                    latencies[otherReplica][oldReplica] = toEdge.getLatencyValue();
+
             }
         }
         return latencies;
