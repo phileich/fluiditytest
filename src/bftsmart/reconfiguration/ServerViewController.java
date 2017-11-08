@@ -17,6 +17,7 @@ package bftsmart.reconfiguration;
 
 import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.reconfiguration.views.View;
@@ -273,6 +274,18 @@ public class ServerViewController extends ViewController {
 
 		for (int i = 0; i < nextV.length; i++)
 			addresses[i] = getStaticConf().getRemoteAddress(nextV[i]);
+
+		Map<Integer, InetSocketAddress> addre = currentView.getAddresses();
+		for (int i = 0; i < nextV.length; i++) {
+			int[] processes = currentView.getProcesses();
+			int val = nextV[i];
+			boolean contains = IntStream.of(processes).anyMatch(x -> x == val);
+
+			if (!contains) {
+				addre.put(nextV[i], getStaticConf().getRemoteAddress(nextV[i]));
+			}
+		}
+
 
 //		View newV = new View(currentView.getId() + 1, nextV, f, addresses, getStaticConf().isBFT(),
 //				getStaticConf().getDelta(), getStaticConf().useFluidity(), fluidityGraph, weightAssignment);
