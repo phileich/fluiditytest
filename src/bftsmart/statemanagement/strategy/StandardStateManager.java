@@ -119,6 +119,7 @@ public class StandardStateManager extends BaseStateManager {
             }
         };
 
+        //TODO Exponential growth of timeout leading to overflow of variable
         stateTimer = new Timer("state timer");
         timeout = timeout * 2;
         stateTimer.schedule(stateTask,timeout);
