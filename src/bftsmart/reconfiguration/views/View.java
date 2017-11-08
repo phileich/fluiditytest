@@ -19,10 +19,8 @@ import bftsmart.fluidity.graph.FluidityGraph;
 import bftsmart.fluidity.graph.FluidityGraphBuilder;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.*;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -105,12 +103,13 @@ public class View implements Serializable {
 	 * @param fluidityGraph
 	 * @param weightAssignment
 	 */
-	public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta, boolean useFluidity,
+	public View(int id, int[] processes, int f, Map<Integer, InetSocketAddress> addresses, boolean isBFT, int delta, boolean useFluidity,
 				FluidityGraph fluidityGraph, Map<Integer, Double> weightAssignment) {
 		this.id = id;
 		this.processes = processes;
 		this.isBFT = isBFT;
-		this.addresses = new HashMap<Integer, InetSocketAddress>();
+		//this.addresses = new HashMap<Integer, InetSocketAddress>();
+		this.addresses = addresses;
 		this.weights = new HashMap<Integer, Double>();
 		this.f = f;
 		this.delta = delta;
@@ -119,9 +118,9 @@ public class View implements Serializable {
 		this.weights = weightAssignment;
 		//this.fluidityGraphPath = fluidityGraphPath;
 
-		for (int i = 0; i < this.processes.length; i++) {//TODO WTF?
-			this.addresses.put(processes[i], addresses[i]);
-		}
+//		for (int i = 0; i < this.processes.length; i++) //TODO WTF?
+//			this.addresses.put(processes[i], addresses[i]);
+
 
 		if (delta > 0) {
 			updateWeights();
@@ -294,6 +293,10 @@ public class View implements Serializable {
 
 	public InetSocketAddress getAddress(int id) {
 		return addresses.get(id);
+	}
+
+	public Map<Integer, InetSocketAddress> getAddresses() {
+		return this.addresses;
 	}
 
 	@Override

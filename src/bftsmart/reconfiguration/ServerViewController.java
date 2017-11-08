@@ -274,8 +274,13 @@ public class ServerViewController extends ViewController {
 		for (int i = 0; i < nextV.length; i++)
 			addresses[i] = getStaticConf().getRemoteAddress(nextV[i]);
 
-		View newV = new View(currentView.getId() + 1, nextV, f, addresses, getStaticConf().isBFT(),
+//		View newV = new View(currentView.getId() + 1, nextV, f, addresses, getStaticConf().isBFT(),
+//				getStaticConf().getDelta(), getStaticConf().useFluidity(), fluidityGraph, weightAssignment);
+
+		View newV = new View(currentView.getId() + 1, nextV, f, currentView.getAddresses(), getStaticConf().isBFT(),
 				getStaticConf().getDelta(), getStaticConf().useFluidity(), fluidityGraph, weightAssignment);
+
+
 
 		System.out.println("new view: " + newV);
 		System.out.println("installed on CID: " + cid);
@@ -285,7 +290,6 @@ public class ServerViewController extends ViewController {
 		// processes execute the leave!!!
 		reconfigureTo(newV);
 		// TODO Check for leader change in weight assignment
-		// TODO Check for weight assignment causing no side effects, like when changing the weights during a consensus
 
 		if (forceLC) {
 
