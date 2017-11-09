@@ -152,6 +152,11 @@ public class FluidityViewManager {
 
             executeUpdates();
 
+            int port = (idsOfNewReplicas.get(0) * 10) + 11000;
+            addServer(idsOfNewReplicas.get(0), "127.0.0.1", port);
+
+            executeUpdates();
+
 
 
 

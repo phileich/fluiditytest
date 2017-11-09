@@ -92,7 +92,7 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 							&& controller.getStaticConf().measureServers()) {
 						lmps.addServerProposeLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
 					} else {
-						messageHandler.processData(sm);
+						messageHandler.processData(sm); //TODO Vielleicht zu häufig aufgerufen
 						count++;
 					}
 
