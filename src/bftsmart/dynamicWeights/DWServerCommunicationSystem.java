@@ -93,6 +93,7 @@ public class DWServerCommunicationSystem extends ServerCommunicationSystem {
 						lmps.addServerProposeLatency(sm.getSender(), ((ConsensusMessage) sm).getNumber());
 					} else {
 						messageHandler.processData(sm); //TODO Vielleicht zu häufig aufgerufen
+						//TODO Problem mit Leader Change message. Warum wird diese versendet?
 						count++;
 					}
 

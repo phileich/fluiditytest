@@ -38,7 +38,7 @@ import bftsmart.consensus.Consensus;
 import bftsmart.consensus.Epoch;
 import bftsmart.tom.leaderchange.CertifiedDecision;
 
-/**
+/**Timeout to retrieve stateTimeout Timeout to retrieve stateTimeout to retrieve stateTimeout to retrieve stateTimeout to retrieve stateto retrieve state
  * 
  * @author Marcel Santos
  *
