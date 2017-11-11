@@ -201,8 +201,10 @@ public class StateLog {
         CommandsInfo[] batches = null;
 
         int lastCID = -1;
+        cid = this.lastCID;
        
         if (cid >= lastCheckpointCID && cid <= this.lastCID) {
+        //if (cid >= lastCheckpointCID) {
             
     	System.out.println("--- Constructing ApplicationState up until CID " + cid);
 

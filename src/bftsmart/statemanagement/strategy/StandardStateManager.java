@@ -183,7 +183,10 @@ public class StandardStateManager extends BaseStateManager {
                         senderProofs.put(msg.getSender(), msg.getState().getCertifiedDecision(SVController));
                     if (enoughRegencies(msg.getRegency())) currentRegency = msg.getRegency();
                     if (enoughLeaders(msg.getLeader())) currentLeader = msg.getLeader();
-                    if (enoughViews(msg.getView())) currentView = msg.getView();
+                    if (enoughViews(msg.getView())) {
+                        currentView = msg.getView();
+                        currentProof = msg.getState().getCertifiedDecision(SVController);
+                    }
                     if (enoughProofs(waitingCID, this.tomLayer.getSynchronizer().getLCManager())) currentProof = msg.getState().getCertifiedDecision(SVController);
                     
                 } else {
@@ -196,6 +199,10 @@ public class StandardStateManager extends BaseStateManager {
                 	System.out.println("Expected replica sent state. Setting it to state");
                     state = msg.getState();
                     if (stateTimer != null) stateTimer.cancel();
+                }
+
+                if (msg.getSender() == replica && msg.getState().getSerializedState() == null) {
+                    System.out.println("!!!!Replica " +  replica + " that should send state did not send state!!!!!");
                 }
 
                 senderStates.put(msg.getSender(), msg.getState());
@@ -339,6 +346,7 @@ public class StandardStateManager extends BaseStateManager {
                     } else if (haveState == 0 && (SVController.getCurrentViewN() - SVController.getCurrentViewF()) <= getReplies()) {
 
                         Logger.println("(TOMLayer.SMReplyDeliver) Could not obtain the state, retrying");
+                        System.out.println("(TOMLayer.SMReplyDeliver) Could not obtain the state, retrying");
                         reset();
                         if (stateTimer != null) stateTimer.cancel();
                         waitingCID = -1;
