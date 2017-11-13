@@ -227,9 +227,12 @@ public final class DeliveryThread extends Thread {
                         // ******* EDUARDO BEGIN ***********//
                         if (controller.hasUpdates()) {
                             processReconfigMessages(lastDecision.getConsensusId());
+                            System.out.println("reconfig message: " + lastDecision.getConsensusId());
 
                             // set the consensus associated to the last decision as the last executed
                             tomLayer.setLastExec(lastDecision.getConsensusId());
+
+                            System.out.println("reconfig message: " + lastDecision.getConsensusId());
                             // define that end of this execution
                             tomLayer.setInExec(-1);
                             // ******* EDUARDO END **************//

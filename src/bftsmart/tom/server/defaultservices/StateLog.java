@@ -118,8 +118,10 @@ public class StateLog {
      * @param lastCID the consensus ID for the last messages batch delivered to the application
      */
     public void setLastCID(int lastCID) {
-
-       this.lastCID = lastCID;
+        if (lastCID != -1) {
+            this.lastCID = lastCID;
+        }
+        System.out.println("LastCID set to: " + this.lastCID);
     }
 
     /**
@@ -201,6 +203,7 @@ public class StateLog {
         CommandsInfo[] batches = null;
 
         int lastCID = -1;
+        //this.lastCID = 99; //TODO Change last CID addition with fluidity
         cid = this.lastCID;
        
         if (cid >= lastCheckpointCID && cid <= this.lastCID) {

@@ -31,6 +31,7 @@ import bftsmart.statemanagement.StateManager;
 import bftsmart.statemanagement.strategy.StandardStateManager;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ReplicaContext;
+import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.server.BatchExecutable;
 import bftsmart.tom.server.Recoverable;
 import bftsmart.tom.util.Logger;
@@ -176,6 +177,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         logLock.lock();
 
         Logger.println("(TOMLayer.saveState) Saving state of CID " + lastCID);
+        System.out.println("(TOMLayer.saveState) Saving state of CID " + lastCID);
 
         thisLog.newCheckpoint(snapshot, computeHash(snapshot), lastCID);
         thisLog.setLastCID(lastCID);
@@ -201,18 +203,31 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         logLock.lock();
 
         int cid = msgCtx[0].getConsensusId();
+        if (msgCtx[0].getType() == TOMMessageType.RECONFIG) {
+            cid = -1;
+        }
+
         int batchStart = 0;
         for (int i = 0; i <= msgCtx.length; i++) {
             if (i == msgCtx.length) { // the batch command contains only one command or it is the last position of the array
                 byte[][] batch = Arrays.copyOfRange(commands, batchStart, i);
                 MessageContext[] batchMsgCtx = Arrays.copyOfRange(msgCtx, batchStart, i);
+                //TODO Delete
+                System.out.println("SaveCommand CID: " + cid);
                 log.addMessageBatch(batch, batchMsgCtx, cid);
             } else {
                 if (msgCtx[i].getConsensusId() > cid) { // saves commands when the cid changes or when it is the last batch
                     byte[][] batch = Arrays.copyOfRange(commands, batchStart, i);
                     MessageContext[] batchMsgCtx = Arrays.copyOfRange(msgCtx, batchStart, i);
                     log.addMessageBatch(batch, batchMsgCtx, cid);
+                    //TODO Delete
+                    System.out.println("SaveCommand CID: " + cid);
                     cid = msgCtx[i].getConsensusId();
+                    if (msgCtx[i].getType() == TOMMessageType.RECONFIG) {
+                        cid = -1;
+                    }
+                    //TODO Delete
+                    System.out.println("SaveCommand CID: " + cid);
                     batchStart = i;
                 }
             }
@@ -227,9 +242,11 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         
         // Only will send a state if I have a proof for the last logged decision/consensus
         //TODO: I should always make sure to have a log with proofs, since this is a result
-        // of not storing anything after a checkpoint and before logging more requests        
+        // of not storing anything after a checkpoint and before logging more requests
+        System.out.println("Decision of sending replica (true/false) shall be false: " + (ret == null || (config.isBFT() && ret.getCertifiedDecision(this.controller) == null)));
         if (ret == null || (config.isBFT() && ret.getCertifiedDecision(this.controller) == null)) ret = new DefaultApplicationState();
-        
+        //if (ret == null) ret = new DefaultApplicationState();
+
         logLock.unlock();
         return ret;
     }
