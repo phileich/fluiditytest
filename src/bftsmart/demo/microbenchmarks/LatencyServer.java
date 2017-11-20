@@ -16,6 +16,7 @@ limitations under the License.
 package bftsmart.demo.microbenchmarks;
 
 import bftsmart.dynamicWeights.DWServiceReplica;
+import bftsmart.fluidity.FluidityServiceReplica;
 import bftsmart.reconfiguration.util.TOMConfiguration;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
@@ -54,9 +55,12 @@ public class LatencyServer extends DefaultRecoverable {
 		acceptLatency = new Storage(interval);
 
 		TOMConfiguration conf = new TOMConfiguration(id);
-		if (conf.useDynamicWeights()) {
+		if (conf.useDynamicWeights() && !conf.useFluidity()) {
 			System.out.println("#using Dynamic Weights");
 			replica = new DWServiceReplica(id, this, this);
+		} else if (conf.useFluidity() && conf.useDynamicWeights()) {
+			System.out.println("Using Fluidity");
+			replica = new FluidityServiceReplica(id, this, this);
 		} else {
 			replica = new ServiceReplica(id, this, this);
 		}
