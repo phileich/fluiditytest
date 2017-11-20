@@ -84,6 +84,9 @@ Session.vim
 files
 config/currentView
 config/system.config
+config/system.config.fluidity
+config/system.config.wheat
+config/system.config.dyn
 bin
 bin/*
 
