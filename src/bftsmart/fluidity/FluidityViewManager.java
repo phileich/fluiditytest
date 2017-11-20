@@ -144,11 +144,11 @@ public class FluidityViewManager {
 
             updateFluidityGraph(newFluidityGraph);
 
-
+            executeUpdates();
             //TODO First remove old replicas, then update weights and graph and finally start new instances and
             // add the new replicas to the view
 
-            //updateWeights(currentWeights);
+            updateWeights(currentWeights);
 
             executeUpdates();
 
