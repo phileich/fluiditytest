@@ -78,7 +78,13 @@ public class Reconfiguration {
         byte[] signature = TOMUtil.signMessage(proxy.getViewManager().getStaticConf().getRSAPrivateKey(),
                                                                             request.toString().getBytes());
         request.setSignature(signature);
-        byte[] reply = proxy.invoke(TOMUtil.getBytes(request), TOMMessageType.RECONFIG);
+        byte[] reply = new byte[0];
+        try {
+            reply = proxy.invoke(TOMUtil.getBytes(request), TOMMessageType.RECONFIG);
+        } catch (RuntimeException e) {
+            System.out.println("dynWHEAT inconsistent measurement");
+            reply = null;
+        }
         request = null;
         return (ReconfigureReply)TOMUtil.getObject(reply);
     }

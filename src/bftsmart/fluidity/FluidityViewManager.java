@@ -35,6 +35,8 @@ public class FluidityViewManager {
     private Map<Integer, Integer> substitudeReplicas = null;
     private int proxyId;
     private Client oneClient;
+    private long reconfigDuration;
+    private boolean furtherExecution;
 
     private static final String ONE_USERNAME = "oneadmin";
     private static final String ONE_PASSWORD = "opennebula";
@@ -111,6 +113,7 @@ public class FluidityViewManager {
 
             ArrayList<Integer> idsOfNewReplicas = new ArrayList<>();
             ArrayList<Integer> idsOfRemovedReplicas = new ArrayList<>();
+            ArrayList<Integer> nodeIdsOfNewReplicas = new ArrayList<>();
             //FluidityViewManager.main(null);
             //TODO Extend view manager to change currentWeights and fluidity graph
             // compare nodes and check for differences (relevant for cloud connection)
@@ -123,6 +126,7 @@ public class FluidityViewManager {
                     if (!oldReplicaIds.contains(repId)) {
                         // new replica created
                         idsOfNewReplicas.add(repId);
+                        nodeIdsOfNewReplicas.add(currentfluidityGraph.getNodeIdFromReplicaId(repId));
                     }
                 }
                 //System.out.println("Ids of New: " + idsOfNewReplicas.get(0));
@@ -144,7 +148,7 @@ public class FluidityViewManager {
 
             updateFluidityGraph(newFluidityGraph);
 
-            executeUpdates();
+            //executeUpdates();
             //TODO First remove old replicas, then update weights and graph and finally start new instances and
             // add the new replicas to the view
 
@@ -152,14 +156,19 @@ public class FluidityViewManager {
 
             executeUpdates();
 
-            removeServer(idsOfRemovedReplicas.get(0));
+            if (furtherExecution) {
 
-            executeUpdates();
+                removeServer(idsOfRemovedReplicas.get(0));
 
-            int port = (idsOfNewReplicas.get(0) * 10) + 11000;
-            addServer(idsOfNewReplicas.get(0), "127.0.0.1", port);
+                executeUpdates();
 
-            executeUpdates();
+                //int port = (idsOfNewReplicas.get(0) * 10) + 11000;
+                int port = 11000;
+                String ip = "10.0.1." + nodeIdsOfNewReplicas.get(0);
+                addServer(idsOfNewReplicas.get(0), ip, port);
+
+                executeUpdates();
+            }
 
 
 
@@ -260,16 +269,25 @@ public class FluidityViewManager {
     }
 
     public void executeUpdates() {
+        reconfigDuration = System.currentTimeMillis();
         connect();
         ReconfigureReply r = rec.execute();
-        View v = r.getView();
-        System.out.println("New view f: " + v.getF());
+        if (r != null) {
+            View v = r.getView();
+            System.out.println("New view f: " + v.getF());
 
-        VMMessage msg = new VMMessage(id, r);
+            VMMessage msg = new VMMessage(id, r);
 
-        if (addIds.size() > 0) {
-            sendResponse(addIds.toArray(new Integer[1]), msg);
-            addIds.clear();
+            if (addIds.size() > 0) {
+                sendResponse(addIds.toArray(new Integer[1]), msg);
+                addIds.clear();
+            }
+
+            furtherExecution = true;
+            long duration = System.currentTimeMillis() - reconfigDuration;
+            System.out.println("------------------- ReconfigTime: " + duration + " (ms) ----------------");
+        } else {
+            furtherExecution = false;
         }
 
 
