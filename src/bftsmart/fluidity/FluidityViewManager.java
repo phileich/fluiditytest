@@ -158,16 +158,18 @@ public class FluidityViewManager {
 
             if (furtherExecution) {
 
-                removeServer(idsOfRemovedReplicas.get(0));
+                for (int i = 0; i < idsOfRemovedReplicas.size(); i++) {
+                    removeServer(idsOfRemovedReplicas.get(i));
 
-                executeUpdates();
+                    executeUpdates();
 
-                //int port = (idsOfNewReplicas.get(0) * 10) + 11000;
-                int port = 11000;
-                String ip = "10.0.1." + nodeIdsOfNewReplicas.get(0);
-                addServer(idsOfNewReplicas.get(0), ip, port);
+                    //int port = (idsOfNewReplicas.get(0) * 10) + 11000;
+                    int port = 11000;
+                    String ip = "10.0.1." + nodeIdsOfNewReplicas.get(i);
+                    addServer(idsOfNewReplicas.get(i), ip, port);
 
-                executeUpdates();
+                    executeUpdates();
+                }
             }
 
 
