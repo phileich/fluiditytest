@@ -30,5 +30,23 @@
     <node datacenterId="7">
         <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
     </node>
+    <node datacenterId="8">
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="9">
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="10">
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="11">
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="12">
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
+    <node datacenterId="13">
+        <maximumNumberOfReplicas>1</maximumNumberOfReplicas>
+    </node>
 </graph>
 

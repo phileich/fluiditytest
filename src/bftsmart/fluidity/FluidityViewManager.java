@@ -68,6 +68,7 @@ public class FluidityViewManager {
         currentfluidityGraph = internalClient.getViewManager().getCurrentView().getFluidityGraph();
         currentWeights = internalClient.getViewManager().getCurrentView().getWeights();
         byte[] reply = null;
+        boolean canExecute = true;
 
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream(4);
@@ -91,6 +92,7 @@ public class FluidityViewManager {
 
             } else {
                 bftsmart.tom.util.Logger.println("Received Internal Consensus: NULL");
+                canExecute = false;
             }
 
             // Execute consensus over weights
@@ -109,67 +111,73 @@ public class FluidityViewManager {
 
             } else {
                 bftsmart.tom.util.Logger.println("Received Internal Consensus: NULL");
+                canExecute = false;
             }
 
-            ArrayList<Integer> idsOfNewReplicas = new ArrayList<>();
-            ArrayList<Integer> idsOfRemovedReplicas = new ArrayList<>();
-            ArrayList<Integer> nodeIdsOfNewReplicas = new ArrayList<>();
-            //FluidityViewManager.main(null);
-            //TODO Extend view manager to change currentWeights and fluidity graph
-            // compare nodes and check for differences (relevant for cloud connection)
-            for (FluidityGraphNode newNode : newFluidityGraph.getNodes()) {
-                FluidityGraphNode oldNode = currentfluidityGraph.getNodeById(newNode.getNodeId());
-                ArrayList<Integer> oldReplicaIds = currentfluidityGraph.getReplicasFromNode(oldNode);
-                ArrayList<Integer> newReplicaIds = newFluidityGraph.getReplicasFromNode(newNode);
+            if (canExecute) {
+                ArrayList<Integer> idsOfNewReplicas = new ArrayList<>();
+                ArrayList<Integer> idsOfRemovedReplicas = new ArrayList<>();
+                ArrayList<Integer> nodeIdsOfNewReplicas = new ArrayList<>();
+                //FluidityViewManager.main(null);
+                //TODO Extend view manager to change currentWeights and fluidity graph
+                // compare nodes and check for differences (relevant for cloud connection)
+                for (FluidityGraphNode newNode : newFluidityGraph.getNodes()) {
+                    FluidityGraphNode oldNode = currentfluidityGraph.getNodeById(newNode.getNodeId());
+                    ArrayList<Integer> oldReplicaIds = currentfluidityGraph.getReplicasFromNode(oldNode);
+                    ArrayList<Integer> newReplicaIds = newFluidityGraph.getReplicasFromNode(newNode);
 
-                for (int repId : newReplicaIds) {
-                    if (!oldReplicaIds.contains(repId)) {
-                        // new replica created
-                        idsOfNewReplicas.add(repId);
-                        nodeIdsOfNewReplicas.add(currentfluidityGraph.getNodeIdFromReplicaId(repId));
+                    for (int repId : newReplicaIds) {
+                        if (!oldReplicaIds.contains(repId)) {
+                            // new replica created
+                            idsOfNewReplicas.add(repId);
+                            nodeIdsOfNewReplicas.add(currentfluidityGraph.getNodeIdFromReplicaId(repId));
+                        }
+                    }
+                    //System.out.println("Ids of New: " + idsOfNewReplicas.get(0));
+
+                    for (int repId : oldReplicaIds) {
+                        if (!newReplicaIds.contains(repId)) {
+                            // old replica deleted
+                            idsOfRemovedReplicas.add(repId);
+                        }
+                    }
+
+                    //System.out.println("Ids of Removed: " + idsOfRemovedReplicas.get(0));
+                }
+
+                adoptWeights(idsOfNewReplicas, idsOfRemovedReplicas);
+
+                //TODO Extract commands to remove servers and add new ones later
+
+
+                updateFluidityGraph(newFluidityGraph);
+
+                //executeUpdates();
+                //TODO First remove old replicas, then update weights and graph and finally start new instances and
+                // add the new replicas to the view
+
+                updateWeights(currentWeights);
+
+                executeUpdates();
+
+                if (furtherExecution) {
+
+                    for (int i = 0; i < idsOfRemovedReplicas.size(); i++) {
+                        removeServer(idsOfRemovedReplicas.get(i));
+
+                        executeUpdates();
+
+                        int port = (idsOfNewReplicas.get(i) * 10) + 11000;
+                        //int port = 11000;
+                        //String ip = "10.0.1." + nodeIdsOfNewReplicas.get(i);
+                        String ip = "127.0.0.1";
+                        addServer(idsOfNewReplicas.get(i), ip, port);
+
+                        executeUpdates();
                     }
                 }
-                //System.out.println("Ids of New: " + idsOfNewReplicas.get(0));
-
-                for (int repId : oldReplicaIds) {
-                    if (!newReplicaIds.contains(repId)) {
-                        // old replica deleted
-                        idsOfRemovedReplicas.add(repId);
-                    }
-                }
-
-                //System.out.println("Ids of Removed: " + idsOfRemovedReplicas.get(0));
-            }
-
-            adoptWeights(idsOfNewReplicas, idsOfRemovedReplicas);
-
-            //TODO Extract commands to remove servers and add new ones later
-
-
-            updateFluidityGraph(newFluidityGraph);
-
-            //executeUpdates();
-            //TODO First remove old replicas, then update weights and graph and finally start new instances and
-            // add the new replicas to the view
-
-            updateWeights(currentWeights);
-
-            executeUpdates();
-
-            if (furtherExecution) {
-
-                for (int i = 0; i < idsOfRemovedReplicas.size(); i++) {
-                    removeServer(idsOfRemovedReplicas.get(i));
-
-                    executeUpdates();
-
-                    //int port = (idsOfNewReplicas.get(0) * 10) + 11000;
-                    int port = 11000;
-                    String ip = "10.0.1." + nodeIdsOfNewReplicas.get(i);
-                    addServer(idsOfNewReplicas.get(i), ip, port);
-
-                    executeUpdates();
-                }
+            } else {
+                System.out.println("dynWHEAT not consistent in calculation, hence, no reconfig.");
             }
 
 
