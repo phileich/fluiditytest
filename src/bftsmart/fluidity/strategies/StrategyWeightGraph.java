@@ -412,7 +412,7 @@ public class StrategyWeightGraph implements DistributionStrategy {
 
         for (int oldReplica : replicasToReplace) {
             for (int i = 0; i < variantsOfNewNodes[0].size(); i++) {
-                replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
+                //replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
                 for (int otherReplica : replicaIds) {
                     FluidityGraphNode nodeStandard = fluidityGraph.getNodeById(fluidityGraph.getNodeIdFromReplicaId(otherReplica));
                     FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica);
@@ -432,7 +432,7 @@ public class StrategyWeightGraph implements DistributionStrategy {
 
         for (int oldReplica : replicasToReplace) {
             for (int i = 0; i < variantsOfNewNodes[0].size(); i++) {
-                replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
+                //replicaIdsToReplace.put(oldReplica, getOneOfNewNodes(variant, i));
 
                 FluidityGraphNode nodeToReplace = replicaIdsToReplace.get(oldReplica); //TODO Check for array index out of bounds
                 latencies[i] = nodeToReplace.getClientLatency();
