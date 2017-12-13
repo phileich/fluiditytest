@@ -87,8 +87,7 @@ config/system.config
 config/system.config.fluidity
 config/system.config.wheat
 config/system.config.dyn
-bin
-bin/*
+bin/bftsmart/*
 
 
 ### ECLIPSE ####################################################### ECLIPSE ###
